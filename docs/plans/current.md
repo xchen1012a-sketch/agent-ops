@@ -1,8 +1,8 @@
 # 当前阶段
 
-- 阶段：`ARCH-003`
-- 名称：单仓迁移
-- 状态：执行中
-- 阶段文件：`docs/plans/phases/ARCH-003-monorepo-migration.md`
-- 下一步：完成根 Git 初始化、安全检查、分支创建和远端推送，然后恢复 `DESIGN-002`
+- 阶段：`DESIGN-002`
+- 名称：模块详细设计对齐
+- 状态：进行中（单仓迁移已完成，详细计划待逐模块决策对齐）
+- 阶段文件：`docs/plans/phases/DESIGN-002-module-design-alignment.md`
+- 下一步：依次对齐统一认证、法律知识来源、招聘材料/评分规则、MCP/SQL 策略、数据库权限与部署参数
 - 代码状态：禁止编写业务代码
