@@ -1,0 +1,42 @@
+# 智能问数 API 草案
+
+基础运行接口遵循运维仓 `docs/contracts/api-conventions.md`。
+
+## 领域资源
+
+```text
+POST   /v1/threads
+GET    /v1/threads
+POST   /v1/threads/{thread_id}/runs
+GET    /v1/runs/{run_id}
+GET    /v1/runs/{run_id}/stream
+POST   /v1/runs/{run_id}/cancel
+POST   /v1/runs/{run_id}/retry
+GET    /v1/query-history
+GET    /v1/query-history/{query_id}
+POST   /v1/evaluations
+GET    /v1/evaluations/{evaluation_id}
+POST   /v1/integrations/feishu/events
+```
+
+长连接飞书模式不一定使用 HTTP events 入口，最终接口由 `FEISHU-500` 详细设计确认。
+
+## 运行输入草案
+
+- `question`
+- `thread_id`
+- `timezone`
+- `locale`
+- `channel`：`web` 或 `feishu`
+- `idempotency_key`
+
+## 运行输出草案
+
+- `answer`
+- `data.columns` / `data.rows` / `data.truncated`
+- `chart.type` / `chart.dataset` / `chart.encoding`
+- `query_summary`
+- `run_id` / `status` / `warnings`
+
+默认不向普通用户暴露原始 SQL；管理员调试权限和脱敏规则在 `DATA-310` 确认。
+

@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+*.log
+logs/
+traces/
+metrics/
+secrets/
+private/
+__pycache__/
+.pytest_cache/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+

@@ -1,0 +1,19 @@
+# Reference courseware is not part of the engineering repository.
+/AI编程_智能问数实训(课件)/
+
+# Local environment and generated files.
+.env
+.env.*
+!.env.example
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+dist/
+build/
+coverage/
+.idea/
+.vscode/
+*.log
+
