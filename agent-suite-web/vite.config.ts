@@ -6,11 +6,16 @@ import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 
+import { createDevAuthPlugin } from './dev-auth-plugin';
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const authPrefix = env.VITE_API_AUTH_PREFIX || '/api/auth';
+  const enableDevAuth = env.VITE_ENABLE_DEV_AUTH === 'true';
 
   return {
     plugins: [
+      ...(enableDevAuth ? [createDevAuthPlugin(authPrefix)] : []),
       vue(),
       AutoImport({
         imports: ['vue', 'vue-router', 'pinia'],
@@ -51,10 +56,14 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: {
-        [env.VITE_API_AUTH_PREFIX || '/api/auth']: {
-          target: env.VITE_PROXY_AUTH_TARGET || 'http://localhost:8081',
-          changeOrigin: true,
-        },
+        ...(enableDevAuth
+          ? {}
+          : {
+              [authPrefix]: {
+                target: env.VITE_PROXY_AUTH_TARGET || 'http://localhost:8081',
+                changeOrigin: true,
+              },
+            }),
         [env.VITE_API_LEGAL_PREFIX || '/api/legal/v1']: {
           target: env.VITE_PROXY_LEGAL_TARGET || 'http://localhost:8101',
           changeOrigin: true,

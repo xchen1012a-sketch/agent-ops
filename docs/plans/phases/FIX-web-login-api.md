@@ -107,3 +107,34 @@
 
 验证：登录按钮点击应触发 /api/auth/login，使用本地测试账号返回 token 和 profile，随后可进入 /legal。
 
+
+### 阶段 3 结果
+
+状态：已完成。
+
+实现点：
+- 新增 `agent-suite-web/dev-auth-plugin.ts`，仅在 Vite dev server 下提供本地 `/api/auth` mock。
+- 修改 `agent-suite-web/vite.config.ts`：当 `VITE_ENABLE_DEV_AUTH=true` 时启用 mock，并跳过 `/api/auth` 到 8081 的代理。
+- 修改 `agent-suite-web/.env.example`：记录 `VITE_ENABLE_DEV_AUTH=false` 默认值，避免共享/生产环境误启用。
+- 修改本地忽略文件 `agent-suite-web/.env`：加入 `VITE_ENABLE_DEV_AUTH=true`。
+
+本地账号：
+- 管理员：`admin@example.com`
+- 普通用户：`user@example.com`
+- 密码规则：任意 8 位及以上本地测试口令；不在代码或文档中固化真实密码。
+
+验证证据：
+- `POST http://127.0.0.1:5666/api/auth/login` 使用管理员账号和 8 位以上测试口令返回 `dev-auth-token.dev-admin`。
+- `GET http://127.0.0.1:5666/api/auth/me` 返回管理员 profile，role=`admin`。
+- 错误密码返回 401。
+- `GET http://127.0.0.1:5666/api/legal/v1/health/live` 返回 `{"status":"ok"}`，法律 Agent 代理仍正常。
+- `GET http://127.0.0.1:5666` 返回 200。
+- `pnpm.cmd typecheck`：通过。
+- `pnpm.cmd lint`：通过。
+- `pnpm.cmd format:check`：通过。
+- `pnpm.cmd test`：通过，7 files / 34 tests passed。
+- `pnpm.cmd build`：通过；保留既有 warning：Element Plus chunk > 500k、echarts empty chunk、@vueuse/core PURE 注释 warning。
+
+安全边界：
+- dev auth 只受本地 `.env` 开关控制，`.env` 已被 `.gitignore` 忽略。
+- mock token 只用于本地开发，不作为生产认证实现。

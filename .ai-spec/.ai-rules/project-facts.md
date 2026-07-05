@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: 80bb98bb9aaef98e
-- last refresh: 2026-07-05 16:22:17 +08:00
+- source hash: 5f32433338ae91b9
+- last refresh: 2026-07-05 16:34:01 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -59,9 +59,9 @@ agent/
 |   |-- auto-imports.d.ts
 |   |-- CLAUDE.md
 |   |-- components.d.ts
+|   |-- dev-auth-plugin.ts
 |   |-- Dockerfile
 |   |-- eslint.config.mjs
-|   |-- index.html
 |-- docs/
 |   |-- homework/
 |   |-- plans/
