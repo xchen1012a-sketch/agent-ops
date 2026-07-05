@@ -428,6 +428,34 @@
 - 若继续 `LEGAL-140`：真实 LLM adapter 设计需要单独成片，并通过配置/adapter 接入，不在 workflow node 中硬编码模型名、URL 或 key。
 - 若进入 `LEGAL-150`：先冻结 API/SSE 契约，再做会话、问答、历史搜索、反馈、报告导出等课件功能。
 
+## 第三块：LEGAL-150 领域 API 与课件功能
+
+### 第一切片执行范围：会话创建 API 契约
+
+- 目标：在不接真实 DeepSeek/RAG、不新增数据库结构的条件下，对外提供法律咨询会话创建 API。
+- 输入：受信任上游身份边界 `x-user-public-id`、`category_code`、可选 `title`。
+- 输出：`POST /v1/sessions` 与 `POST /api/legal/v1/sessions`、`LegalSessionCreateRequest`、`LegalSessionResponse`、`LegalSessionCreateEnvelope`。
+- 行为：API 层只处理 header、DTO、响应 envelope 和参数校验；业务逻辑仍通过 `LegalDataService.create_session()` 执行；repository 事务仍由 request-scoped session 管理。
+- 约束：不实现 JWT 解码或权限体系变更；不新增表/迁移；不做问答执行；不接 DeepSeek、Qdrant、BGE；不修改其他 Agent。
+- 不做：会话列表/详情、消息接口、问答 API、SSE、前端页面、真实鉴权网关。
+
+### 第一切片执行记录（2026-07-05）
+
+- 已新增会话 DTO：`api/v1/schemas/legal_sessions.py`。
+- 已新增 endpoint：`api/v1/endpoints/legal_sessions.py`，并接入 v1 router。
+- 已新增 API dependency：`get_current_user_public_id()`、`get_legal_data_service()`、`CurrentUserPublicIdDep`、`LegalDataServiceDep`。
+- 已覆盖成功创建、缺失身份 header 映射 `AUTH_REQUIRED`、非法 `category_code` 返回 422。
+- `uv run pytest tests/unit/test_legal_sessions_api.py -q`：3 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，79 files already formatted。
+- `uv run mypy src`：通过，55 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：104 passed，总覆盖率 89%。
+
+### LEGAL-150 下一切片建议
+
+- 法律问答入口 API 契约：先打通 user message + mock workflow + assistant message 的应用边界。
+- 继续保持真实 DeepSeek、RAG 检索、SSE 流式输出和前端后置到独立切片。
+
 ## 验收标准
 
 ### LEGAL-130
