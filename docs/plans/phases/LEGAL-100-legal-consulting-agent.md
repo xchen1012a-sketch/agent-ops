@@ -456,6 +456,34 @@
 - 法律问答入口 API 契约：先打通 user message + mock workflow + assistant message 的应用边界。
 - 继续保持真实 DeepSeek、RAG 检索、SSE 流式输出和前端后置到独立切片。
 
+### 第二切片执行范围：法律问答入口 API 契约
+
+- 目标：在不接真实 DeepSeek/RAG/SSE 的条件下，提供同步问答入口 API，打通用户消息持久化、默认 deterministic workflow 执行和助手消息持久化边界。
+- 输入：受信任上游身份边界 `x-user-public-id`、`session_public_id`、`question`。
+- 输出：`POST /v1/sessions/{session_public_id}/questions` 与 `POST /api/legal/v1/sessions/{session_public_id}/questions`、`LegalQuestionRequest`、`LegalQuestionAnswerResponse`、`LegalQuestionAnswerEnvelope`、`LegalQuestionAnswerService`。
+- 行为：先保存用户消息；执行默认 graph；若 `INPUT_BLOCKED` 则返回统一错误；成功后保存助手消息并返回回答、引用、高风险标记、分类和节点轨迹。
+- 约束：不接真实 DeepSeek；不接 RAG 检索；不新增 DB 表；不做 SSE；不做审核自动入队；不修改其他 Agent。
+- 不做：流式问答、取消/重试 HTTP API、真实 LLM adapter、PromptVersion active 查询、报告导出、前端页面。
+
+### 第二切片执行记录（2026-07-05）
+
+- 已新增 `application/services/question_answer_service.py`，封装 user message → workflow → assistant message 的应用层边界。
+- 已新增问答 DTO：`api/v1/schemas/legal_questions.py`。
+- 已新增 endpoint：`api/v1/endpoints/legal_questions.py`，并接入 v1 router。
+- 已新增 API dependency：`get_legal_question_answer_service()`、`LegalQuestionAnswerServiceDep`。
+- 已在 `LegalDataService` 增加 `get_user_mirror()`，用于问答 workflow state 的内部 user id 输入；不改 repository port/DB schema。
+- 已覆盖问答成功持久化两条消息、prompt-injection 阻断只保存用户消息、API 成功 envelope、空问题 422。
+- `uv run pytest tests/unit/test_question_answer_service.py tests/unit/test_legal_questions_api.py -q`：4 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，84 files already formatted。
+- `uv run mypy src`：通过，58 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：108 passed，总覆盖率 90%。
+
+### LEGAL-150 下一切片建议
+
+- 历史咨询记录/消息查询 API：先做只读分页契约，复用已有会话用户隔离边界。
+- 流式 SSE、真实 DeepSeek/RAG、报告导出和高风险审核入队继续独立成片。
+
 ## 验收标准
 
 ### LEGAL-130

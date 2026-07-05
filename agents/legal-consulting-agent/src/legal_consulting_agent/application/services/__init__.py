@@ -19,6 +19,11 @@ from legal_consulting_agent.application.services.prompt_workflow_factory import 
     LegalPromptWorkflowFactory,
     LegalPromptWorkflowPrompts,
 )
+from legal_consulting_agent.application.services.question_answer_service import (
+    LegalQuestionAnswerResult,
+    LegalQuestionAnswerService,
+    LegalWorkflowExecutionError,
+)
 from legal_consulting_agent.application.services.risk_prompt_service import (
     LegalRiskCheckPromptService,
     LegalRiskCheckResult,
@@ -46,8 +51,11 @@ __all__ = [
     "LegalGenerationResult",
     "LegalPromptWorkflowFactory",
     "LegalPromptWorkflowPrompts",
+    "LegalQuestionAnswerResult",
+    "LegalQuestionAnswerService",
     "LegalRiskCheckPromptService",
     "LegalRiskCheckResult",
+    "LegalWorkflowExecutionError",
     "LegalWorkflowAuditService",
     "LegalWorkflowRunnerService",
     "TextLLMAdapter",

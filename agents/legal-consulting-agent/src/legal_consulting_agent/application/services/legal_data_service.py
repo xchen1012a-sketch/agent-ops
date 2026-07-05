@@ -59,6 +59,14 @@ class LegalDataService:
     def __init__(self, repository: LegalDataRepository) -> None:
         self._repository = repository
 
+    async def get_user_mirror(self, public_id: str) -> UserMirror:
+        """Return a local user mirror by public ID."""
+
+        user = await self._repository.get_user_by_public_id(public_id)
+        if user is None or user.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+        return user
+
     async def sync_user_mirror(
         self,
         *,
