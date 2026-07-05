@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: bbb828acf33e5bd2
-- last refresh: 2026-07-05 11:51:08 +08:00
+- source hash: 80bb98bb9aaef98e
+- last refresh: 2026-07-05 16:22:17 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -43,12 +43,14 @@ agent/
 |   |-- README.md
 |-- agent-suite-web/
 |   |-- docs/
+|   |-- logs/
 |   |-- nginx/
 |   |-- public/
 |   |-- src/
 |   |-- tests/
 |   |-- .dockerignore
 |   |-- .editorconfig
+|   |-- .env
 |   |-- .env.example
 |   |-- .eslintrc-auto-import.json
 |   |-- .gitignore
@@ -60,11 +62,10 @@ agent/
 |   |-- Dockerfile
 |   |-- eslint.config.mjs
 |   |-- index.html
-|   |-- package.json
-|   |-- playwright.config.ts
 |-- docs/
 |   |-- homework/
 |   |-- plans/
+|-- logs/
 |-- .gitignore
 |-- AGENTS.md
 |-- CLAUDE.md
@@ -78,7 +79,7 @@ agent/
 ## [auto] Git status
 
 - Current branch: legal-100-data-workflow-local
-- Working tree: clean
+- Working tree: has uncommitted changes
 - Remotes:
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (push)

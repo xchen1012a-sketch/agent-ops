@@ -1,4 +1,4 @@
-# Project facts
+﻿# Project facts
 
 > [auto] is refreshed by AI or scripts from repository state and only records verifiable facts.
 > [manual] may be filled by AI from explicit sources and confirmed by humans. AI must mark uncertain entries as pending confirmation.
@@ -6,13 +6,13 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: cb88dfbc6dc4bad2
-- last refresh: 2026-07-05 10:54:44 +0800
-- refresh command: scripts/refresh-project-facts.sh
+- source hash: ad02e758b2d2e064
+- last refresh: 2026-07-05 14:06:31 +08:00
+- refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
 
-- No package.json parser available.
+- No common framework or tool detected from package.json.
 
 ## [auto] Scripts
 
@@ -22,59 +22,55 @@
 
 ```text
 data-query-agent/
+|-- .mypy_cache/
+|   |-- 3.12/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|-- .pytest_cache/
+|-- .ruff_cache/
+|   |-- 0.15.20/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|-- .venv/
+|   |-- include/
+|   |-- Lib/
+|   |-- Scripts/
+|   |-- share/
+|   |-- .gitignore
+|   |-- .lock
+|   |-- CACHEDIR.TAG
+|   |-- pyvenv.cfg
+|-- docs/
+|   |-- api-contract.md
+|   |-- architecture.md
+|   |-- detailed-design.md
+|   |-- specification.md
+|-- migrations/
+|   |-- versions/
+|   |-- env.py
+|   |-- script.py.mako
+|-- scripts/
+|   |-- .gitkeep
+|-- src/
+|   |-- data_query_agent/
+|-- tests/
+|   |-- __pycache__/
+|   |-- contract/
+|   |-- e2e/
+|   |-- evaluation/
+|   |-- integration/
+|   |-- unit/
+|   |-- __init__.py
+|   |-- conftest.py
 |-- .coverage
 |-- .env.example
 |-- .gitignore
-|-- .mypy_cache
-|   |-- .mypy_cache/.gitignore
-|   |-- .mypy_cache/3.12
-|   |-- .mypy_cache/CACHEDIR.TAG
-|-- .pytest_cache
-|   |-- .pytest_cache/.gitignore
-|   |-- .pytest_cache/CACHEDIR.TAG
-|   |-- .pytest_cache/README.md
-|   |-- .pytest_cache/v
-|-- .ruff_cache
-|   |-- .ruff_cache/.gitignore
-|   |-- .ruff_cache/0.15.20
-|   |-- .ruff_cache/CACHEDIR.TAG
-|-- .venv
-|   |-- .venv/.gitignore
-|   |-- .venv/.lock
-|   |-- .venv/CACHEDIR.TAG
-|   |-- .venv/Lib
-|   |-- .venv/Scripts
-|   |-- .venv/include
-|   |-- .venv/pyvenv.cfg
-|   |-- .venv/share
 |-- AGENTS.md
+|-- alembic.ini
 |-- CLAUDE.md
 |-- Dockerfile
-|-- README.md
-|-- alembic.ini
-|-- docs
-|   |-- docs/api-contract.md
-|   |-- docs/architecture.md
-|   |-- docs/detailed-design.md
-|   |-- docs/specification.md
-|-- migrations
-|   |-- migrations/env.py
-|   |-- migrations/script.py.mako
-|   |-- migrations/versions
 |-- pyproject.toml
-|-- scripts
-|   |-- scripts/.gitkeep
-|-- src
-|   |-- src/data_query_agent
-|-- tests
-|   |-- tests/__init__.py
-|   |-- tests/__pycache__
-|   |-- tests/conftest.py
-|   |-- tests/contract
-|   |-- tests/e2e
-|   |-- tests/evaluation
-|   |-- tests/integration
-|   |-- tests/unit
+|-- README.md
 |-- uv.lock
 ```
 
@@ -120,7 +116,7 @@ data-query-agent/
 
 ## [auto] Git status
 
-- Current branch: main
+- Current branch: legal-100-data-workflow-local
 - Working tree: has uncommitted changes
 - Remotes:
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)
