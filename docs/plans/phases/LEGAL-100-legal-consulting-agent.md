@@ -561,6 +561,34 @@
 - 报告导出 API 契约：基于 `consultation_records` 生成同步 Markdown 投影，暂不引入异步任务和 PDF 依赖。
 - SSE、真实 DeepSeek/RAG、管理员复核流程继续独立成片。
 
+### 第六切片执行范围：咨询记录 Markdown 报告导出 API
+
+- 目标：基于已完成的 `consultation_records` 生成同步 Markdown 报告投影。
+- 输入：受信任上游身份边界 `x-user-public-id`、`record_public_id`。
+- 输出：`GET /v1/consultation-records/{record_public_id}/report` 与 `/api/legal/v1` 等价路径、`LegalReportService`、`LegalReportResponse`、`LegalReportEnvelope`。
+- 行为：service 校验用户拥有咨询记录；同步渲染 Markdown 字符串并返回 response envelope；不落盘。
+- 约束：不引入 PDF 依赖；不创建报告表/导出任务表；不改 DB schema；不修改其他 Agent。
+- 不做：PDF 生成、异步批量导出、对象存储、报告列表、前端页面。
+
+### 第六切片执行记录（2026-07-05）
+
+- 已扩展 `LegalDataRepository.get_consultation_record_for_user()` 和 SQLAlchemy 实现。
+- 已新增 `LegalDataService.get_consultation_record()`。
+- 已新增 `application/services/report_service.py`，生成 Markdown 报告投影。
+- 已新增报告 DTO：`api/v1/schemas/legal_reports.py`。
+- 已新增 endpoint：`api/v1/endpoints/legal_reports.py`，并接入 v1 router。
+- 已覆盖用户所属记录 Markdown 生成、API 成功 envelope。
+- `uv run pytest tests/unit/test_report_service.py tests/unit/test_legal_reports_api.py -q`：2 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，98 files already formatted。
+- `uv run mypy src`：通过，67 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：118 passed，总覆盖率 90%。
+
+### LEGAL-150 下一切片建议
+
+- SSE 事件契约与同步问答事件投影：先输出 deterministic workflow 的 started/node/answer/completed 事件结构，仍不接真实流式 LLM。
+- 真实 DeepSeek/RAG、取消/重试 HTTP API、前端页面继续独立成片。
+
 ## 验收标准
 
 ### LEGAL-130

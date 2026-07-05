@@ -75,6 +75,14 @@ class LegalDataRepository(Protocol):
     ) -> ConsultationRecord:
         """Persist a completed consultation snapshot."""
 
+    async def get_consultation_record_for_user(
+        self,
+        *,
+        record_public_id: str,
+        user_id: int,
+    ) -> ConsultationRecord | None:
+        """Return a user-owned consultation record, or None."""
+
     async def create_feedback(self, feedback: Feedback) -> Feedback:
         """Persist user feedback for an assistant message."""
 

@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-150 领域 API 与课件功能` 第五切片已落地：高风险审核入队 API 契约
+- 状态：`LEGAL-150 领域 API 与课件功能` 第六切片已落地：咨询记录 Markdown 报告导出 API 契约
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -29,11 +29,12 @@
   - 已实现 LEGAL-150 历史消息查询 API：`GET /v1/sessions/{session_public_id}/messages`、消息分页 DTO、repository 只读查询
   - 已实现 LEGAL-150 反馈 API：`POST /v1/sessions/{session_public_id}/messages/{message_public_id}/feedback`
   - 已实现 LEGAL-150 高风险审核入队 API：`POST /v1/sessions/{session_public_id}/messages/{message_public_id}/high-risk-review`
+  - 已实现 LEGAL-150 报告导出 API：`GET /v1/consultation-records/{record_public_id}/report`，同步返回 Markdown 投影
 - 暂不具备 / 后置依赖：
   - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
   - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - 继续 `LEGAL-150` 第六切片：报告导出 API 契约，基于咨询记录生成同步 Markdown 投影。
+  - 继续 `LEGAL-150` 第七切片：SSE 事件契约与同步问答事件投影，仍不接真实流式 LLM。
   - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。
 
 ## 并行阶段：RECRUIT-200 智能招聘 Agent

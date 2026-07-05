@@ -169,6 +169,21 @@ class FakeLegalDataRepository:
         self.consultation_records.append(persisted)
         return persisted
 
+    async def get_consultation_record_for_user(
+        self,
+        *,
+        record_public_id: str,
+        user_id: int,
+    ) -> ConsultationRecord | None:
+        return next(
+            (
+                record
+                for record in self.consultation_records
+                if record.public_id == record_public_id and record.user_id == user_id
+            ),
+            None,
+        )
+
     async def create_feedback(self, feedback: Feedback) -> Feedback:
         persisted = Feedback(
             id=50,

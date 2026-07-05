@@ -8,7 +8,11 @@ from typing import Annotated
 from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from legal_consulting_agent.application.services import LegalDataService, LegalQuestionAnswerService
+from legal_consulting_agent.application.services import (
+    LegalDataService,
+    LegalQuestionAnswerService,
+    LegalReportService,
+)
 from legal_consulting_agent.core.config import Settings, get_settings
 from legal_consulting_agent.core.errors import AuthError
 from legal_consulting_agent.core.request_context import REQUEST_ID_KEY, request_context
@@ -62,6 +66,12 @@ def get_legal_question_answer_service(
     return LegalQuestionAnswerService(legal_data_service=legal_data_service)
 
 
+def get_legal_report_service(legal_data_service: LegalDataServiceDep) -> LegalReportService:
+    """Build the legal report projection service."""
+
+    return LegalReportService(legal_data_service)
+
+
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 RequestIdDep = Annotated[str, Depends(get_request_id)]
@@ -71,3 +81,4 @@ LegalQuestionAnswerServiceDep = Annotated[
     LegalQuestionAnswerService,
     Depends(get_legal_question_answer_service),
 ]
+LegalReportServiceDep = Annotated[LegalReportService, Depends(get_legal_report_service)]

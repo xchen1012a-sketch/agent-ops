@@ -258,6 +258,23 @@ class LegalDataService:
             )
         )
 
+    async def get_consultation_record(
+        self,
+        *,
+        user_public_id: str,
+        record_public_id: str,
+    ) -> ConsultationRecord:
+        """Return a user-owned consultation record by public ID."""
+
+        user = await self.get_user_mirror(user_public_id)
+        record = await self._repository.get_consultation_record_for_user(
+            record_public_id=record_public_id,
+            user_id=user.id or 0,
+        )
+        if record is None:
+            raise LegalDataNotFoundError("Consultation record not found")
+        return record
+
     async def create_feedback(
         self,
         *,

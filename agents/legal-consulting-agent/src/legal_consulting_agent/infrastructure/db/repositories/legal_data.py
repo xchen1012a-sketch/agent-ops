@@ -180,6 +180,22 @@ class SqlAlchemyLegalDataRepository:
         await self._session.flush()
         return self._to_consultation_record(model)
 
+    async def get_consultation_record_for_user(
+        self,
+        *,
+        record_public_id: str,
+        user_id: int,
+    ) -> ConsultationRecord | None:
+        """Return a user-owned consultation record, or None."""
+        result = await self._session.execute(
+            select(ConsultationRecordModel).where(
+                ConsultationRecordModel.public_id == record_public_id,
+                ConsultationRecordModel.user_id == user_id,
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_consultation_record(model) if model is not None else None
+
     async def create_feedback(self, feedback: Feedback) -> Feedback:
         """Persist user feedback without committing."""
         model = FeedbackModel(
