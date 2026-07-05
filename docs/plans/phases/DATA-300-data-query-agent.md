@@ -393,3 +393,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed（首次发现 fake adapter 与测试需格式化，已格式化后通过）。
   - `uv run mypy src`：passed。
   - `uv run pytest -q`：113 passed，coverage 80%。
+- 2026-07-05：完成 `DATA-340` 循环 12。新增 DataQueryState/NodeTrace、deterministic 节点与 LangGraph graph factory，打通 input_validation/intent_classify/schema_retrieval/sql_generate/sql_policy_check/query_execute/result_validate/interpret/persist_audit/polite_refusal 主路径；非数据问题走 polite_refusal，数据问题走 deterministic 主路径，节点 trace 完整。未做 runner 审计/失败语义、cancel/retry、API，未调用 LLM/真实 DB。验证：
+  - `uv run pytest tests/unit/test_data_query_workflow.py -q`：4 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed（首次发现 workflow 测试需格式化，已格式化后通过）。
+  - `uv run mypy src`：首次发现 Literal 类型收窄问题，已修复后 passed。
+  - `uv run pytest -q`：117 passed，coverage 81%。
