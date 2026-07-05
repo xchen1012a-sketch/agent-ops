@@ -24,7 +24,7 @@ def _make_config() -> Config:
 
 def test_single_head_revision() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
-    assert script_dir.get_heads() == ["0003_thread_messages"]
+    assert script_dir.get_heads() == ["0004_query_runs_node_runs"]
 
 
 def test_baseline_has_no_down_revision() -> None:
@@ -43,6 +43,7 @@ def test_walk_revisions_returns_exactly_one() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
     revisions = list(script_dir.walk_revisions())
     assert [revision.revision for revision in revisions] == [
+        "0004_query_runs_node_runs",
         "0003_thread_messages",
         "0002_identity_threads",
         "0001_initial_baseline",
@@ -61,3 +62,10 @@ def test_thread_messages_revision_follows_identity_threads() -> None:
     message_revision = script_dir.get_revision("0003_thread_messages")
     assert message_revision is not None
     assert message_revision.down_revision == "0002_identity_threads"
+
+
+def test_query_runs_revision_follows_thread_messages() -> None:
+    script_dir = ScriptDirectory.from_config(_make_config())
+    run_revision = script_dir.get_revision("0004_query_runs_node_runs")
+    assert run_revision is not None
+    assert run_revision.down_revision == "0003_thread_messages"

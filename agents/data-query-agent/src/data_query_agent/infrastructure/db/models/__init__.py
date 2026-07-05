@@ -5,5 +5,12 @@ from data_query_agent.infrastructure.db.models.identity import (
     ThreadMessageModel,
     UserMirrorModel,
 )
+from data_query_agent.infrastructure.db.models.run import NodeRunModel, QueryRunModel
 
-__all__ = ["QueryThreadModel", "ThreadMessageModel", "UserMirrorModel"]
+__all__ = [
+    "NodeRunModel",
+    "QueryRunModel",
+    "QueryThreadModel",
+    "ThreadMessageModel",
+    "UserMirrorModel",
+]
