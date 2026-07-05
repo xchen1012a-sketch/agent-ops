@@ -59,6 +59,16 @@ class LegalDataRepository(Protocol):
     ) -> LegalMessage | None:
         """Return a session message with the required role, or None."""
 
+    async def list_messages_for_user_session(
+        self,
+        *,
+        session_public_id: str,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> list[LegalMessage]:
+        """Return messages from a user-owned session ordered by id."""
+
     async def create_consultation_record(
         self,
         record: ConsultationRecord,

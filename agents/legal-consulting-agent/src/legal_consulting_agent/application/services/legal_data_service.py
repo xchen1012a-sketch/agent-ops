@@ -149,6 +149,28 @@ class LegalDataService:
             )
         )
 
+    async def list_session_messages(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        limit: int,
+        offset: int,
+    ) -> list[LegalMessage]:
+        """List messages for a user-owned session with bounded pagination."""
+
+        if limit < 1 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+        if offset < 0:
+            raise ValueError("offset must be greater than or equal to 0")
+        user = await self.get_user_mirror(user_public_id)
+        return await self._repository.list_messages_for_user_session(
+            session_public_id=session_public_id,
+            user_id=user.id or 0,
+            limit=limit,
+            offset=offset,
+        )
+
     async def create_agent_run(
         self,
         *,

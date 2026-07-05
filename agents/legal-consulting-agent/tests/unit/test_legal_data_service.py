@@ -131,6 +131,24 @@ class FakeLegalDataRepository:
             None,
         )
 
+    async def list_messages_for_user_session(
+        self,
+        *,
+        session_public_id: str,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> list[LegalMessage]:
+        if (
+            self.session is None
+            or self.session.public_id != session_public_id
+            or self.session.user_id != user_id
+        ):
+            return []
+        return [message for message in self.messages if message.session_id == self.session.id][
+            offset : offset + limit
+        ]
+
     async def create_consultation_record(
         self,
         record: ConsultationRecord,
@@ -341,6 +359,73 @@ async def test_append_message_enforces_session_ownership() -> None:
 
     assert message.session_id == 10
     assert message.role is MessageRole.USER
+
+
+@pytest.mark.asyncio
+async def test_list_session_messages_uses_owned_session_and_pagination() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    repo.messages = [
+        LegalMessage(
+            id=11,
+            public_id="question-public-id",
+            session_id=10,
+            role=MessageRole.USER,
+            content="Question",
+            citations=None,
+            high_risk=False,
+            prompt_version=None,
+        ),
+        LegalMessage(
+            id=12,
+            public_id="answer-public-id",
+            session_id=10,
+            role=MessageRole.ASSISTANT,
+            content="Answer",
+            citations=[],
+            high_risk=False,
+            prompt_version="deterministic:v1",
+        ),
+    ]
+    service = LegalDataService(repo)
+
+    messages = await service.list_session_messages(
+        user_public_id="user-public-id",
+        session_public_id="thread-public-id",
+        limit=1,
+        offset=1,
+    )
+
+    assert [message.public_id for message in messages] == ["answer-public-id"]
+
+
+@pytest.mark.asyncio
+async def test_list_session_messages_rejects_invalid_pagination() -> None:
+    service = LegalDataService(FakeLegalDataRepository())
+
+    with pytest.raises(ValueError, match="limit"):
+        await service.list_session_messages(
+            user_public_id="user-public-id",
+            session_public_id="thread-public-id",
+            limit=101,
+            offset=0,
+        )
 
 
 @pytest.mark.asyncio

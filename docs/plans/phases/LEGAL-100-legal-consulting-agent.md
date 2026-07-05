@@ -484,6 +484,33 @@
 - 历史咨询记录/消息查询 API：先做只读分页契约，复用已有会话用户隔离边界。
 - 流式 SSE、真实 DeepSeek/RAG、报告导出和高风险审核入队继续独立成片。
 
+### 第三切片执行范围：会话消息历史查询 API
+
+- 目标：提供用户所属法律咨询会话的消息历史只读分页查询。
+- 输入：受信任上游身份边界 `x-user-public-id`、`session_public_id`、`limit`、`offset`。
+- 输出：`GET /v1/sessions/{session_public_id}/messages` 与 `GET /api/legal/v1/sessions/{session_public_id}/messages`、`LegalMessageResponse`、`LegalMessageListData`、`LegalMessageListEnvelope`。
+- 行为：API 层处理 query 参数边界；service 校验分页范围并通过 repository 查询用户所属会话消息；repository 按 message id 升序返回。
+- 约束：只读；不新增 DB schema；不做全文搜索；不接 RAG/DeepSeek；不修改其他 Agent。
+- 不做：咨询记录搜索、报告导出、消息删除/编辑、管理员审核、前端页面。
+
+### 第三切片执行记录（2026-07-05）
+
+- 已扩展 `LegalDataRepository.list_messages_for_user_session()` 和 SQLAlchemy 实现。
+- 已新增 `LegalDataService.list_session_messages()`，统一分页边界为 `limit=1..100`、`offset>=0`。
+- 已新增消息 DTO：`api/v1/schemas/legal_messages.py`。
+- 已新增 endpoint：`api/v1/endpoints/legal_messages.py`，并接入 v1 router。
+- 已覆盖 service 用户会话隔离与分页、非法分页拒绝、API 成功 envelope、非法 limit 422。
+- `uv run pytest tests/unit/test_legal_data_service.py tests/unit/test_legal_messages_api.py -q`：30 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，87 files already formatted。
+- `uv run mypy src`：通过，60 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：112 passed，总覆盖率 90%。
+
+### LEGAL-150 下一切片建议
+
+- 反馈 API 契约：复用 `LegalDataService.create_feedback()`，覆盖评分范围、用户会话隔离和助手消息约束。
+- 报告导出、SSE、真实 DeepSeek/RAG、高风险审核入队继续独立成片。
+
 ## 验收标准
 
 ### LEGAL-130

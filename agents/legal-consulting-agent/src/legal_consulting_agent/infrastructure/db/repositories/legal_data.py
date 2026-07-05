@@ -137,6 +137,28 @@ class SqlAlchemyLegalDataRepository:
         model = result.scalar_one_or_none()
         return self._to_message(model) if model is not None else None
 
+    async def list_messages_for_user_session(
+        self,
+        *,
+        session_public_id: str,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> list[LegalMessage]:
+        """Return messages from a user-owned session ordered by id."""
+        result = await self._session.execute(
+            select(LegalMessageModel)
+            .join(LegalSessionModel, LegalMessageModel.session_id == LegalSessionModel.id)
+            .where(
+                LegalSessionModel.public_id == session_public_id,
+                LegalSessionModel.user_id == user_id,
+            )
+            .order_by(LegalMessageModel.id.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return [self._to_message(model) for model in result.scalars().all()]
+
     async def create_consultation_record(
         self,
         record: ConsultationRecord,

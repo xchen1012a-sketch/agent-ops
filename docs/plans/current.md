@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-150 领域 API 与课件功能` 第二切片已落地：法律问答入口 API 契约、deterministic workflow 执行和问答消息持久化边界
+- 状态：`LEGAL-150 领域 API 与课件功能` 第三切片已落地：会话消息历史查询 API 只读分页契约
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -26,11 +26,12 @@
   - 已实现 prompt-backed workflow 装配边界：`LegalPromptWorkflowFactory`、`LegalPromptWorkflowPrompts`
   - 已实现 LEGAL-150 会话创建 API：`POST /v1/sessions`、`POST /api/legal/v1/sessions`、会话 DTO、trusted user public id 请求边界
   - 已实现 LEGAL-150 问答入口 API：`POST /v1/sessions/{session_public_id}/questions`、`LegalQuestionAnswerService`、问答 DTO
+  - 已实现 LEGAL-150 历史消息查询 API：`GET /v1/sessions/{session_public_id}/messages`、消息分页 DTO、repository 只读查询
 - 暂不具备 / 后置依赖：
   - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
   - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - 继续 `LEGAL-150` 第三切片：历史咨询记录/消息查询 API，先做只读分页契约。
+  - 继续 `LEGAL-150` 第四切片：反馈 API 契约，复用已有 `LegalDataService.create_feedback()`。
   - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。
 
 ## 并行阶段：RECRUIT-200 智能招聘 Agent
