@@ -536,6 +536,31 @@
 - 高风险审核入队 API 契约：复用 `LegalDataService.create_high_risk_review()`。
 - 报告导出、SSE、真实 DeepSeek/RAG、管理员复核流程继续独立成片。
 
+### 第五切片执行范围：高风险审核入队 API 契约
+
+- 目标：提供将已标记高风险的助手消息加入人工审核队列的 API。
+- 输入：受信任上游身份边界 `x-user-public-id`、`session_public_id`、`message_public_id`、`reason`。
+- 输出：`POST /v1/sessions/{session_public_id}/messages/{message_public_id}/high-risk-review` 与 `/api/legal/v1` 等价路径、`LegalHighRiskReviewCreateRequest`、`LegalHighRiskReviewResponse`、`LegalHighRiskReviewCreateEnvelope`。
+- 行为：API 层校验 reason；业务约束复用 `LegalDataService.create_high_risk_review()`，确保用户会话隔离、目标为助手消息且已标记 high_risk。
+- 约束：不改 DB schema；不做管理员复核状态变更；不修改其他 Agent。
+- 不做：管理员认领/复核/解决 API、审核列表、前端页面。
+
+### 第五切片执行记录（2026-07-05）
+
+- 已新增高风险审核 DTO：`api/v1/schemas/legal_reviews.py`。
+- 已新增 endpoint：`api/v1/endpoints/legal_reviews.py`，并接入 v1 router。
+- 已覆盖 API 成功 envelope、空 reason 422。
+- `uv run pytest tests/unit/test_legal_reviews_api.py -q`：2 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，93 files already formatted。
+- `uv run mypy src`：通过，64 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：116 passed，总覆盖率 90%。
+
+### LEGAL-150 下一切片建议
+
+- 报告导出 API 契约：基于 `consultation_records` 生成同步 Markdown 投影，暂不引入异步任务和 PDF 依赖。
+- SSE、真实 DeepSeek/RAG、管理员复核流程继续独立成片。
+
 ## 验收标准
 
 ### LEGAL-130
