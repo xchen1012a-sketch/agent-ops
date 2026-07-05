@@ -381,3 +381,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed。
   - `uv run mypy src`：首次发现 sqlglot parse 类型收窄问题，已增加空值校验和 `cast(exp.Expression, ...)` 后 passed。
   - `uv run pytest -q`：99 passed，coverage 78%。
+- 2026-07-05：完成 `DATA-330` 循环 10。完善 SQL AST 表/列/函数白名单与资源限制，新增非白名表/列/函数拦截、通配符拦截、LIMIT 必填/max_rows 校验、max_fields 校验、查询结果 row/field/bytes 资源限制错误语义；未做查询 adapter，未连接真实 DB。验证：
+  - `uv run pytest tests/unit/test_sql_ast_policy.py -q`：28 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed（首次发现 `tests/unit/test_sql_ast_policy.py` 需格式化，已格式化后通过）。
+  - `uv run mypy src`：首次发现列表别名类型收窄问题，已修复后 passed。
+  - `uv run pytest -q`：108 passed，coverage 79%。

@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import pytest
 
+from data_query_agent.application.services.data_catalog_service import DataCatalogService
 from data_query_agent.domain.policies.sql_ast import (
+    QueryResultResourceUsage,
     SqlAstPolicyValidator,
     SqlPolicyViolationCode,
 )
@@ -118,3 +120,100 @@ def test_with_select_is_allowed_in_basic_ast_slice() -> None:
 
     assert result.is_allowed is True
     assert result.normalized_sql is not None
+
+
+def _whitelist_validator() -> SqlAstPolicyValidator:
+    return SqlAstPolicyValidator(whitelist=DataCatalogService().load_sql_whitelist())
+
+
+def test_whitelisted_table_column_function_and_limit_are_allowed() -> None:
+    result = _whitelist_validator().validate(
+        "SELECT SUM(total_amount) AS total FROM wide_orders WHERE region = 'East' LIMIT 100"
+    )
+
+    assert result.is_allowed is True
+    assert result.normalized_sql is not None
+
+
+def test_non_whitelisted_table_is_blocked() -> None:
+    result = _whitelist_validator().validate("SELECT total_amount FROM not_allowed LIMIT 10")
+
+    assert result.is_allowed is False
+    assert result.first_violation is not None
+    assert result.first_violation.code is SqlPolicyViolationCode.TABLE_NOT_ALLOWED
+
+
+def test_non_whitelisted_column_is_blocked() -> None:
+    result = _whitelist_validator().validate("SELECT password FROM wide_orders LIMIT 10")
+
+    assert result.is_allowed is False
+    assert result.first_violation is not None
+    assert result.first_violation.code is SqlPolicyViolationCode.COLUMN_NOT_ALLOWED
+
+
+def test_wildcard_select_is_blocked_by_column_policy() -> None:
+    result = _whitelist_validator().validate("SELECT * FROM wide_orders LIMIT 10")
+
+    assert result.is_allowed is False
+    assert result.first_violation is not None
+    assert result.first_violation.code is SqlPolicyViolationCode.COLUMN_NOT_ALLOWED
+
+
+def test_non_whitelisted_function_is_blocked() -> None:
+    result = _whitelist_validator().validate("SELECT MD5(customer_id) FROM wide_orders LIMIT 10")
+
+    assert result.is_allowed is False
+    assert result.first_violation is not None
+    assert result.first_violation.code is SqlPolicyViolationCode.FUNCTION_NOT_ALLOWED
+
+
+def test_missing_limit_is_blocked_by_whitelist_policy() -> None:
+    result = _whitelist_validator().validate("SELECT order_id FROM wide_orders")
+
+    assert result.is_allowed is False
+    assert result.first_violation is not None
+    assert result.first_violation.code is SqlPolicyViolationCode.LIMIT_REQUIRED
+
+
+def test_limit_above_max_rows_is_blocked() -> None:
+    result = _whitelist_validator().validate("SELECT order_id FROM wide_orders LIMIT 1001")
+
+    assert result.is_allowed is False
+    assert result.first_violation is not None
+    assert result.first_violation.code is SqlPolicyViolationCode.LIMIT_TOO_LARGE
+
+
+def test_field_count_above_limit_is_blocked() -> None:
+    columns = ", ".join(f"order_id AS order_id_{index}" for index in range(51))
+    result = _whitelist_validator().validate(f"SELECT {columns} FROM wide_orders LIMIT 10")
+
+    assert result.is_allowed is False
+    assert result.first_violation is not None
+    assert result.first_violation.code is SqlPolicyViolationCode.FIELD_COUNT_TOO_LARGE
+
+
+def test_result_resource_limits_are_checked_after_execution() -> None:
+    validator = _whitelist_validator()
+
+    too_many_rows = validator.validate_result_resources(
+        QueryResultResourceUsage(row_count=1001, field_count=10, byte_count=1024)
+    )
+    too_many_fields = validator.validate_result_resources(
+        QueryResultResourceUsage(row_count=10, field_count=51, byte_count=1024)
+    )
+    too_many_bytes = validator.validate_result_resources(
+        QueryResultResourceUsage(row_count=10, field_count=10, byte_count=1_048_577)
+    )
+    allowed = validator.validate_result_resources(
+        QueryResultResourceUsage(row_count=10, field_count=10, byte_count=1024)
+    )
+
+    assert too_many_rows.first_violation is not None
+    assert too_many_rows.first_violation.code is SqlPolicyViolationCode.RESULT_ROW_COUNT_TOO_LARGE
+    assert too_many_fields.first_violation is not None
+    assert (
+        too_many_fields.first_violation.code is SqlPolicyViolationCode.RESULT_FIELD_COUNT_TOO_LARGE
+    )
+    assert too_many_bytes.first_violation is not None
+    assert too_many_bytes.first_violation.code is SqlPolicyViolationCode.RESULT_BYTES_TOO_LARGE
+    assert allowed.is_allowed is True
