@@ -15,6 +15,10 @@ from legal_consulting_agent.application.services.legal_data_service import (
     LegalDataNotFoundError,
     LegalDataService,
 )
+from legal_consulting_agent.application.services.prompt_workflow_factory import (
+    LegalPromptWorkflowFactory,
+    LegalPromptWorkflowPrompts,
+)
 from legal_consulting_agent.application.services.risk_prompt_service import (
     LegalRiskCheckPromptService,
     LegalRiskCheckResult,
@@ -40,6 +44,8 @@ __all__ = [
     "LegalDataService",
     "LegalGenerationPromptService",
     "LegalGenerationResult",
+    "LegalPromptWorkflowFactory",
+    "LegalPromptWorkflowPrompts",
     "LegalRiskCheckPromptService",
     "LegalRiskCheckResult",
     "LegalWorkflowAuditService",

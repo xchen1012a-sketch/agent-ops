@@ -403,6 +403,31 @@
 - 整理 prompt-backed 工作流装配边界：集中组装 classification / generation / risk_check 注入节点，仍只使用 mock adapter 和受控 PromptVersion。
 - 真实 DeepSeek、RAG 检索、DB 写入、API/SSE、审核入队继续后置到独立切片。
 
+### 第九切片执行范围：Prompt-backed workflow 装配边界
+
+- 目标：在不接真实外部服务的条件下，将 classification / generation / risk_check 三个 Prompt-backed 节点集中装配为一个可验证 graph factory。
+- 输入：显式传入的 `LegalPromptWorkflowPrompts`（classification、generation、risk_check 三个 `PromptVersion`）、受控 `PromptTemplateLoader`、`PromptOutputValidator` 和注入式 `TextLLMAdapter`。
+- 输出：`LegalPromptWorkflowFactory`、`LegalPromptWorkflowPrompts`，以及可执行的 prompt-backed `build_legal_workflow_graph()` 编译结果。
+- 行为：由 factory 创建三个 prompt service 和 node factory，并通过 graph handler 注入点装配；默认 deterministic graph 不变；测试 adapter 按模板 marker 返回确定 JSON。
+- 约束：不接真实 DeepSeek；不读取数据库中的 active prompt；不改 API / DB；不新增依赖；不修改其他 Agent。
+- 不做：真实 LLM adapter、PromptVersion repository 查询、Prompt 文件真源管理、API/SSE、审核入队、RAG 检索。
+
+### 第九切片执行记录（2026-07-05）
+
+- 已新增 `application/services/prompt_workflow_factory.py`。
+- 已导出 `LegalPromptWorkflowFactory` 和 `LegalPromptWorkflowPrompts`。
+- 已覆盖从 PromptVersion + 模板 + routing mock LLM adapter 装配完整 graph，并执行 input_safety → classification → context_build → retrieval → generation → citation_check → risk_check → persist 全链路。
+- `uv run pytest tests/unit/test_prompt_workflow_factory.py tests/unit/test_risk_prompt_service.py tests/unit/test_generation_prompt_service.py tests/unit/test_classification_prompt_service.py -q`：13 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，76 files already formatted。
+- `uv run mypy src`：通过，53 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：101 passed，总覆盖率 85%。
+
+### LEGAL-140 后续切片建议
+
+- 若继续 `LEGAL-140`：真实 LLM adapter 设计需要单独成片，并通过配置/adapter 接入，不在 workflow node 中硬编码模型名、URL 或 key。
+- 若进入 `LEGAL-150`：先冻结 API/SSE 契约，再做会话、问答、历史搜索、反馈、报告导出等课件功能。
+
 ## 验收标准
 
 ### LEGAL-130
