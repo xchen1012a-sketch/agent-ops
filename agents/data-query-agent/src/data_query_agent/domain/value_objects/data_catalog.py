@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -101,8 +101,26 @@ class IndicatorCatalog(BaseModel):
         return self
 
 
+class ExpectedQueryResult(BaseModel):
+    """Expected structured result for fake-adapter evaluation runs."""
+
+    model_config = ConfigDict(frozen=True)
+
+    columns: tuple[str, ...] = Field(min_length=1)
+    rows: tuple[tuple[Any, ...], ...]
+    truncated: bool = False
+
+    @field_validator("columns")
+    @classmethod
+    def _columns_must_not_be_blank(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        normalized = tuple(column.strip() for column in value)
+        if any(not column for column in normalized):
+            raise CatalogValidationError("expected result columns must not be blank")
+        return normalized
+
+
 class EvaluationFixture(BaseModel):
-    """Baseline question and SQL pair for deterministic evaluation."""
+    """Baseline question, SQL and expected result for deterministic evaluation."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -110,6 +128,7 @@ class EvaluationFixture(BaseModel):
     question: str
     baseline_sql: str
     verifies: str
+    expected_result: ExpectedQueryResult
 
     @field_validator("case_id", "question", "baseline_sql", "verifies")
     @classmethod

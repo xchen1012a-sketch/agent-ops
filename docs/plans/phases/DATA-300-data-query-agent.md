@@ -484,3 +484,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff check src tests`: passed.
   - `uv run ruff format --check src tests`: passed.
   - `uv run mypy src`: passed.
+
+- 2026-07-05: Completed `DATA-370` cycle 25. Added baseline evaluation harness for the fixed 8 standard questions. `evaluation_fixtures.v1.json` now contains expected fake-adapter results; `DataQueryEvaluationService` runs all 8 fixtures against `ReadOnlyQueryAdapter` without real DB/DeepSeek access and reports per-case pass/fail, row count, and safe adapter error codes. Added evaluation tests covering all-pass fake adapter mode and unregistered SQL failure reporting. Not included: extended 30-question set, security attack suite, chart/followup semantic scoring, real MySQL execution, or external model evaluation.
+  Verification:
+  - `uv run pytest tests/evaluation/test_baseline_evaluation_harness.py tests/unit/test_data_catalog_service.py -q`: 11 passed.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting `evaluation_service.py`.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 167 passed, 1 Starlette/httpx deprecation warning, coverage 88%.

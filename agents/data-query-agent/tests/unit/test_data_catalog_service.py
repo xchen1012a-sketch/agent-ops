@@ -121,3 +121,4 @@ def test_load_evaluation_fixtures_contains_eight_standard_questions() -> None:
         "T8",
     }
     assert all(fixture.baseline_sql.upper().startswith("SELECT") for fixture in fixtures.fixtures)
+    assert all(fixture.expected_result.columns for fixture in fixtures.fixtures)
