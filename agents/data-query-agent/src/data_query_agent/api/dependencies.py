@@ -18,6 +18,7 @@ from data_query_agent.infrastructure.db.repositories.audit import SqlAlchemySqlA
 from data_query_agent.infrastructure.db.repositories.identity import SqlAlchemyIdentityRepository
 from data_query_agent.infrastructure.db.repositories.run import SqlAlchemyRunRepository
 from data_query_agent.infrastructure.db.session import get_session_factory
+from data_query_agent.infrastructure.integrations.feishu_events import FeishuMockEventService
 
 
 async def get_db_session() -> AsyncIterator[AsyncSession]:
@@ -54,6 +55,14 @@ def get_sql_audit_service(session: SessionDep) -> SqlAuditService:
     return SqlAuditService(SqlAlchemySqlAuditRepository(session))
 
 
+_feishu_mock_event_service = FeishuMockEventService()
+
+
+def get_feishu_mock_event_service() -> FeishuMockEventService:
+    """Return process-local mock Feishu event service for fixture tests."""
+    return _feishu_mock_event_service
+
+
 def get_request_id(request: Request) -> str:
     """Return the request id assigned by middleware; fall back to header or unknown."""
     value = request_context.get(REQUEST_ID_KEY)
@@ -69,3 +78,6 @@ CurrentSubjectDep = Annotated[str, Depends(get_current_subject)]
 IdentityThreadServiceDep = Annotated[IdentityThreadService, Depends(get_identity_thread_service)]
 QueryRunTraceServiceDep = Annotated[QueryRunTraceService, Depends(get_query_run_trace_service)]
 SqlAuditServiceDep = Annotated[SqlAuditService, Depends(get_sql_audit_service)]
+FeishuMockEventServiceDep = Annotated[
+    FeishuMockEventService, Depends(get_feishu_mock_event_service)
+]

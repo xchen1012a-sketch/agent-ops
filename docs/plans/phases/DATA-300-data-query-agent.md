@@ -508,3 +508,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting `result_projection_service.py`.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 174 passed, 1 Starlette/httpx deprecation warning, coverage 88%.
+
+- 2026-07-05: Completed `DATA-380` cycle 28. Added mock Feishu event endpoint `POST /v1/integrations/feishu/events` with local signature validation, challenge response support, and process-local `event_id` deduplication for message fixtures. The slice does not connect to a real Feishu tenant, does not use real secrets, and does not send messages. Synchronized `agents/data-query-agent/docs/api-contract.md` for the Feishu mock event boundary. Not included: real Feishu signing, tenant credentials, token exchange, card response projection, or end-to-end Feishu delivery.
+  Verification:
+  - `uv run pytest tests/unit/test_feishu_event_api.py -q`: 3 passed, 1 Starlette/httpx deprecation warning.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 177 passed, 1 Starlette/httpx deprecation warning, coverage 89%.

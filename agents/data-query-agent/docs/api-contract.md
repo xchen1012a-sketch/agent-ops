@@ -172,3 +172,19 @@ Security boundary:
 - The subject must resolve to a persisted `UserRole.ADMIN` mirror.
 - Non-admin and missing user mirrors receive `AUTH_FORBIDDEN`.
 - This endpoint is intentionally separate from ordinary query history because it exposes generated SQL and policy details for audit/debug use.
+
+## DATA-380 Feishu mock event API slice
+
+`POST /v1/integrations/feishu/events` handles local Feishu fixture events only.
+
+Supported mock event types:
+
+- `url_verification`: returns the supplied `challenge`.
+- `message`: validates `header.event_id` and marks repeated event ids as duplicate.
+
+Security and integration boundary:
+
+- Requires `X-Feishu-Signature` to match the local mock signature constant.
+- Does not connect to a real Feishu tenant, does not use real app secrets, and does not send messages.
+- Deduplication is process-local and fixture-only in this slice.
+- Real Feishu signing, tenant credentials, token exchange, and callback delivery remain outside `DATA-380`.
