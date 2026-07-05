@@ -132,35 +132,3 @@ export interface LegalHighRiskReviewEnvelope {
   data: LegalHighRiskReview;
   error: null;
 }
-
-export interface LegalHighRiskReviewAdmin {
-  id: number | null;
-  message_id: number;
-  user_id: number;
-  reason: string;
-  status: LegalHighRiskReviewStatus;
-  reviewed_by: number | null;
-  resolution: string | null;
-}
-
-export interface LegalHighRiskReviewListData {
-  items: LegalHighRiskReviewAdmin[];
-  limit: number;
-  offset: number;
-  status: LegalHighRiskReviewStatus;
-}
-
-export interface LegalHighRiskReviewListEnvelope {
-  data: LegalHighRiskReviewListData;
-  error: null;
-}
-
-export interface LegalHighRiskReviewResolveInput {
-  status: Exclude<LegalHighRiskReviewStatus, 'pending'>;
-  resolution: string;
-}
-
-export interface LegalHighRiskReviewResolveEnvelope {
-  data: LegalHighRiskReviewAdmin;
-  error: null;
-}

@@ -5,11 +5,16 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import Depends, Request
+from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from recruitment_assistant_agent.application.services.agent_api_config import ApiConfigCrypto
 from recruitment_assistant_agent.core.config import Settings, get_settings
+from recruitment_assistant_agent.core.errors import AuthError, ForbiddenError
 from recruitment_assistant_agent.core.request_context import REQUEST_ID_KEY, request_context
+from recruitment_assistant_agent.infrastructure.db.repositories.agent_api_config import (
+    SqlAlchemyAgentApiConfigRepository,
+)
 from recruitment_assistant_agent.infrastructure.db.session import get_session_factory
 
 
@@ -33,6 +38,56 @@ def get_request_id(request: Request) -> str:
     return request.headers.get("x-request-id", "unknown")
 
 
+def get_current_user_public_id(
+    x_user_public_id: Annotated[str | None, Header(alias="x-user-public-id")] = None,
+) -> str:
+    """Return the trusted upstream user public id from the request boundary."""
+
+    if x_user_public_id is None or not x_user_public_id.strip():
+        raise AuthError("User identity header is required")
+    return x_user_public_id.strip()
+
+
+def get_current_user_role(
+    x_user_role: Annotated[str | None, Header(alias="x-user-role")] = None,
+) -> str:
+    """Return the trusted upstream role injected by the gateway."""
+
+    if x_user_role is None or not x_user_role.strip():
+        raise AuthError("User role header is required")
+    return x_user_role.strip()
+
+
+def require_admin_role(
+    role: Annotated[str, Depends(get_current_user_role)],
+) -> str:
+    """Reject non-admin callers; gateway-injected role is the trust boundary."""
+
+    if role.lower() != "admin":
+        raise ForbiddenError("Admin role required")
+    return role
+
+
+def get_agent_api_config_crypto(settings: SettingsDep) -> ApiConfigCrypto:
+    """Build the Fernet crypto service from settings."""
+
+    return ApiConfigCrypto(settings.agent_config_encryption_key.get_secret_value())
+
+
+def get_agent_api_config_repository(
+    session: SessionDep,
+) -> SqlAlchemyAgentApiConfigRepository:
+    """Build the agent_api_config repository for the request scope."""
+
+    return SqlAlchemyAgentApiConfigRepository(session)
+
+
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 RequestIdDep = Annotated[str, Depends(get_request_id)]
+CurrentUserPublicIdDep = Annotated[str, Depends(get_current_user_public_id)]
+AdminUserDep = Annotated[str, Depends(require_admin_role)]
+AgentApiConfigRepoDep = Annotated[
+    SqlAlchemyAgentApiConfigRepository, Depends(get_agent_api_config_repository)
+]
+AgentApiConfigCryptoDep = Annotated[ApiConfigCrypto, Depends(get_agent_api_config_crypto)]

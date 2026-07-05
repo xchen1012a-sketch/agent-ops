@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from legal_consulting_agent.api.v1.endpoints import (
+    admin_api_config,
     health,
     legal_consultation_records,
     legal_feedbacks,
@@ -26,3 +27,4 @@ router.include_router(legal_feedbacks.router, tags=["legal-feedbacks"])
 router.include_router(legal_reviews.router, tags=["legal-reviews"])
 router.include_router(legal_reports.router, tags=["legal-reports"])
 router.include_router(legal_runs.router, tags=["legal-runs"])
+router.include_router(admin_api_config.router, tags=["admin-api-config"])

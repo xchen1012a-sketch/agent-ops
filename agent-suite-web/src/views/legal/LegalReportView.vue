@@ -21,7 +21,7 @@ async function loadReport(): Promise<void> {
     const response = await legalClient.getConsultationReport(String(route.params.id));
     report.value = response.data;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : '加载咨询报告失败');
+    toast.error(error instanceof Error ? error.message : '加载失败');
   } finally {
     loading.value = false;
   }
@@ -36,26 +36,23 @@ onMounted(() => {
   <div class="legal-report-view">
     <section class="legal-report-view__header" aria-labelledby="legal-report-title">
       <div>
-        <p class="legal-report-view__eyebrow">咨询报告</p>
-        <h1 id="legal-report-title">法律咨询报告</h1>
-        <p class="legal-report-view__description">
-          当前展示后端同步生成的 Markdown 报告投影；PDF 导出等待后端公开契约后接入。
-        </p>
+        <p class="legal-report-view__eyebrow">法律助手</p>
+        <h1 id="legal-report-title">报告</h1>
       </div>
-      <el-button :loading="loading" @click="loadReport">刷新报告</el-button>
+      <el-button :loading="loading" @click="loadReport">刷新</el-button>
     </section>
 
-    <LoadingState v-if="loading" message="正在加载咨询报告…" />
+    <LoadingState v-if="loading" message="加载中…" />
     <EmptyState
       v-else-if="!report"
-      title="报告不可用"
-      description="请从历史咨询记录进入报告详情。"
+      title="未找到报告"
+      description="请返回列表重试。"
       icon="DocumentRemove"
     />
     <article v-else class="legal-report-view__content">
       <div class="legal-report-view__meta">
         <el-tag type="info" effect="light">{{ report.format }}</el-tag>
-        <span>记录 ID：{{ report.record_public_id }}</span>
+        <span>{{ report.record_public_id }}</span>
       </div>
       <SafeMarkdown :source="report.content" variant="citation" />
     </article>
@@ -66,7 +63,7 @@ onMounted(() => {
 .legal-report-view {
   display: grid;
   gap: var(--space-5);
-  max-width: var(--layout-content-max-width);
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -93,15 +90,6 @@ onMounted(() => {
   letter-spacing: 0.08em;
 }
 
-.legal-report-view__description,
-.legal-report-view__meta {
-  color: var(--color-text-muted);
-}
-
-.legal-report-view__description {
-  margin-top: var(--space-3);
-}
-
 .legal-report-view__content {
   padding: var(--space-6);
 }
@@ -112,6 +100,7 @@ onMounted(() => {
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
 

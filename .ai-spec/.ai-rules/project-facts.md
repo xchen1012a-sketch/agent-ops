@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: 5f32433338ae91b9
-- last refresh: 2026-07-05 16:34:01 +08:00
+- source hash: 6d92937f11068800
+- last refresh: 2026-07-05 21:34:54 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -28,6 +28,7 @@ agent/
 |   |-- settings.json
 |   |-- settings.local.json
 |-- agents/
+|   |-- auth-service/
 |   |-- data-query-agent/
 |   |-- legal-consulting-agent/
 |   |-- recruitment-assistant-agent/
@@ -35,10 +36,12 @@ agent/
 |   |-- docs/
 |   |-- nginx/
 |   |-- scripts/
+|   |-- .env
 |   |-- .env.example
 |   |-- .gitignore
 |   |-- AGENTS.md
 |   |-- CLAUDE.md
+|   |-- docker-compose.local.yml
 |   |-- docker-compose.yml
 |   |-- README.md
 |-- agent-suite-web/
@@ -63,9 +66,11 @@ agent/
 |   |-- Dockerfile
 |   |-- eslint.config.mjs
 |-- docs/
+|   |-- contracts/
 |   |-- homework/
 |   |-- plans/
 |-- logs/
+|   |-- local-agent-runtime/
 |-- .gitignore
 |-- AGENTS.md
 |-- CLAUDE.md

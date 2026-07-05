@@ -26,7 +26,7 @@ async function loadRecords(): Promise<void> {
     });
     records.value = response.data.items;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : '加载历史咨询失败');
+    toast.error(error instanceof Error ? error.message : '加载失败');
   } finally {
     loading.value = false;
   }
@@ -48,43 +48,39 @@ onMounted(() => {
   <div class="legal-history-page">
     <section class="legal-history-page__header" aria-labelledby="legal-history-title">
       <div>
-        <p class="legal-history-page__eyebrow">法律咨询</p>
-        <h1 id="legal-history-title">历史咨询</h1>
-        <p class="legal-history-page__description">
-          基于法律 Agent 已公开的 consultation-records 投影查询，不读取完整原始对话。
-        </p>
+        <p class="legal-history-page__eyebrow">法律助手</p>
+        <h1 id="legal-history-title">咨询记录</h1>
       </div>
     </section>
 
-    <section class="legal-history-page__toolbar" aria-label="历史咨询搜索">
+    <section class="legal-history-page__toolbar" aria-label="搜索记录">
       <el-input
         v-model="query"
         clearable
-        placeholder="按摘要关键词搜索，例如：劳动、合同、赔偿"
-        aria-label="历史咨询关键词"
+        placeholder="搜索关键词"
+        aria-label="搜索记录"
         @keyup.enter="loadRecords"
       />
       <el-button type="primary" :loading="loading" @click="loadRecords">搜索</el-button>
     </section>
 
-    <LoadingState v-if="loading" message="正在加载历史咨询…" />
+    <LoadingState v-if="loading" message="加载中…" />
     <EmptyState
       v-else-if="records.length === 0"
-      title="暂无历史咨询"
-      description="完成一次法律问答后，后端会生成 consultation record，并可在这里检索。"
+      title="暂无记录"
+      description="开始一次咨询后，这里会自动保存。"
       icon="Search"
     />
-    <section v-else class="legal-history-page__list" aria-label="历史咨询记录">
+    <section v-else class="legal-history-page__list" aria-label="咨询记录">
       <article v-for="record in records" :key="record.public_id" class="legal-record-card">
         <div class="legal-record-card__main">
           <div class="legal-record-card__title">
             <h2>{{ record.summary }}</h2>
-            <el-tag v-if="record.high_risk" type="warning" effect="light">高风险</el-tag>
+            <el-tag v-if="record.high_risk" type="warning" effect="light">需确认</el-tag>
           </div>
-          <p class="legal-record-card__disclaimer">{{ record.disclaimer }}</p>
-          <p class="legal-record-card__meta">引用数：{{ record.citations?.length ?? 0 }}</p>
+          <p class="legal-record-card__meta">{{ record.citations?.length ?? 0 }} 条依据</p>
         </div>
-        <el-button @click="openReport(record.public_id)">查看报告</el-button>
+        <el-button @click="openReport(record.public_id)">查看</el-button>
       </article>
     </section>
   </div>
@@ -94,7 +90,7 @@ onMounted(() => {
 .legal-history-page {
   display: grid;
   gap: var(--space-5);
-  max-width: var(--layout-content-max-width);
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -117,16 +113,6 @@ onMounted(() => {
   font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
-}
-
-.legal-history-page__description,
-.legal-record-card__disclaimer,
-.legal-record-card__meta {
-  color: var(--color-text-muted);
-}
-
-.legal-history-page__description {
-  margin-top: var(--space-3);
 }
 
 .legal-history-page__toolbar {
@@ -163,12 +149,9 @@ onMounted(() => {
   font-size: var(--text-lg);
 }
 
-.legal-record-card__disclaimer {
-  margin-top: var(--space-2);
-}
-
 .legal-record-card__meta {
   margin-top: var(--space-2);
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
 

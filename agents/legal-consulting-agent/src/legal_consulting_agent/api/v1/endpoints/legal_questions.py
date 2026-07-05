@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import AsyncIterator
 
@@ -97,10 +98,21 @@ async def _stream_question_answer_events(
         session_public_id=session_public_id,
         question=payload.question,
     )
+    for chunk in _chunk_answer(result.answer):
+        yield _sse_event("message.delta", {"delta": chunk})
+        await asyncio.sleep(0)
     yield _sse_event(
         "completed",
         _to_question_answer_response(result).model_dump(mode="json"),
     )
+
+
+def _chunk_answer(answer: str, *, chunk_size: int = 24) -> list[str]:
+    """Split a persisted answer into small SSE deltas for MVP streaming display."""
+
+    if not answer:
+        return []
+    return [answer[index : index + chunk_size] for index in range(0, len(answer), chunk_size)]
 
 
 def _sse_event(event: str, data: dict[str, object]) -> str:

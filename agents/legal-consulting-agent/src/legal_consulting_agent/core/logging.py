@@ -44,8 +44,7 @@ def configure_logging(settings: Settings) -> None:
             '"level":"{level}",'
             '"service":"{extra[service]}",'
             '"env":"{extra[env]}",'
-            '"message":"{message}",'
-            '"extra":{_extra}}}'
+            '"message":"{message}"}}'
         )
     else:
         fmt = "{time:HH:mm:ss.SSS} {level:<7} {name}:{line} {message}"

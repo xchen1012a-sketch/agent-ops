@@ -40,12 +40,21 @@ describe('LoginPage', () => {
     });
   });
 
-  it('submits credentials through auth store when the login form is submitted', async () => {
+  it('opens login dialog and submits credentials through auth store', async () => {
     const wrapper = mount(LoginPage, {
       global: {
         plugins: [ElementPlus],
+        stubs: {
+          teleport: true,
+          transition: false,
+        },
       },
     });
+
+    expect(wrapper.find('input[type="email"]').exists()).toBe(false);
+
+    await wrapper.find('.login-top-bar__login').trigger('click');
+    await flushPromises();
 
     await wrapper.find('input[type="email"]').setValue(' admin@example.com ');
     await wrapper.find('input[type="password"]').setValue('Admin123456');

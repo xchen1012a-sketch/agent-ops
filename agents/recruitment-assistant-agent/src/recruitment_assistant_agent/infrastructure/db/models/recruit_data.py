@@ -107,7 +107,10 @@ class UserModel(TimestampMixin, Base):
         server_default=UserStatus.ACTIVE.value,
     )
 
-    tasks: Mapped[list[RecruitTaskModel]] = relationship(back_populates="user")
+    tasks: Mapped[list[RecruitTaskModel]] = relationship(
+        back_populates="user",
+        foreign_keys="RecruitTaskModel.user_id",
+    )
 
 
 class RecruitTaskModel(TimestampMixin, Base):
@@ -151,7 +154,10 @@ class RecruitTaskModel(TimestampMixin, Base):
     )
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTimeFsp)
 
-    user: Mapped[UserModel] = relationship(back_populates="tasks")
+    user: Mapped[UserModel] = relationship(
+        back_populates="tasks",
+        foreign_keys=[user_id],
+    )
     reviewer: Mapped[UserModel | None] = relationship(foreign_keys=[reviewed_by])
     materials: Mapped[list[MaterialModel]] = relationship(
         back_populates="task",

@@ -26,7 +26,7 @@ describe('RetryAction', () => {
       global: { plugins: [ElementPlus] },
     });
 
-    expect(wrapper.text()).toContain('操作过于频繁');
+    expect(wrapper.text()).toContain('慢一点');
     expect(wrapper.text()).toContain('too many requests');
     expect(wrapper.text()).toContain('10 秒后重试');
     expect(wrapper.text()).toContain('trace-1');
@@ -65,7 +65,7 @@ describe('AsyncState', () => {
       global: { plugins: [ElementPlus] },
     });
 
-    expect(wrapper.text()).toContain('网络连接异常');
+    expect(wrapper.text()).toContain('网络异常');
     await wrapper.find('button').trigger('click');
     expect(wrapper.emitted('retry')).toHaveLength(1);
   });
@@ -75,14 +75,14 @@ describe('AsyncState', () => {
       props: {
         state: createSuccessState([]),
         emptyTitle: '没有报告',
-        emptyDescription: '当前筛选条件下没有报告。',
+        emptyDescription: '当前筛选下没有报告。',
         emptyActionText: '新建报告',
       },
       global: { plugins: [ElementPlus] },
     });
 
     expect(wrapper.text()).toContain('没有报告');
-    expect(wrapper.text()).toContain('当前筛选条件下没有报告。');
+    expect(wrapper.text()).toContain('当前筛选下没有报告。');
     await wrapper.find('button').trigger('click');
     expect(wrapper.emitted('empty-action')).toHaveLength(1);
   });

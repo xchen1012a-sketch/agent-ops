@@ -1,4 +1,4 @@
-# Project facts
+﻿# Project facts
 
 > [auto] is refreshed by AI or scripts from repository state and only records verifiable facts.
 > [manual] may be filled by AI from explicit sources and confirmed by humans. AI must mark uncertain entries as pending confirmation.
@@ -6,13 +6,13 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: d57ec15539527d74
-- last refresh: 2026-07-05 10:53:47 +0800
-- refresh command: scripts/refresh-project-facts.sh
+- source hash: 837ef693f293eacd
+- last refresh: 2026-07-05 20:17:15 +08:00
+- refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
 
-- No package.json parser available.
+- No common framework or tool detected from package.json.
 
 ## [auto] Scripts
 
@@ -22,71 +22,80 @@
 
 ```text
 legal-consulting-agent/
+|-- .mypy_cache/
+|   |-- 3.12/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|-- .pytest_cache/
+|   |-- v/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|   |-- README.md
+|-- .ruff_cache/
+|   |-- 0.15.20/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|-- .uv-cache/
+|   |-- interpreter-v4/
+|   |-- sdists-v9/
+|   |-- .gitignore
+|   |-- .lock
+|   |-- CACHEDIR.TAG
+|-- .venv/
+|   |-- include/
+|   |-- Lib/
+|   |-- Scripts/
+|   |-- share/
+|   |-- .gitignore
+|   |-- .lock
+|   |-- CACHEDIR.TAG
+|   |-- pyvenv.cfg
+|-- docs/
+|   |-- acceptance-closeout.md
+|   |-- api-contract.md
+|   |-- architecture.md
+|   |-- detailed-design.md
+|   |-- specification.md
+|-- logs/
+|   |-- uvicorn-8081.err.log
+|   |-- uvicorn-8081.out.log
+|   |-- uvicorn-8088.err.log
+|   |-- uvicorn-8088.job.log
+|   |-- uvicorn-8088.out.log
+|-- migrations/
+|   |-- __pycache__/
+|   |-- versions/
+|   |-- env.py
+|   |-- script.py.mako
+|-- scripts/
+|   |-- .gitkeep
+|-- src/
+|   |-- legal_consulting_agent/
+|-- tests/
+|   |-- __pycache__/
+|   |-- contract/
+|   |-- e2e/
+|   |-- evaluation/
+|   |-- integration/
+|   |-- unit/
+|   |-- __init__.py
+|   |-- conftest.py
 |-- .coverage
+|-- .env
 |-- .env.example
 |-- .gitignore
-|-- .mypy_cache
-|   |-- .mypy_cache/.gitignore
-|   |-- .mypy_cache/3.12
-|   |-- .mypy_cache/CACHEDIR.TAG
-|-- .pytest_cache
-|   |-- .pytest_cache/.gitignore
-|   |-- .pytest_cache/CACHEDIR.TAG
-|   |-- .pytest_cache/README.md
-|   |-- .pytest_cache/v
-|-- .ruff_cache
-|   |-- .ruff_cache/.gitignore
-|   |-- .ruff_cache/0.15.20
-|   |-- .ruff_cache/CACHEDIR.TAG
-|-- .uv-cache
-|   |-- .uv-cache/.gitignore
-|   |-- .uv-cache/.lock
-|   |-- .uv-cache/CACHEDIR.TAG
-|   |-- .uv-cache/interpreter-v4
-|   |-- .uv-cache/sdists-v9
-|-- .venv
-|   |-- .venv/.gitignore
-|   |-- .venv/.lock
-|   |-- .venv/CACHEDIR.TAG
-|   |-- .venv/Lib
-|   |-- .venv/Scripts
-|   |-- .venv/include
-|   |-- .venv/pyvenv.cfg
-|   |-- .venv/share
 |-- AGENTS.md
+|-- alembic.ini
 |-- CLAUDE.md
 |-- Dockerfile
-|-- README.md
-|-- alembic.ini
-|-- docs
-|   |-- docs/api-contract.md
-|   |-- docs/architecture.md
-|   |-- docs/detailed-design.md
-|   |-- docs/specification.md
-|-- migrations
-|   |-- migrations/__pycache__
-|   |-- migrations/env.py
-|   |-- migrations/script.py.mako
-|   |-- migrations/versions
 |-- pyproject.toml
-|-- scripts
-|   |-- scripts/.gitkeep
-|-- src
-|   |-- src/legal_consulting_agent
-|-- tests
-|   |-- tests/__init__.py
-|   |-- tests/__pycache__
-|   |-- tests/conftest.py
-|   |-- tests/contract
-|   |-- tests/e2e
-|   |-- tests/evaluation
-|   |-- tests/integration
-|   |-- tests/unit
+|-- README.md
 |-- uv.lock
 ```
 
 ## [auto] Environment keys
 
+- AGENT_CONFIG_ENCRYPTION_KEY
 - APP_ENV
 - APP_NAME
 - APP_PORT
@@ -114,10 +123,10 @@ legal-consulting-agent/
 - RAG_CATEGORY_FILTER_ENABLED
 - RAG_DENSE_WEIGHT
 - RAG_RECALL_TOP_N
+- RAG_RERANK_TOP_N
 - RAG_RERANKER_BASE_URL
 - RAG_RERANKER_ENABLED
 - RAG_RERANKER_MODEL
-- RAG_RERANK_TOP_N
 - RAG_SIMILARITY_THRESHOLD
 - RAG_SPARSE_WEIGHT
 - RAG_VECTOR_COLLECTION
@@ -128,7 +137,7 @@ legal-consulting-agent/
 
 ## [auto] Git status
 
-- Current branch: main
+- Current branch: legal-100-data-workflow-local
 - Working tree: has uncommitted changes
 - Remotes:
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)

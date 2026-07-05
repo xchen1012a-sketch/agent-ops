@@ -1,13 +1,13 @@
-import { legalApi } from '@lib/config';
+import { legalApi, suiteEnv } from '@lib/config';
+import { AgentStreamClient, type SseClientHeaders } from '@lib/sse-client';
+import { useAuthStore } from '@stores/auth';
+import type { AgentStreamEvent, StreamState } from '@/types/sse';
 import type {
   LegalConsultationRecordListEnvelope,
   LegalFeedbackEnvelope,
   LegalFeedbackInput,
   LegalHighRiskReviewEnvelope,
   LegalHighRiskReviewInput,
-  LegalHighRiskReviewListEnvelope,
-  LegalHighRiskReviewResolveEnvelope,
-  LegalHighRiskReviewResolveInput,
   LegalMessageListEnvelope,
   LegalQuestionAnswerEnvelope,
   LegalQuestionInput,
@@ -15,6 +15,13 @@ import type {
   LegalSessionCreateEnvelope,
   LegalSessionCreateInput,
 } from '@/types/legal';
+
+export interface LegalQuestionStreamOptions {
+  sessionPublicId: string;
+  question: string;
+  onEvent: (event: AgentStreamEvent) => void;
+  onStateChange?: (state: StreamState) => void;
+}
 
 export const legalClient = {
   async createSession(payload: LegalSessionCreateInput): Promise<LegalSessionCreateEnvelope> {
@@ -42,6 +49,20 @@ export const legalClient = {
       payload,
     );
     return data;
+  },
+
+  createQuestionStream(options: LegalQuestionStreamOptions): AgentStreamClient {
+    return new AgentStreamClient({
+      url: buildLegalApiUrl(
+        `/sessions/${encodeURIComponent(options.sessionPublicId)}/questions/events`,
+      ),
+      method: 'POST',
+      body: JSON.stringify({ question: options.question }),
+      token: useAuthStore().accessToken,
+      headers: buildLegalStreamHeaders(),
+      onEvent: options.onEvent,
+      onStateChange: options.onStateChange,
+    });
   },
 
   async listConsultationRecords(
@@ -86,24 +107,22 @@ export const legalClient = {
     );
     return data;
   },
-
-  async listHighRiskReviews(
-    query: { status?: string; limit?: number; offset?: number } = {},
-  ): Promise<LegalHighRiskReviewListEnvelope> {
-    const { data } = await legalApi.get<LegalHighRiskReviewListEnvelope>('/high-risk-reviews', {
-      params: query,
-    });
-    return data;
-  },
-
-  async resolveHighRiskReview(
-    reviewId: number,
-    payload: LegalHighRiskReviewResolveInput,
-  ): Promise<LegalHighRiskReviewResolveEnvelope> {
-    const { data } = await legalApi.post<LegalHighRiskReviewResolveEnvelope>(
-      `/high-risk-reviews/${reviewId}/resolution`,
-      payload,
-    );
-    return data;
-  },
 };
+
+function buildLegalApiUrl(path: string): string {
+  return `${suiteEnv.apiBaseUrl}${suiteEnv.legalPrefix}${path}`;
+}
+
+function buildLegalStreamHeaders(): SseClientHeaders {
+  const auth = useAuthStore();
+  const headers: SseClientHeaders = {
+    'Content-Type': 'application/json',
+  };
+  if (auth.profile?.public_id) {
+    headers['X-User-Public-Id'] = auth.profile.public_id;
+  }
+  if (auth.role) {
+    headers['X-User-Role'] = auth.role;
+  }
+  return headers;
+}

@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import AppIcon from '@components/ui/AppIcon.vue';
+
 interface Props {
   title: string;
   description: string;
   availableEndpoints?: string[];
   pendingEndpoints?: string[];
 }
+
+const contractPendingLabel = '\u5951\u7ea6\u7b49\u5f85\u72b6\u6001';
+const availableEndpointsLabel = '\u5f53\u524d\u53ef\u7528\u516c\u5f00\u63a5\u53e3';
+const pendingEndpointsLabel = '\u7b49\u5f85\u540e\u7aef\u516c\u5f00\u5951\u7ea6';
 
 const props = withDefaults(defineProps<Props>(), {
   availableEndpoints: () => [],
@@ -13,18 +19,18 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <section class="contract-pending" aria-label="契约等待状态">
+  <section class="contract-pending" :aria-label="contractPendingLabel">
     <div class="contract-pending__icon" aria-hidden="true">
-      <el-icon :size="32"><DocumentChecked /></el-icon>
+      <el-icon :size="32"><AppIcon name="DocumentChecked" /></el-icon>
     </div>
     <div class="contract-pending__content">
-      <p class="contract-pending__eyebrow">契约等待</p>
+      <p class="contract-pending__eyebrow">{{ contractPendingLabel }}</p>
       <h1>{{ props.title }}</h1>
       <p class="contract-pending__description">{{ props.description }}</p>
 
       <div class="contract-pending__columns">
         <div v-if="props.availableEndpoints.length" class="contract-pending__card">
-          <h2>当前可用公开接口</h2>
+          <h2>{{ availableEndpointsLabel }}</h2>
           <ul>
             <li v-for="endpoint in props.availableEndpoints" :key="endpoint">
               <code>{{ endpoint }}</code>
@@ -32,7 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
           </ul>
         </div>
         <div v-if="props.pendingEndpoints.length" class="contract-pending__card">
-          <h2>等待后端公开契约</h2>
+          <h2>{{ pendingEndpointsLabel }}</h2>
           <ul>
             <li v-for="endpoint in props.pendingEndpoints" :key="endpoint">
               <code>{{ endpoint }}</code>

@@ -20,7 +20,7 @@ async function loadReports(): Promise<void> {
     const response = await legalClient.listConsultationRecords({ limit: 50, offset: 0 });
     records.value = response.data.items;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : '加载咨询报告列表失败');
+    toast.error(error instanceof Error ? error.message : '加载失败');
   } finally {
     loading.value = false;
   }
@@ -39,32 +39,27 @@ onMounted(() => {
   <div class="legal-report-list">
     <section class="legal-report-list__header" aria-labelledby="legal-report-list-title">
       <div>
-        <p class="legal-report-list__eyebrow">法律咨询</p>
-        <h1 id="legal-report-list-title">咨询报告</h1>
-        <p class="legal-report-list__description">
-          法律 Agent 当前未公开独立 reports 列表，前端使用 consultation-records 作为报告入口，
-          点击后读取 Markdown 报告投影。
-        </p>
+        <p class="legal-report-list__eyebrow">法律助手</p>
+        <h1 id="legal-report-list-title">我的报告</h1>
       </div>
       <el-button :loading="loading" @click="loadReports">刷新</el-button>
     </section>
 
-    <LoadingState v-if="loading" message="正在加载咨询报告入口…" />
+    <LoadingState v-if="loading" message="加载中…" />
     <EmptyState
       v-else-if="records.length === 0"
-      title="暂无可查看报告"
-      description="完成法律问答并生成咨询记录后，可在这里查看报告投影。"
+      title="暂无报告"
+      description="完成咨询后，可在这里查看整理结果。"
       icon="Notebook"
     />
-    <section v-else class="legal-report-list__grid" aria-label="咨询报告列表">
+    <section v-else class="legal-report-list__grid" aria-label="报告列表">
       <article v-for="record in records" :key="record.public_id" class="report-card">
         <div class="report-card__title">
           <h2>{{ record.summary }}</h2>
-          <el-tag v-if="record.high_risk" type="warning" effect="light">高风险</el-tag>
+          <el-tag v-if="record.high_risk" type="warning" effect="light">需确认</el-tag>
         </div>
-        <p class="report-card__disclaimer">{{ record.disclaimer }}</p>
-        <p class="report-card__meta">引用数：{{ record.citations?.length ?? 0 }}</p>
-        <el-button type="primary" plain @click="openReport(record.public_id)">查看报告</el-button>
+        <p class="report-card__meta">{{ record.citations?.length ?? 0 }} 条依据</p>
+        <el-button type="primary" plain @click="openReport(record.public_id)">查看</el-button>
       </article>
     </section>
   </div>
@@ -74,7 +69,7 @@ onMounted(() => {
 .legal-report-list {
   display: grid;
   gap: var(--space-5);
-  max-width: var(--layout-content-max-width);
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -101,17 +96,6 @@ onMounted(() => {
   letter-spacing: 0.08em;
 }
 
-.legal-report-list__description,
-.report-card__disclaimer,
-.report-card__meta {
-  color: var(--color-text-muted);
-}
-
-.legal-report-list__description {
-  max-width: 760px;
-  margin-top: var(--space-3);
-}
-
 .legal-report-list__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -136,6 +120,7 @@ onMounted(() => {
 }
 
 .report-card__meta {
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
 

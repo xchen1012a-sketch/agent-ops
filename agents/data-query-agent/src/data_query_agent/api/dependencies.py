@@ -8,12 +8,16 @@ from typing import Annotated
 from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from data_query_agent.application.services.agent_api_config import ApiConfigCrypto
 from data_query_agent.application.services.audit_service import SqlAuditService
 from data_query_agent.application.services.identity_service import IdentityThreadService
 from data_query_agent.application.services.run_service import QueryRunTraceService
 from data_query_agent.core.config import Settings, get_settings
 from data_query_agent.core.errors import AuthError
 from data_query_agent.core.request_context import REQUEST_ID_KEY, request_context
+from data_query_agent.infrastructure.db.repositories.agent_api_config import (
+    SqlAlchemyAgentApiConfigRepository,
+)
 from data_query_agent.infrastructure.db.repositories.audit import SqlAlchemySqlAuditRepository
 from data_query_agent.infrastructure.db.repositories.identity import SqlAlchemyIdentityRepository
 from data_query_agent.infrastructure.db.repositories.run import SqlAlchemyRunRepository
@@ -38,6 +42,18 @@ def get_current_subject(x_user_subject: str | None = Header(default=None)) -> st
     if x_user_subject is None or not x_user_subject.strip():
         raise AuthError("X-User-Subject header is required")
     return x_user_subject.strip()
+
+
+def get_agent_api_config_crypto(settings: SettingsDep) -> ApiConfigCrypto:
+    """Build the Fernet crypto service from settings."""
+
+    return ApiConfigCrypto(settings.agent_config_encryption_key.get_secret_value())
+
+
+def get_agent_api_config_repository(session: SessionDep) -> SqlAlchemyAgentApiConfigRepository:
+    """Build the agent_api_config repository for the request scope."""
+
+    return SqlAlchemyAgentApiConfigRepository(session)
 
 
 def get_identity_thread_service(session: SessionDep) -> IdentityThreadService:
@@ -75,6 +91,10 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 RequestIdDep = Annotated[str, Depends(get_request_id)]
 CurrentSubjectDep = Annotated[str, Depends(get_current_subject)]
+AgentApiConfigRepoDep = Annotated[
+    SqlAlchemyAgentApiConfigRepository, Depends(get_agent_api_config_repository)
+]
+AgentApiConfigCryptoDep = Annotated[ApiConfigCrypto, Depends(get_agent_api_config_crypto)]
 IdentityThreadServiceDep = Annotated[IdentityThreadService, Depends(get_identity_thread_service)]
 QueryRunTraceServiceDep = Annotated[QueryRunTraceService, Depends(get_query_run_trace_service)]
 SqlAuditServiceDep = Annotated[SqlAuditService, Depends(get_sql_audit_service)]

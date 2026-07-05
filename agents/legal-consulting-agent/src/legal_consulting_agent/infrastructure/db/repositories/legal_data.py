@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +18,7 @@ from legal_consulting_agent.domain.entities.legal_data import (
     PromptVersion,
     UserMirror,
 )
-from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole, ReviewStatus
+from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole
 from legal_consulting_agent.infrastructure.db.models.legal_data import (
     AgentRunModel,
     ConsultationRecordModel,
@@ -243,46 +241,6 @@ class SqlAlchemyLegalDataRepository:
             reviewed_at=review.reviewed_at,
         )
         self._session.add(model)
-        await self._session.flush()
-        return self._to_high_risk_review(model)
-
-    async def list_high_risk_reviews(
-        self,
-        *,
-        status: ReviewStatus,
-        limit: int,
-        offset: int,
-    ) -> list[HighRiskReview]:
-        """Return high-risk reviews for administrator queues."""
-        result = await self._session.execute(
-            select(HighRiskReviewModel)
-            .where(HighRiskReviewModel.status == status)
-            .order_by(HighRiskReviewModel.id.asc())
-            .limit(limit)
-            .offset(offset)
-        )
-        return [self._to_high_risk_review(model) for model in result.scalars().all()]
-
-    async def update_high_risk_review_resolution(
-        self,
-        *,
-        review_id: int,
-        reviewer_id: int,
-        status: ReviewStatus,
-        resolution: str,
-        reviewed_at: datetime,
-    ) -> HighRiskReview | None:
-        """Persist an administrator review resolution without committing."""
-        result = await self._session.execute(
-            select(HighRiskReviewModel).where(HighRiskReviewModel.id == review_id)
-        )
-        model = result.scalar_one_or_none()
-        if model is None:
-            return None
-        model.status = status
-        model.reviewed_by = reviewer_id
-        model.resolution = resolution
-        model.reviewed_at = reviewed_at
         await self._session.flush()
         return self._to_high_risk_review(model)
 

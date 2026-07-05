@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from legal_consulting_agent.domain.value_objects.legal_enums import ReviewStatus
 
@@ -29,57 +29,4 @@ class LegalHighRiskReviewCreateEnvelope(BaseModel):
     """Success envelope for high-risk review queueing."""
 
     data: LegalHighRiskReviewResponse
-    error: Literal[None] = None
-
-
-class LegalHighRiskReviewAdminResponse(BaseModel):
-    """Administrator projection for high-risk review queues."""
-
-    id: int | None
-    message_id: int
-    user_id: int
-    reason: str
-    status: ReviewStatus
-    reviewed_by: int | None
-    resolution: str | None
-
-
-class LegalHighRiskReviewListData(BaseModel):
-    """Paginated administrator high-risk review list."""
-
-    items: list[LegalHighRiskReviewAdminResponse]
-    limit: int
-    offset: int
-    status: ReviewStatus
-
-
-class LegalHighRiskReviewListEnvelope(BaseModel):
-    """Success envelope for administrator high-risk review list."""
-
-    data: LegalHighRiskReviewListData
-    error: Literal[None] = None
-
-
-class LegalHighRiskReviewResolveRequest(BaseModel):
-    """Request body for administrator high-risk review resolution."""
-
-    model_config = ConfigDict(str_strip_whitespace=True)
-
-    status: ReviewStatus
-    resolution: str = Field(min_length=1, max_length=1000)
-
-    @field_validator("status")
-    @classmethod
-    def reject_pending_status(cls, value: ReviewStatus) -> ReviewStatus:
-        """Resolution endpoint may only move reviews out of pending."""
-
-        if value is ReviewStatus.PENDING:
-            raise ValueError("status must be reviewed or resolved")
-        return value
-
-
-class LegalHighRiskReviewResolveEnvelope(BaseModel):
-    """Success envelope for administrator high-risk review resolution."""
-
-    data: LegalHighRiskReviewAdminResponse
     error: Literal[None] = None

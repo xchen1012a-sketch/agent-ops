@@ -13,6 +13,7 @@ export type AgentStreamEventName =
 
 export interface AgentStreamEvent<T = unknown> {
   event_id: string;
+  event?: AgentStreamEventName | string;
   request_id?: string;
   run_id: string;
   thread_id?: string;

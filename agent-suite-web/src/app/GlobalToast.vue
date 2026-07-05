@@ -2,14 +2,17 @@
 import { computed } from 'vue';
 
 import { useToastStore } from '@stores/toast';
+import AppIcon from '@components/ui/AppIcon.vue';
 
 const toast = useToastStore();
 const items = computed(() => toast.items);
+const notificationLabel = '\u901a\u77e5';
+const closeNotificationLabel = '\u5173\u95ed\u901a\u77e5';
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="global-toast" role="region" aria-label="通知" aria-live="polite">
+    <div class="global-toast" role="region" :aria-label="notificationLabel" aria-live="polite">
       <TransitionGroup name="toast">
         <div
           v-for="item in items"
@@ -19,8 +22,8 @@ const items = computed(() => toast.items);
           role="alert"
         >
           <el-icon class="global-toast__icon">
-            <component
-              :is="
+            <AppIcon
+              :name="
                 item.type === 'success'
                   ? 'CircleCheck'
                   : item.type === 'warning'
@@ -40,10 +43,10 @@ const items = computed(() => toast.items);
           <button
             type="button"
             class="global-toast__close"
-            :aria-label="`关闭通知: ${item.title ?? ''}`"
+            :aria-label="`${closeNotificationLabel}: ${item.title ?? item.message}`"
             @click="toast.dismiss(item.id)"
           >
-            <el-icon><Close /></el-icon>
+            <el-icon><AppIcon name="Close" /></el-icon>
           </button>
         </div>
       </TransitionGroup>

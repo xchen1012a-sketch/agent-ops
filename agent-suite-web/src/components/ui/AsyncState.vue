@@ -16,7 +16,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   loadingMessage: '加载中…',
-  emptyTitle: '暂无数据',
+  emptyTitle: '暂无内容',
   emptyDescription: '',
   emptyActionText: '',
   retrying: false,

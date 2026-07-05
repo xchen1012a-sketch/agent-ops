@@ -27,9 +27,57 @@ body {
   line-height: var(--line-normal);
   color: var(--color-text);
   background-color: var(--color-bg);
+  accent-color: var(--color-primary);
   transition:
     background-color var(--duration-normal) var(--ease-in-out),
     color var(--duration-normal) var(--ease-in-out);
+}
+
+:root {
+  --el-color-primary: var(--color-primary);
+  --el-color-primary-light-3: color-mix(in oklch, var(--color-primary) 76%, var(--color-surface));
+  --el-color-primary-light-5: color-mix(in oklch, var(--color-primary) 52%, var(--color-surface));
+  --el-color-primary-light-7: color-mix(in oklch, var(--color-primary) 28%, var(--color-surface));
+  --el-color-primary-light-8: color-mix(in oklch, var(--color-primary) 20%, var(--color-surface));
+  --el-color-primary-light-9: var(--color-primary-soft);
+  --el-color-primary-dark-2: var(--color-primary-active);
+  --el-color-success: var(--color-success);
+  --el-color-warning: var(--color-warning);
+  --el-color-danger: var(--color-danger);
+  --el-color-error: var(--color-danger);
+  --el-color-info: var(--color-info);
+  --el-bg-color: var(--color-surface);
+  --el-bg-color-page: var(--color-bg);
+  --el-bg-color-overlay: var(--color-surface);
+  --el-text-color-primary: var(--color-text);
+  --el-text-color-regular: var(--color-text-muted);
+  --el-text-color-secondary: var(--color-text-subtle);
+  --el-text-color-placeholder: var(--color-text-subtle);
+  --el-border-color: var(--color-border);
+  --el-border-color-light: color-mix(in oklch, var(--color-border), var(--color-surface) 28%);
+  --el-border-color-lighter: color-mix(in oklch, var(--color-border), var(--color-surface) 48%);
+  --el-fill-color: var(--color-surface-muted);
+  --el-fill-color-light: color-mix(in oklch, var(--color-surface-muted), var(--color-surface) 35%);
+  --el-fill-color-lighter: color-mix(
+    in oklch,
+    var(--color-surface-muted),
+    var(--color-surface) 55%
+  );
+  --el-fill-color-blank: var(--color-surface);
+  --el-mask-color: rgba(41, 30, 20, 0.42);
+  --el-border-radius-base: var(--radius-md);
+  --el-border-radius-small: var(--radius-sm);
+  --el-border-radius-round: var(--radius-pill);
+  --el-box-shadow-light: var(--shadow-card);
+  --el-box-shadow: var(--shadow-popover);
+  --el-box-shadow-dark: var(--shadow-modal);
+  --el-font-family: var(--font-sans);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --el-mask-color: rgba(0, 0, 0, 0.58);
+  color-scheme: dark;
 }
 
 h1,
@@ -70,6 +118,77 @@ button {
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
+}
+
+.el-button {
+  font-weight: 650;
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--color-primary);
+  --el-button-border-color: var(--color-primary);
+  --el-button-hover-bg-color: var(--color-primary-hover);
+  --el-button-hover-border-color: var(--color-primary-hover);
+  --el-button-active-bg-color: var(--color-primary-active);
+  --el-button-active-border-color: var(--color-primary-active);
+  --el-button-text-color: var(--color-text-inverse);
+}
+
+.el-button.is-round,
+.el-button.is-circle {
+  box-shadow: none;
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  background-color: var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border) inset;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover,
+.el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-primary) 34%, var(--color-border)) inset;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus,
+.el-select__wrapper.is-focused {
+  box-shadow:
+    0 0 0 1px var(--color-primary) inset,
+    0 0 0 3px color-mix(in oklch, var(--color-primary) 14%, transparent);
+}
+
+.el-card,
+.el-table,
+.el-dialog,
+.el-popper,
+.el-message-box {
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+.el-dialog,
+.el-message-box {
+  border-radius: var(--radius-xl);
+}
+
+.el-table {
+  --el-table-header-bg-color: var(--color-surface-muted);
+  --el-table-row-hover-bg-color: color-mix(in oklch, var(--color-primary-soft), transparent 42%);
+  --el-table-border-color: var(--color-border);
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.el-tag {
+  border-radius: var(--radius-pill);
+  font-weight: 650;
+}
+
+.el-alert {
+  border-radius: var(--radius-lg);
 }
 
 img,

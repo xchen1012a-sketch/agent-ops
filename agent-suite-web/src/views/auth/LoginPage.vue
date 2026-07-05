@@ -1,57 +1,35 @@
-﻿<script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+<script setup lang="ts">
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useAuthStore } from '@stores/auth';
 import { useToastStore } from '@stores/toast';
-import type { FormInstance, FormRules } from 'element-plus';
+import type { LoginCredentials } from '@/types/auth';
 
-interface LoginForm {
-  email: string;
-  password: string;
-}
+import LoginDialog from './components/LoginDialog.vue';
+import LoginProductIntro from './components/LoginProductIntro.vue';
+import LoginTopBar from './components/LoginTopBar.vue';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const toast = useToastStore();
 
-const formRef = ref<FormInstance | null>(null);
 const submitting = ref(false);
-
-const form = reactive<LoginForm>({
-  email: '',
-  password: '',
-});
-
-const rules: FormRules<LoginForm> = {
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' },
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 8, message: '密码长度至少 8 位', trigger: 'blur' },
-  ],
-};
+const loginDialogVisible = ref(false);
 
 const redirectTarget = computed(() => {
   const redirect = route.query.redirect;
   return typeof redirect === 'string' ? redirect : '/legal';
 });
 
-async function handleSubmit(): Promise<void> {
-  if (submitting.value || !formRef.value) return;
+async function handleLogin(credentials: LoginCredentials): Promise<void> {
+  if (submitting.value) return;
   submitting.value = true;
   try {
-    const valid = await formRef.value.validate().catch(() => false);
-    if (!valid) return;
-
-    await auth.login({
-      email: form.email.trim(),
-      password: form.password,
-    });
+    await auth.login(credentials);
     toast.success('登录成功');
+    loginDialogVisible.value = false;
     await router.push(redirectTarget.value);
   } catch (error) {
     const message = error instanceof Error ? error.message : '登录失败，请重试';
@@ -63,105 +41,82 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <div class="login-page">
-    <div class="login-page__card">
-      <header class="login-page__header">
-        <h1 class="login-page__title">企业智能体平台</h1>
-        <p class="login-page__subtitle">法律咨询 · 智能招聘 · 智能问数</p>
-      </header>
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-position="top"
-        @submit.prevent="handleSubmit"
-      >
-        <el-form-item label="邮箱" prop="email">
-          <el-input
-            v-model="form.email"
-            type="email"
-            autocomplete="username"
-            placeholder="you@example.com"
-            size="large"
-          />
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            autocomplete="current-password"
-            placeholder="至少 8 位"
-            show-password
-            size="large"
-          />
-        </el-form-item>
-        <el-button
-          type="primary"
-          native-type="submit"
-          size="large"
-          class="login-page__submit"
-          :loading="submitting"
-          @click="handleSubmit"
-        >
-          登录
-        </el-button>
-      </el-form>
-      <footer class="login-page__footer">
-        <p>登录即表示同意平台使用条款与隐私政策。</p>
-      </footer>
+  <main class="login-page" aria-label="Agent Suite 产品介绍">
+    <div class="login-page__background" aria-hidden="true">
+      <span class="login-page__grid" />
     </div>
-  </div>
+
+    <LoginTopBar @login="loginDialogVisible = true" />
+    <div class="login-page__content">
+      <LoginProductIntro @login="loginDialogVisible = true" />
+    </div>
+    <LoginDialog v-model="loginDialogVisible" :submitting="submitting" @submit="handleLogin" />
+  </main>
 </template>
 
 <style scoped>
 .login-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  --login-canvas: var(--color-bg);
+  --login-canvas-deep: color-mix(in oklch, var(--color-bg) 90%, var(--color-primary-soft));
+  --login-surface: color-mix(in oklch, var(--color-surface) 78%, transparent);
+  --login-surface-strong: var(--color-surface);
+  --login-border: var(--color-border);
+  --login-border-strong: color-mix(in oklch, var(--color-primary) 24%, var(--color-border));
+  --login-text: var(--color-text);
+  --login-text-muted: var(--color-text-muted);
+  --login-text-subtle: var(--color-text-subtle);
+  --login-accent: var(--color-primary);
+
+  position: relative;
   min-height: 100vh;
-  padding: var(--space-6);
+  overflow: hidden;
   background:
-    radial-gradient(circle at top left, var(--color-legal-soft), transparent 50%),
-    radial-gradient(circle at bottom right, var(--color-data-soft), transparent 50%),
-    var(--color-bg);
+    linear-gradient(
+      135deg,
+      color-mix(in oklch, var(--color-primary-soft), transparent 68%),
+      transparent 42%
+    ),
+    linear-gradient(145deg, var(--login-canvas), var(--login-canvas-deep));
 }
 
-.login-page__card {
-  width: 100%;
-  max-width: 420px;
-  padding: var(--space-8);
-  background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+.login-page__background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.login-page__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(var(--login-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--login-border) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black, transparent 76%);
+}
+.login-page__content {
+  position: relative;
+  z-index: var(--z-base);
+  width: min(100%, 1280px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 108px clamp(var(--space-5), 4vw, var(--space-12)) var(--space-10);
 }
 
-.login-page__header {
-  text-align: center;
-  margin-bottom: var(--space-6);
+@media (max-width: 1023px) {
+  .login-page {
+    overflow: auto;
+  }
+  .login-page__content {
+    min-height: auto;
+    padding-top: 102px;
+  }
 }
 
-.login-page__title {
-  margin: 0 0 var(--space-1);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.login-page__subtitle {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.login-page__submit {
-  width: 100%;
-  margin-top: var(--space-2);
-}
-
-.login-page__footer {
-  margin-top: var(--space-4);
-  text-align: center;
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
+@media (max-width: 767px) {
+  .login-page__content {
+    padding: 92px var(--space-5) var(--space-8);
+  }
 }
 </style>

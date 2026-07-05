@@ -8,19 +8,19 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'login',
     component: () => import('@views/auth/LoginPage.vue'),
-    meta: { layout: 'plain', public: true, title: '登录' },
+    meta: { layout: 'plain', public: true, title: '\u767b\u5f55' },
   },
   {
     path: '/onboarding',
     name: 'onboarding',
     component: () => import('@views/auth/OnboardingPage.vue'),
-    meta: { layout: 'plain', public: true, title: '账号初始化' },
+    meta: { layout: 'plain', public: true, title: '\u8d26\u53f7\u521d\u59cb\u5316' },
   },
   {
     path: '/logout',
     name: 'logout',
     component: () => import('@views/auth/LogoutPage.vue'),
-    meta: { public: true, title: '退出登录' },
+    meta: { public: true, title: '\u9000\u51fa\u767b\u5f55' },
   },
   {
     path: '/',
@@ -35,61 +35,31 @@ const routes: RouteRecordRaw[] = [
     path: '/legal/sessions',
     name: 'legal-sessions',
     component: () => import('@views/legal/LegalSessionListPage.vue'),
-    meta: { module: 'legal', title: '法律咨询 - 会话列表' },
+    meta: { module: 'legal', title: '\u5f00\u59cb\u54a8\u8be2' },
   },
   {
     path: '/legal/sessions/:id',
     name: 'legal-session-detail',
     component: () => import('@views/legal/LegalSessionPage.vue'),
-    meta: { module: 'legal', title: '法律咨询 - 会话' },
+    meta: { module: 'legal', title: '\u6cd5\u5f8b\u54a8\u8be2' },
   },
   {
     path: '/legal/history',
     name: 'legal-history',
     component: () => import('@views/legal/LegalHistoryPage.vue'),
-    meta: { module: 'legal', title: '法律咨询 - 历史搜索' },
+    meta: { module: 'legal', title: '\u54a8\u8be2\u8bb0\u5f55' },
   },
   {
     path: '/legal/reports',
     name: 'legal-reports',
     component: () => import('@views/legal/LegalReportListPage.vue'),
-    meta: { module: 'legal', title: '法律咨询 - 报告' },
+    meta: { module: 'legal', title: '\u6cd5\u5f8b\u62a5\u544a' },
   },
   {
     path: '/legal/reports/:id',
     name: 'legal-report-detail',
     component: () => import('@views/legal/LegalReportView.vue'),
-    meta: { module: 'legal', title: '法律咨询 - 报告详情' },
-  },
-  {
-    path: '/legal/admin/users',
-    name: 'legal-admin-users',
-    component: () => import('@views/legal/admin/UserAdminPage.vue'),
-    meta: { module: 'legal', role: 'admin', title: '用户管理' },
-  },
-  {
-    path: '/legal/admin/categories',
-    name: 'legal-admin-categories',
-    component: () => import('@views/legal/admin/CategoryAdminPage.vue'),
-    meta: { module: 'legal', role: 'admin', title: '法律分类管理' },
-  },
-  {
-    path: '/legal/admin/knowledge',
-    name: 'legal-admin-knowledge',
-    component: () => import('@views/legal/admin/KnowledgeAdminPage.vue'),
-    meta: { module: 'legal', role: 'admin', title: '知识材料管理' },
-  },
-  {
-    path: '/legal/admin/prompts',
-    name: 'legal-admin-prompts',
-    component: () => import('@views/legal/admin/PromptAdminPage.vue'),
-    meta: { module: 'legal', role: 'admin', title: 'Prompt 版本管理' },
-  },
-  {
-    path: '/legal/admin/reviews',
-    name: 'legal-admin-reviews',
-    component: () => import('@views/legal/admin/HighRiskReviewAdminPage.vue'),
-    meta: { module: 'legal', role: 'admin', title: '高风险审核' },
+    meta: { module: 'legal', title: '\u62a5\u544a\u8be6\u60c5' },
   },
   {
     path: '/recruitment',
@@ -100,43 +70,31 @@ const routes: RouteRecordRaw[] = [
     path: '/recruitment/tasks',
     name: 'recruit-tasks',
     component: () => import('@views/recruitment/RecruitTaskListPage.vue'),
-    meta: { module: 'recruitment', title: '智能招聘 - 任务列表' },
+    meta: { module: 'recruitment', title: '\u62db\u8058\u4efb\u52a1' },
   },
   {
     path: '/recruitment/tasks/new',
     name: 'recruit-task-new',
     component: () => import('@views/recruitment/RecruitNewTaskPage.vue'),
-    meta: { module: 'recruitment', title: '智能招聘 - 新建分析' },
+    meta: { module: 'recruitment', title: '\u65b0\u5efa\u5206\u6790' },
   },
   {
     path: '/recruitment/tasks/:id',
     name: 'recruit-task-detail',
     component: () => import('@views/recruitment/RecruitTaskDetailPage.vue'),
-    meta: { module: 'recruitment', title: '智能招聘 - 任务详情' },
-  },
-  {
-    path: '/recruitment/materials',
-    name: 'recruit-materials',
-    component: () => import('@views/recruitment/RecruitMaterialListPage.vue'),
-    meta: { module: 'recruitment', title: '智能招聘 - 材料' },
+    meta: { module: 'recruitment', title: '\u4efb\u52a1\u8be6\u60c5' },
   },
   {
     path: '/recruitment/reports',
     name: 'recruit-reports',
     component: () => import('@views/recruitment/RecruitReportListPage.vue'),
-    meta: { module: 'recruitment', title: '智能招聘 - 报告' },
+    meta: { module: 'recruitment', title: '\u5339\u914d\u62a5\u544a' },
   },
   {
-    path: '/recruitment/admin/scoring',
-    name: 'recruit-admin-scoring',
-    component: () => import('@views/recruitment/admin/ScoringAdminPage.vue'),
-    meta: { module: 'recruitment', role: 'admin', title: '评分规则真源' },
-  },
-  {
-    path: '/recruitment/admin/audit',
-    name: 'recruit-admin-audit',
-    component: () => import('@views/recruitment/admin/AuditAdminPage.vue'),
-    meta: { module: 'recruitment', role: 'admin', title: '招聘审计' },
+    path: '/recruitment/reports/:id',
+    name: 'recruit-report-detail',
+    component: () => import('@views/recruitment/RecruitReportView.vue'),
+    meta: { module: 'recruitment', title: '\u62a5\u544a\u8be6\u60c5' },
   },
   {
     path: '/data',
@@ -147,55 +105,43 @@ const routes: RouteRecordRaw[] = [
     path: '/data/sessions',
     name: 'data-sessions',
     component: () => import('@views/data/DataSessionListPage.vue'),
-    meta: { module: 'data', title: '智能问数 - 会话列表' },
+    meta: { module: 'data', title: '\u95ee\u6570\u5bf9\u8bdd' },
   },
   {
     path: '/data/sessions/:id',
     name: 'data-session-detail',
     component: () => import('@views/data/DataSessionPage.vue'),
-    meta: { module: 'data', title: '智能问数 - 对话查询' },
+    meta: { module: 'data', title: '\u6570\u636e\u95ee\u7b54' },
   },
   {
     path: '/data/history',
     name: 'data-history',
     component: () => import('@views/data/DataHistoryPage.vue'),
-    meta: { module: 'data', title: '智能问数 - 查询历史' },
-  },
-  {
-    path: '/data/admin/sql-audit',
-    name: 'data-admin-sql-audit',
-    component: () => import('@views/data/admin/SqlAuditPage.vue'),
-    meta: { module: 'data', role: 'admin', title: 'SQL 审计' },
+    meta: { module: 'data', title: '\u67e5\u8be2\u5386\u53f2' },
   },
   {
     path: '/me',
     name: 'profile',
     component: () => import('@views/profile/ProfilePage.vue'),
-    meta: { title: '个人信息' },
+    meta: { title: '\u4e2a\u4eba\u4fe1\u606f' },
   },
   {
-    path: '/settings',
-    name: 'settings',
-    component: () => import('@views/profile/SettingsPage.vue'),
-    meta: { title: '偏好设置' },
-  },
-  {
-    path: '/health',
-    name: 'health',
-    component: () => import('@views/system/HealthPage.vue'),
-    meta: { public: true, title: '系统健康' },
+    path: '/settings/api-config',
+    name: 'admin-api-config',
+    component: () => import('@views/admin/ApiConfigAdminPage.vue'),
+    meta: { title: 'API \u914d\u7f6e' },
   },
   {
     path: '/403',
     name: 'forbidden',
     component: () => import('@views/system/ForbiddenPage.vue'),
-    meta: { public: true, title: '权限不足' },
+    meta: { public: true, title: '\u6743\u9650\u4e0d\u8db3' },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@views/system/NotFoundPage.vue'),
-    meta: { public: true, title: '页面未找到' },
+    meta: { public: true, title: '\u9875\u9762\u672a\u627e\u5230' },
   },
 ];
 
@@ -209,7 +155,7 @@ export const router = createRouter({
 
 router.beforeEach((to) => {
   if (to.meta.title) {
-    document.title = `${String(to.meta.title)} | 企业智能体平台`;
+    document.title = `${String(to.meta.title)} | \u4f01\u4e1a\u667a\u80fd\u4f53`;
   }
 
   const auth = useAuthStore();
@@ -226,7 +172,7 @@ router.beforeEach((to) => {
     const toast = useToastStore();
     toast.push({
       type: 'warning',
-      message: '当前账号无权访问该页面',
+      message: '\u5f53\u524d\u8d26\u53f7\u65e0\u6743\u8bbf\u95ee\u8be5\u9875\u9762',
       duration: 4000,
     });
     return { name: 'forbidden' };

@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: 603a283e5f9148b7
-- last refresh: 2026-07-05 16:31:22 +08:00
+- source hash: ea680b49675b6c3a
+- last refresh: 2026-07-05 18:03:08 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -35,6 +35,8 @@ recruitment-assistant-agent/
 |   |-- 0.15.20/
 |   |-- .gitignore
 |   |-- CACHEDIR.TAG
+|-- .tmp/
+|   |-- pytest/
 |-- .uv-cache/
 |   |-- interpreter-v4/
 |   |-- sdists-v9/

@@ -61,7 +61,7 @@ describe('request state factory', () => {
     expect(state.status).toBe('cancelled');
     expect(state.error).toMatchObject({
       code: 'REQUEST_CANCELLED',
-      title: '请求已取消',
+      title: '已取消',
       retryable: false,
     });
   });
@@ -89,7 +89,7 @@ describe('mapRequestError', () => {
 
     expect(mapRequestError({ error_code: API_ERROR_CODES.AUTH_FORBIDDEN })).toMatchObject({
       code: API_ERROR_CODES.AUTH_FORBIDDEN,
-      title: '无权访问',
+      title: '暂不能访问',
       retryable: false,
     });
   });
@@ -112,13 +112,13 @@ describe('mapRequestError', () => {
   it('maps service and network errors as retryable', () => {
     expect(mapRequestError({ error_code: API_ERROR_CODES.AGENT_DEPENDENCY_TIMEOUT })).toMatchObject(
       {
-        title: '服务暂不可用',
+        title: '暂时不可用',
         retryable: true,
       },
     );
 
     expect(mapRequestError({ error_code: 'NETWORK_ERROR' })).toMatchObject({
-      title: '网络连接异常',
+      title: '网络异常',
       retryable: true,
     });
   });

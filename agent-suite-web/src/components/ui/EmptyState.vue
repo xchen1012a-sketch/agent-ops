@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppIcon from '@components/ui/AppIcon.vue';
+
 interface Props {
   title: string;
   description?: string;
@@ -18,7 +20,7 @@ const emit = defineEmits<{ (e: 'action'): void }>();
 <template>
   <div class="empty-state" role="status">
     <el-icon class="empty-state__icon" :size="40">
-      <component :is="props.icon" />
+      <AppIcon :name="props.icon" />
     </el-icon>
     <h3 class="empty-state__title">
       {{ title }}

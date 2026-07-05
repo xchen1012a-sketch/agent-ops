@@ -5,8 +5,9 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@stores/auth';
 import { useThemeStore } from '@stores/theme';
 import { useToastStore } from '@stores/toast';
+import AppIcon from '@components/ui/AppIcon.vue';
 
-defineProps<{ sidebarCollapsed: boolean }>();
+const props = defineProps<{ sidebarCollapsed: boolean }>();
 const emit = defineEmits<{ (e: 'toggle-sidebar'): void }>();
 
 const router = useRouter();
@@ -14,7 +15,23 @@ const auth = useAuthStore();
 const theme = useThemeStore();
 const toast = useToastStore();
 
-const themeLabel = computed(() => (theme.isDark ? '切换到浅色' : '切换到深色'));
+const brandTitle = '\u4f01\u4e1a\u667a\u80fd\u4f53';
+const brandSubtitle =
+  '\u4f60\u7684\u6cd5\u5f8b\u3001\u62db\u8058\u4e0e\u6570\u636e\u667a\u80fd\u52a9\u624b';
+const openAccountMenuLabel = '\u6253\u5f00\u8d26\u53f7\u83dc\u5355';
+const themeLabel = computed(() =>
+  theme.isDark
+    ? '\u5207\u6362\u5230\u6d45\u8272\u6a21\u5f0f'
+    : '\u5207\u6362\u5230\u6df1\u8272\u6a21\u5f0f',
+);
+const sidebarToggleLabel = computed(() =>
+  props.sidebarCollapsed
+    ? '\u5c55\u5f00\u667a\u80fd\u4f53\u5bfc\u822a'
+    : '\u6536\u8d77\u667a\u80fd\u4f53\u5bfc\u822a',
+);
+const roleLabel = computed(() =>
+  auth.isAdmin ? '\u7ba1\u7406\u5458\u4f53\u9a8c' : '\u7528\u6237\u4f53\u9a8c',
+);
 
 async function handleCommand(command: string): Promise<void> {
   if (command === 'profile') {
@@ -28,11 +45,10 @@ async function handleCommand(command: string): Promise<void> {
   if (command === 'logout') {
     try {
       await auth.logout();
-      toast.success('已退出登录');
+      toast.success('\u5df2\u9000\u51fa\u767b\u5f55');
       await router.push({ name: 'login' });
-    } catch (error) {
-      toast.error('登出失败，请重试');
-      console.error('[logout]', error);
+    } catch {
+      toast.error('\u9000\u51fa\u5931\u8d25\uff0c\u8bf7\u91cd\u8bd5');
     }
   }
 }
@@ -43,32 +59,49 @@ async function handleCommand(command: string): Promise<void> {
     <button
       type="button"
       class="app-header__toggle"
-      :aria-label="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+      :aria-label="sidebarToggleLabel"
       :aria-expanded="!sidebarCollapsed"
       @click="emit('toggle-sidebar')"
     >
-      <el-icon><Menu /></el-icon>
+      <el-icon><AppIcon name="Menu" /></el-icon>
     </button>
-    <div class="app-header__brand">
-      <span class="app-header__brand-title">企业智能体平台</span>
+
+    <div class="app-header__brand" :aria-label="brandTitle">
+      <span class="app-header__brand-title">{{ brandTitle }}</span>
+      <span class="app-header__brand-subtitle">{{ brandSubtitle }}</span>
     </div>
+
     <div class="app-header__actions">
-      <el-button text :aria-label="themeLabel" :title="themeLabel" @click="theme.toggle()">
-        <el-icon><component :is="theme.isDark ? 'Sunny' : 'Moon'" /></el-icon>
+      <el-button
+        class="app-header__theme"
+        text
+        :aria-label="themeLabel"
+        :title="themeLabel"
+        @click="theme.toggle()"
+      >
+        <el-icon><AppIcon :name="theme.isDark ? 'Sunny' : 'Moon'" /></el-icon>
       </el-button>
       <el-dropdown trigger="click" @command="handleCommand">
-        <span class="app-header__user" tabindex="0">
-          <el-avatar :size="32">{{ auth.initials }}</el-avatar>
-          <span class="app-header__user-name">{{ auth.displayName }}</span>
-          <el-icon><ArrowDown /></el-icon>
+        <span
+          class="app-header__user"
+          tabindex="0"
+          role="button"
+          :aria-label="openAccountMenuLabel"
+        >
+          <el-avatar :size="34">{{ auth.initials }}</el-avatar>
+          <span class="app-header__user-copy">
+            <span class="app-header__user-name">{{ auth.displayName }}</span>
+            <span class="app-header__user-role">{{ roleLabel }}</span>
+          </span>
+          <el-icon class="app-header__user-arrow"><AppIcon name="ArrowDown" /></el-icon>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="profile"> 个人信息 </el-dropdown-item>
-            <el-dropdown-item command="theme">
-              {{ theme.isDark ? '切换到浅色' : '切换到深色' }}
-            </el-dropdown-item>
-            <el-dropdown-item command="logout" divided> 退出登录 </el-dropdown-item>
+            <el-dropdown-item command="profile">{{ '\u4e2a\u4eba\u4fe1\u606f' }}</el-dropdown-item>
+            <el-dropdown-item command="theme">{{ themeLabel }}</el-dropdown-item>
+            <el-dropdown-item command="logout" divided>{{
+              '\u9000\u51fa\u767b\u5f55'
+            }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -78,12 +111,15 @@ async function handleCommand(command: string): Promise<void> {
 
 <style scoped>
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   gap: var(--space-4);
   height: var(--layout-header-height);
-  padding: 0 var(--space-4);
-  background-color: var(--color-surface);
+  padding: var(--space-3) var(--space-6);
+  background: color-mix(in oklch, var(--color-surface), var(--color-bg) 22%);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -91,31 +127,46 @@ async function handleCommand(command: string): Promise<void> {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background-color: transparent;
-  border-radius: var(--radius-md);
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-lg);
   color: var(--color-text-muted);
   transition:
     background-color var(--duration-fast) var(--ease-in-out),
+    border-color var(--duration-fast) var(--ease-in-out),
     color var(--duration-fast) var(--ease-in-out);
 }
 
 .app-header__toggle:hover {
-  background-color: var(--color-surface-muted);
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
   color: var(--color-text);
 }
 
 .app-header__brand {
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   min-width: 0;
 }
 
 .app-header__brand-title {
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: 700;
+  line-height: var(--line-tight);
   color: var(--color-text);
+}
+
+.app-header__brand-subtitle {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-header__actions {
@@ -124,22 +175,62 @@ async function handleCommand(command: string): Promise<void> {
   gap: var(--space-3);
 }
 
+.app-header__theme {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+}
+
 .app-header__user {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: none;
   cursor: pointer;
 }
 
+.app-header__user-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .app-header__user-name {
-  font-size: var(--text-sm);
+  max-width: 132px;
+  overflow: hidden;
   color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-header__user-role {
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  line-height: 1.25;
+}
+
+.app-header__user-arrow {
+  color: var(--color-text-subtle);
 }
 
 @media (max-width: 767px) {
-  .app-header__user-name {
+  .app-header {
+    height: 64px;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .app-header__brand-subtitle,
+  .app-header__user-copy,
+  .app-header__user-arrow {
     display: none;
   }
 }

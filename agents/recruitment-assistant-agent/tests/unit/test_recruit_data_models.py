@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from sqlalchemy.orm import configure_mappers
+
 from recruitment_assistant_agent.infrastructure.db.base import Base
 from recruitment_assistant_agent.infrastructure.db.models import (
     AgentRunModel,
@@ -66,6 +68,19 @@ def test_task_foreign_keys_enforce_ownership_path() -> None:
     }
 
     assert {"fk_tasks_user", "fk_tasks_reviewer"}.issubset(task_fks)
+
+
+def test_task_user_relationships_are_unambiguous() -> None:
+    configure_mappers()
+
+    assert {column.key for column in UserModel.tasks.property.local_remote_pairs[0]} == {
+        "id",
+        "user_id",
+    }
+    assert {column.key for column in RecruitTaskModel.user.property.local_remote_pairs[0]} == {
+        "user_id",
+        "id",
+    }
 
 
 def test_task_indexes_match_detailed_design() -> None:

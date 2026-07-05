@@ -113,3 +113,11 @@ pnpm build
   - `pnpm.cmd test`：6 files / 33 tests passed。
   - `pnpm.cmd build`：通过；保留既有 Vite/Rollup warning：Element Plus chunk 大于 500 kB、`echarts` 空 chunk、`@vueuse/core` PURE 注释提示。
   - `git diff --check -- agent-suite-web/src/components/ui/ContractPendingState.vue agent-suite-web/src/views/legal/LegalReportListPage.vue agent-suite-web/src/views/legal/admin/CategoryAdminPage.vue agent-suite-web/src/views/legal/admin/KnowledgeAdminPage.vue agent-suite-web/src/views/legal/admin/PromptAdminPage.vue agent-suite-web/src/views/legal/admin/UserAdminPage.vue`：通过，仅提示 Windows CRLF 工作区转换警告。
+
+- 2026-07-05：完成 `WEB-430` 公共交互基础设施补强。新增统一请求状态类型与状态工厂（`src/types/request-state.ts`、`src/lib/request-state.ts`），覆盖 idle/loading/success/empty/error/cancelled 状态以及 401/403/429/5xx/network/timeout/cancelled 错误展示映射；新增 `AsyncState` 与 `RetryAction` 通用 UI 组件，复用现有 `EmptyState`/`LoadingState`，提供 loading/error/empty/success/取消状态投影与重试事件；补充 `sse-client` 单测，覆盖 SSE 事件去重、主动取消 AbortController、失败重连耗尽后进入 error 状态。为避免测试环境依赖自动图标导入，将 `LoadingState` 调整为纯 CSS spinner。未修改三个后端 Agent，未猜测招聘/问数未冻结接口字段，未接入真实外部服务。验证：
+  - `pnpm.cmd typecheck`：通过。
+  - `pnpm.cmd lint`：通过。
+  - `pnpm.cmd format:check`：通过。
+  - `pnpm.cmd test`：10 files / 53 tests passed。
+  - `pnpm.cmd build`：通过；保留既有 Vite/Rollup warning：Element Plus chunk 大于 500 kB、`echarts` empty chunk、`@vueuse/core` PURE 注释提示。
+  - smoke：`GET http://127.0.0.1:5666` 返回 200；`GET http://127.0.0.1:5666/api/legal/v1/health/live` 返回 `{"status":"ok"}`；`POST http://127.0.0.1:5666/api/auth/login` 使用本地管理员账号返回 dev auth token。

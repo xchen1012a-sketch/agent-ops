@@ -15,9 +15,14 @@ import type { AgentStreamEvent, StreamState } from '@/types/sse';
  *   - Cancellation: caller-owned AbortController, safe to discard.
  */
 
+export type SseClientHeaders = Record<string, string>;
+
 export interface SseClientOptions {
   url: string;
   token: string | null;
+  method?: 'GET' | 'POST';
+  body?: BodyInit | null;
+  headers?: SseClientHeaders;
   onEvent: (event: AgentStreamEvent) => void;
   onStateChange?: (state: StreamState) => void;
   heartbeatTimeoutMs?: number;
@@ -43,6 +48,9 @@ export class AgentStreamClient {
     this.options = {
       url: options.url,
       token: options.token,
+      method: options.method ?? 'GET',
+      body: options.body ?? null,
+      headers: options.headers ?? {},
       onEvent: options.onEvent,
       onStateChange: options.onStateChange ?? (() => {}),
       heartbeatTimeoutMs: options.heartbeatTimeoutMs ?? DEFAULT_HEARTBEAT_TIMEOUT_MS,
@@ -74,8 +82,9 @@ export class AgentStreamClient {
 
     try {
       const response = await fetch(this.options.url, {
-        method: 'GET',
+        method: this.options.method,
         headers: this.buildHeaders(),
+        body: this.options.body,
         signal: this.abortController.signal,
         credentials: 'include',
       });
@@ -123,9 +132,12 @@ export class AgentStreamClient {
 
     const lines = frame.split('\n');
     let dataStr = '';
+    let eventName: string | undefined;
 
     for (const line of lines) {
-      if (line.startsWith('data:')) {
+      if (line.startsWith('event:')) {
+        eventName = line.slice(6).trim();
+      } else if (line.startsWith('data:')) {
         dataStr += line.slice(5).trim();
       } else if (line.startsWith('id:')) {
         this.lastEventId = line.slice(3).trim();
@@ -135,11 +147,29 @@ export class AgentStreamClient {
     if (!dataStr) return;
 
     try {
-      const payload = JSON.parse(dataStr) as AgentStreamEvent;
-      this.dispatchEvent(payload);
+      const payload = JSON.parse(dataStr) as Record<string, unknown>;
+      this.dispatchEvent(this.normalizeEvent(payload, eventName));
     } catch (error) {
       console.warn('[sse] failed to parse event frame', { frame, error });
     }
+  }
+
+  private normalizeEvent(payload: Record<string, unknown>, eventName?: string): AgentStreamEvent {
+    if (typeof payload.event_id === 'string' && typeof payload.sequence === 'number') {
+      return {
+        ...(payload as unknown as AgentStreamEvent),
+        event: eventName ?? (payload as { event?: string }).event,
+      };
+    }
+
+    return {
+      event_id: this.lastEventId ?? `${eventName ?? 'message'}-${this.lastSequence + 1}`,
+      event: eventName,
+      run_id: typeof payload.run_id === 'string' ? payload.run_id : '',
+      sequence: this.lastSequence + 1,
+      timestamp: new Date().toISOString(),
+      payload,
+    };
   }
 
   private dispatchEvent(event: AgentStreamEvent): void {
@@ -154,6 +184,7 @@ export class AgentStreamClient {
 
   private buildHeaders(): HeadersInit {
     const headers: Record<string, string> = {
+      ...this.options.headers,
       Accept: 'text/event-stream',
     };
     if (this.options.token) {

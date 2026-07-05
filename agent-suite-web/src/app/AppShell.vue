@@ -10,6 +10,7 @@ import GlobalToast from './GlobalToast.vue';
 
 const route = useRoute();
 const sidebarCollapsed = ref(false);
+const loadingLabel = '\u6b63\u5728\u6253\u5f00\u667a\u80fd\u5de5\u4f5c\u53f0\u2026';
 
 const currentModule = computed(() => (route.meta?.module ?? null) as string | null);
 
@@ -31,21 +32,21 @@ function toggleSidebar(): void {
       <AppHeader :sidebar-collapsed="sidebarCollapsed" @toggle-sidebar="toggleSidebar" />
       <AppBreadcrumb />
       <main class="app-shell__content" role="main">
-        <ErrorBoundary>
-          <RouterView v-slot="{ Component }">
-            <Suspense>
-              <component :is="Component" />
-              <template #fallback>
-                <div class="app-shell__loading" role="status" aria-live="polite">
-                  <el-icon class="is-loading">
-                    <Loading />
-                  </el-icon>
-                  <span>页面加载中…</span>
-                </div>
-              </template>
-            </Suspense>
-          </RouterView>
-        </ErrorBoundary>
+        <div class="app-shell__content-inner">
+          <ErrorBoundary>
+            <RouterView v-slot="{ Component }">
+              <Suspense>
+                <component :is="Component" />
+                <template #fallback>
+                  <div class="app-shell__loading" role="status" aria-live="polite">
+                    <span class="app-shell__loading-mark" aria-hidden="true" />
+                    <span>{{ loadingLabel }}</span>
+                  </div>
+                </template>
+              </Suspense>
+            </RouterView>
+          </ErrorBoundary>
+        </div>
       </main>
     </div>
     <GlobalToast />
@@ -55,14 +56,20 @@ function toggleSidebar(): void {
 <style scoped>
 .app-shell {
   display: grid;
-  grid-template-columns: var(--layout-sidebar-width) 1fr;
+  grid-template-columns: var(--layout-sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
-  background-color: var(--color-bg);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-bg), var(--color-surface) 42%),
+      var(--color-bg)
+    ),
+    var(--color-bg);
   transition: grid-template-columns var(--duration-normal) var(--ease-in-out);
 }
 
 .app-shell--collapsed {
-  grid-template-columns: var(--layout-sidebar-collapsed-width) 1fr;
+  grid-template-columns: var(--layout-sidebar-collapsed-width) minmax(0, 1fr);
 }
 
 .app-shell__main {
@@ -73,17 +80,43 @@ function toggleSidebar(): void {
 
 .app-shell__content {
   flex: 1 1 auto;
-  padding: var(--space-6);
-  background-color: var(--color-bg);
+  padding: var(--space-5) var(--space-6) var(--space-8);
+}
+
+.app-shell__content-inner {
+  width: min(100%, var(--layout-content-max-width));
+  margin: 0 auto;
 }
 
 .app-shell__loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-12);
+  gap: var(--space-3);
+  min-height: 280px;
   color: var(--color-text-muted);
+}
+
+.app-shell__loading-mark {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 8px var(--color-primary-soft);
+  animation: app-shell-loading-pulse 1.2s var(--ease-in-out) infinite;
+}
+
+@keyframes app-shell-loading-pulse {
+  0%,
+  100% {
+    transform: scale(0.78);
+    opacity: 0.65;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 767px) {
@@ -93,7 +126,7 @@ function toggleSidebar(): void {
   }
 
   .app-shell__content {
-    padding: var(--space-3);
+    padding: var(--space-4) var(--space-3) var(--space-6);
   }
 }
 </style>

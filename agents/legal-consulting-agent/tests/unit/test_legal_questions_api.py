@@ -116,7 +116,7 @@ def test_answer_question_rejects_empty_question() -> None:
     assert response.status_code == 422
 
 
-def test_answer_question_events_returns_sse_started_and_completed() -> None:
+def test_answer_question_events_returns_sse_started_delta_and_completed() -> None:
     fake_service = FakeQuestionAnswerService()
     client = build_client(fake_service)
 
@@ -129,5 +129,7 @@ def test_answer_question_events_returns_sse_started_and_completed() -> None:
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/event-stream")
     assert "event: started" in response.text
+    assert "event: message.delta" in response.text
+    assert '"delta":"Mock legal answer"' in response.text
     assert "event: completed" in response.text
     assert '"answer":"Mock legal answer"' in response.text

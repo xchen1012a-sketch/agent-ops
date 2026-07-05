@@ -37,11 +37,3 @@ class SqlAuditRepository(Protocol):
         offset: int,
     ) -> Sequence[SqlAudit]:
         """List SQL audits owned by one user."""
-
-    async def list_sql_audits_for_admin(
-        self,
-        *,
-        limit: int,
-        offset: int,
-    ) -> Sequence[SqlAudit]:
-        """List SQL audits across users for an admin boundary."""

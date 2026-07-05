@@ -1,4 +1,4 @@
-# Project facts
+﻿# Project facts
 
 > [auto] is refreshed by AI or scripts from repository state and only records verifiable facts.
 > [manual] may be filled by AI from explicit sources and confirmed by humans. AI must mark uncertain entries as pending confirmation.
@@ -6,9 +6,9 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: 6762ea778d81c04b
-- last refresh: 2026-07-05 00:52:36 +0800
-- refresh command: scripts/refresh-project-facts.sh
+- source hash: eb545504abf2440f
+- last refresh: 2026-07-05 19:53:47 +08:00
+- refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
 
@@ -40,50 +40,55 @@
 
 ```text
 agent-suite-web/
+|-- docs/
+|   |-- api-integration.md
+|   |-- architecture.md
+|   |-- detailed-design.md
+|   |-- specification.md
+|-- logs/
+|   |-- vite-5666.err.log
+|   |-- vite-5666.out.log
+|-- nginx/
+|   |-- default.conf
+|-- public/
+|   |-- favicon.svg
+|-- src/
+|   |-- api/
+|   |-- app/
+|   |-- components/
+|   |-- lib/
+|   |-- router/
+|   |-- stores/
+|   |-- styles/
+|   |-- types/
+|   |-- views/
+|   |-- App.vue
+|   |-- env.d.ts
+|   |-- main.ts
+|   |-- vue-shims.d.ts
+|-- tests/
+|   |-- unit/
+|   |-- setup.ts
 |-- .dockerignore
 |-- .editorconfig
+|-- .env
 |-- .env.example
 |-- .eslintrc-auto-import.json
 |-- .gitignore
 |-- .npmrc
 |-- AGENTS.md
-|-- CLAUDE.md
-|-- Dockerfile
-|-- README.md
 |-- auto-imports.d.ts
+|-- CLAUDE.md
 |-- components.d.ts
-|-- docs
-|   |-- docs/api-integration.md
-|   |-- docs/architecture.md
-|   |-- docs/detailed-design.md
-|   |-- docs/specification.md
+|-- dev-auth-plugin.ts
+|-- Dockerfile
 |-- eslint.config.mjs
 |-- index.html
-|-- nginx
-|   |-- nginx/default.conf
 |-- package.json
 |-- playwright.config.ts
 |-- pnpm-lock.yaml
 |-- pnpm-workspace.yaml
-|-- public
-|   |-- public/favicon.svg
-|-- src
-|   |-- src/App.vue
-|   |-- src/api
-|   |-- src/app
-|   |-- src/components
-|   |-- src/env.d.ts
-|   |-- src/lib
-|   |-- src/main.ts
-|   |-- src/router
-|   |-- src/stores
-|   |-- src/styles
-|   |-- src/types
-|   |-- src/views
-|   |-- src/vue-shims.d.ts
-|-- tests
-|   |-- tests/setup.ts
-|   |-- tests/unit
+|-- README.md
 |-- tsconfig.json
 |-- tsconfig.node.json
 |-- vite.config.ts
@@ -98,11 +103,12 @@ agent-suite-web/
 - VITE_API_LEGAL_PREFIX
 - VITE_API_RECRUITMENT_PREFIX
 - VITE_DEFAULT_THEME
+- VITE_ENABLE_DEV_AUTH
 - VITE_SESS_TIMEOUT_MINUTES
 
 ## [auto] Git status
 
-- Current branch: main
+- Current branch: legal-100-data-workflow-local
 - Working tree: has uncommitted changes
 - Remotes:
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)

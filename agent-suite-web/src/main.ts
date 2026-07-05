@@ -28,9 +28,9 @@ bootstrap().catch((error) => {
   const root = document.getElementById('app');
   if (root) {
     root.innerHTML =
-      '<div style="padding:24px;font-family:system-ui;color:#b00020">' +
-      '<h1>平台启动失败</h1>' +
-      '<p>请检查网络或联系系统管理员。</p>' +
+      '<div style="padding:24px;font-family:system-ui;color:#a94f37;background:#f8f8f6">' +
+      '<h1>\u5e94\u7528\u542f\u52a8\u5931\u8d25</h1>' +
+      '<p>\u8bf7\u68c0\u67e5\u7f51\u7edc\u8fde\u63a5\u6216\u7a0d\u540e\u91cd\u8bd5\u3002</p>' +
       '</div>';
   }
 });

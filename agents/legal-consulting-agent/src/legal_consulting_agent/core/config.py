@@ -2,11 +2,26 @@
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _load_local_env_defaults() -> None:
+    """Load the module .env into process env when pydantic does not pre-load it."""
+    env_path = Path(__file__).resolve().parents[3] / ".env"
+    if not env_path.exists():
+        return
+    for raw_line in env_path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
 class Settings(BaseSettings):
@@ -79,6 +94,10 @@ class Settings(BaseSettings):
     rag_reranker_base_url: str = ""
     rag_reranker_model: str = "BAAI/bge-reranker-v2-m3"
 
+    # Agent API config center (CONFIG-100): Fernet master key for encrypting
+    # upstream API keys stored in agent_api_config.api_key_encrypted.
+    agent_config_encryption_key: SecretStr = Field(default=SecretStr(""))
+
     # Backwards-compatible alias for legacy callers expecting top_k.
     @property
     def rag_top_k(self) -> int:
@@ -116,4 +135,5 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Return a singleton Settings instance."""
+    _load_local_env_defaults()
     return Settings()

@@ -64,14 +64,6 @@ class FakeSqlAuditRepository:
         owned = [audit for audit in self.audits if audit.user_id == user_id]
         return tuple(owned[offset : offset + limit])
 
-    async def list_sql_audits_for_admin(
-        self,
-        *,
-        limit: int,
-        offset: int,
-    ) -> Sequence[SqlAudit]:
-        return tuple(self.audits[offset : offset + limit])
-
 
 def _run(user_id: int = 20) -> QueryRun:
     now = datetime.now(UTC).replace(tzinfo=None)
@@ -176,28 +168,6 @@ async def test_user_summary_keeps_user_boundary() -> None:
     summaries = await service.list_user_audit_summaries(user=_user(user_id=20))
 
     assert [summary.sql_fingerprint for summary in summaries] == ["sha256:owner"]
-
-
-@pytest.mark.asyncio
-async def test_admin_can_see_full_sql_audits_but_user_cannot() -> None:
-    repository = FakeSqlAuditRepository()
-    service = SqlAuditService(repository)
-    await service.record_sql_audit(
-        run=_run(user_id=20),
-        decision=SqlPolicyDecision.ALLOWED,
-        sql_fingerprint="sha256:full",
-        generated_sql="SELECT COUNT(*) FROM orders",
-        redacted_summary="count orders",
-        policy_summary="allowed",
-    )
-
-    full_audits = await service.list_admin_sql_audits(
-        admin_user=_user(user_id=99, role=UserRole.ADMIN)
-    )
-
-    assert full_audits[0].generated_sql == "SELECT COUNT(*) FROM orders"
-    with pytest.raises(PermissionError):
-        await service.list_admin_sql_audits(admin_user=_user(user_id=20, role=UserRole.USER))
 
 
 @pytest.mark.asyncio

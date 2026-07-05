@@ -11,7 +11,7 @@ from data_query_agent.domain.entities.audit import (
     SqlPolicyDecision,
     UserSqlAuditSummary,
 )
-from data_query_agent.domain.entities.identity import UserMirror, UserRole
+from data_query_agent.domain.entities.identity import UserMirror
 from data_query_agent.domain.entities.run import QueryRun
 from data_query_agent.domain.ports.audit_repository import SqlAuditRepository
 
@@ -78,20 +78,6 @@ class SqlAuditService:
             offset=offset,
         )
         return tuple(_to_user_summary(audit) for audit in audits)
-
-    async def list_admin_sql_audits(
-        self,
-        *,
-        admin_user: UserMirror,
-        limit: int = 50,
-        offset: int = 0,
-    ) -> Sequence[SqlAudit]:
-        """List full SQL audits only for admin mirrors."""
-        if admin_user.id is None:
-            raise ValueError("persisted user mirror must have an id")
-        if admin_user.role is not UserRole.ADMIN:
-            raise PermissionError("admin role required for full SQL audit access")
-        return await self._repository.list_sql_audits_for_admin(limit=limit, offset=offset)
 
 
 def _to_user_summary(audit: SqlAudit) -> UserSqlAuditSummary:

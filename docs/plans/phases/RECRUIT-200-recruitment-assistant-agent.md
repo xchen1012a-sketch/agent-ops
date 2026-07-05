@@ -2,7 +2,7 @@
 
 ## 状态
 
-进行中。`RECRUIT-240 匹配与面试工作流` 第五切片 Prompt 输出 schema 校验边界已落地并通过本地质量门禁；下一步进入 RECRUIT-240 第六切片 Prompt-backed resume_parse 节点。
+完成。`RECRUIT-230` 数据层、`RECRUIT-240` 工作流、`RECRUIT-250` API/报告/admin 复核、`RECRUIT-260` 课程 MVP 质量验收均已完成本地 mock 闭环；招聘模块可进入全栈对接小问题修正，真实 DeepSeek/ClamAV/Redis/MySQL/PDF 引擎后置。
 
 ## 上一阶段
 
@@ -435,6 +435,14 @@
 - 输出：`ResumeParsePromptService`、`ResumeParseResult`、`make_prompt_resume_parse_node()`、graph 注入点。
 - 行为：渲染 `recruit_resume_parse` Prompt；调用注入的 LLM adapter；通过 validator 校验；将 `summary`、`total_years_exp`、`skills`、`experiences`、`educations`、`soft_skills` 写入 state；显式剔除 11 类敏感属性；输出异常时降级到 `PARSE_FAILED`。
 
+### 第六切片执行记录（2026-07-05）
+
+- 已新增 `application/services/resume_parse_prompt_service.py`，提供 `ResumeParsePromptService`、`ResumeParseResult`、`TextLLMAdapter`、`make_prompt_resume_parse_node()`。
+- 节点通过 Prompt loader + mock LLM adapter + output validator 写入 `resume_structure`，adapter/模板/输出异常统一降级为 `PARSE_FAILED`。
+- 已在 state 增加 `mock_resume_text` 测试/adapter 边界字段；不调用真实 DeepSeek。
+- 已覆盖成功解析、节点 state 更新、非法输出、adapter 失败、敏感文本 fail-closed、已有错误跳过。
+- 本地门禁：`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv run pytest`（186 passed，83% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
+
 ### 第七切片：Prompt-backed jd_parse 节点
 
 - 目标：让 jd_parse 通过 Prompt loader + mock adapter + validator 生成结构化 JD。
@@ -460,6 +468,14 @@
 - 输出：`GapQuestionPromptService`、`GapQuestionResult`、`make_prompt_gap_question_node()`、`RecruitmentPromptWorkflowFactory`、`RecruitmentPromptWorkflowPrompts`。
 - 行为：集中组装 resume_parse/jd_parse/evidence_match/fairness_check/gap_question_gen 注入节点；执行 file_safety → task_route → resume_parse → jd_parse → evidence_match → fairness_check → gap_question_gen → persist 全链路。
 
+### 第七至第十切片合并执行记录（2026-07-05）
+
+- 已新增 `application/services/prompt_workflow_service.py`，合并提供 `JDParsePromptService`、`EvidenceMatchPromptService`、`FairnessCheckPromptService`、`GapQuestionPromptService` 及对应 Prompt-backed node factory。
+- 已在 state 增加 `mock_jd_text` 测试/adapter 边界字段；所有节点继续使用 Prompt loader + mock LLM adapter + output validator，不调用真实 DeepSeek。
+- 已覆盖 JD 结构化、匹配项 shaping、无证据项不写 `evidence_snippet`、fairness pass/fail、adapter 异常降级 `PARSE_FAILED`、敏感字段确定性 fail-closed、Prompt-backed 节点注入 graph 后全链路完成。
+- 代码审查发现的两个 HIGH 已修复：fairness adapter/模板/schema 异常不再误标 `FAIRNESS_VIOLATION`；Prompt-backed fairness 节点已恢复敏感字段确定性 fail-closed。
+- 本地门禁：`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv run pytest`（193 passed，83% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
+
 ### RECRUIT-240 后置切片
 
 - 真实 DeepSeek adapter（独立切片，单独 ADR 决策是否使用 Deep Agents harness）。
@@ -474,29 +490,69 @@
 - 输出：`docs/api-contract.md` 增补任务/材料/运行/报告/admin 复核/人工覆盖 6 类端点；SSE 事件枚举；错误码映射。
 - 不做：endpoint 实现。
 
+### 第一切片执行记录（2026-07-05）
+
+- 已更新 `agents/recruitment-assistant-agent/docs/api-contract.md`，按课程 MVP 但正式呈现的口径冻结 RECRUIT-250 API/SSE 契约。
+- 契约覆盖任务与材料、分析运行、简化 SSE、分析结果、admin 复核、人工覆盖、报告生成/查看/导出、统一错误码。
+- 明确本阶段真实 DeepSeek、ClamAV、Redis pub/sub、异步队列、PDF 引擎走 adapter/mock 边界，先完成接口闭环。
+- 本切片只改文档契约，不实现 endpoint；验证方式为契约人工检查与后续 API 切片落地。
+
 ### 第二切片：任务与材料 API
 
 - 目标：实现 `POST /v1/tasks`（multipart 上传）、`GET /v1/tasks/{id}`、`DELETE /v1/tasks/{id}`。
 - 输出：`api/v1/endpoints/recruit_tasks.py`、`api/v1/schemas/recruit_tasks.py`、文件安全 adapter 边界（含 ClamAV 边界、文件大小/页数/类型校验）。
 - 约束：上传后立即排队解析；不直接同步调用 LLM；杀毒失败返回 `FILE_INFECTED` 不可恢复。
 
+### 第二切片执行记录（2026-07-05）
+
+- 已新增课程 MVP 版任务材料 API：`POST /v1/recruitment-tasks`、`GET /v1/recruitment-tasks`、`GET /v1/recruitment-tasks/{task_id}`、`DELETE /v1/recruitment-tasks/{task_id}`。
+- 已新增 `application/services/recruit_task_api_service.py` 作为可替换的内存 task/material adapter 边界，支持文本简历/JD 材料、hash 指纹、scan_status/mock clean、软删除。
+- 已新增 `api/v1/schemas/recruitment_tasks.py`、`api/v1/endpoints/recruitment_tasks.py` 并挂载到 `/v1` 与 legacy `/api/recruitment/v1` 前缀。
+- 已覆盖创建、详情、列表筛选、删除后 404、legacy prefix；代码审查无 CRITICAL/HIGH 阻塞。
+- 本地门禁：`uv run ruff check ...`、`uv run ruff format --check ...`、`uv run mypy src`、`uv run pytest`（197 passed，84% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
+
 ### 第三切片：分析运行 API + SSE
 
-- 目标：实现 `POST /v1/threads/{task_id}/runs`、`GET /v1/runs/{run_id}/events`（SSE）。
-- 输出：`api/v1/endpoints/recruit_runs.py`、SSE 事件序列化器、运行状态查询。
-- 约束：SSE 心跳来自 Redis（仍可用 mock）；取消信号通过 Redis pub/sub。
+- 目标：实现 `POST /v1/recruitment-tasks/{task_id}/runs`、`GET /v1/recruitment-runs/{run_id}`、`GET /v1/recruitment-runs/{run_id}/stream`、`POST /v1/recruitment-runs/{run_id}/cancel`。
+- 输出：`api/v1/endpoints/recruitment_runs.py`、`api/v1/schemas/recruitment_runs.py`、SSE 事件序列化器、运行状态查询。
+- 约束：课程 MVP 使用进程内 mock run/event store；不接真实 Redis pub/sub、异步队列或真实 DeepSeek。
+
+### 第三切片执行记录（2026-07-05）
+
+- 已扩展 `application/services/recruit_task_api_service.py`：新增 mock-backed run/event record，支持 start/get/list events/cancel，并在启动 run 后更新 task `latest_run_id` 与完成状态。
+- 已新增 `api/v1/schemas/recruitment_runs.py` 与 `api/v1/endpoints/recruitment_runs.py`，实现 run 启动、状态查询、简化 SSE stream、取消接口，并挂载到 `/v1` 与 legacy `/api/recruitment/v1`。
+- SSE 输出 `run.started`、`node.completed`、`run.completed`、`run.canceled` 事件；payload 使用 JSON 序列化，包含 request_id、run_id、sequence、timestamp 与节点/版本信息。
+- 已按全栈对接需要补小风险：`prompt_version`/`workflow_version` 限制 1-80 字符，取消接口幂等，单 run 事件历史限制为 32 条。
+- 已覆盖 start/get/stream/cancel/idempotent cancel/oversized version/404/legacy prefix 集成测试；代码审查无 CRITICAL/HIGH 阻塞。
+- 本地门禁：`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv run pytest`（203 passed，85% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
 
 ### 第四切片：admin 复核与人工覆盖 API
 
-- 目标：实现 `GET /v1/admin/tasks/{id}`、`POST /v1/admin/tasks/{id}/review`、`POST /v1/admin/match-results/{id}/override`。
-- 输出：admin 端点、权限依赖（仅 admin）、复核状态变更、人工覆盖记录。
-- 约束：admin 签字是出报告的前置条件；普通用户访问未签字内容返回 `REVIEW_REQUIRED`。
+- 目标：实现 `GET /v1/admin/recruitment-tasks/{task_id}`、`POST /v1/admin/recruitment-tasks/{task_id}/review`、`POST /v1/admin/match-results/{match_result_id}/override`。
+- 输出：admin 端点、课程 MVP mock admin 身份、复核状态变更、人工覆盖记录。
+- 约束：admin 签字是出报告的前置条件；本切片不扩展完整权限矩阵，报告生成时再检查 `review_status`。
+
+### 第四切片执行记录（2026-07-05）
+
+- 已扩展 `application/services/recruit_task_api_service.py`：新增 `RecruitmentReviewRecord`、`RecruitmentManualOverrideRecord`，支持 task review、admin detail review 查询、manual override 记录。
+- 已新增 `api/v1/schemas/recruitment_admin.py` 与 `api/v1/endpoints/recruitment_admin.py`，实现 admin 任务详情、复核提交、match result 字段覆盖接口，并挂载到 `/v1` 与 legacy `/api/recruitment/v1`。
+- Admin 详情返回 task detail、latest_run、review；review 使用课程 MVP mock admin 标识 `admin_mvp`；override 支持 `overall_tier` 和 `match_items[index].match_status/evidence_snippet` 字段路径。
+- 已覆盖 admin 详情含 latest_run、复核更新 task `review_status`、manual override 成功、非法字段拒绝、legacy prefix 集成测试；代码审查无 CRITICAL/HIGH 阻塞。
+- 本地门禁：`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv run pytest`（208 passed，86% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
 
 ### 第五切片：报告导出
 
-- 目标：实现 `GET /v1/reports/{id}/export?format=pdf|md`。
-- 输出：报告端点、Markdown → PDF 转换 adapter（占位，不接真实 wkhtmltopdf）。
-- 约束：报告 `expires_at` 到期拒绝下载；PDF 临时生成，响应后删除。
+- 目标：实现 `POST /v1/recruitment-tasks/{task_id}/reports`、`GET /v1/recruitment-reports/{report_id}`、`GET /v1/recruitment-reports/{report_id}/export?format=md|pdf`。
+- 输出：报告端点、Markdown / mock PDF 导出 adapter 边界（课程 MVP 不接真实 wkhtmltopdf）。
+- 约束：admin 签字后才能生成报告；报告 `expires_at` 到期后拒绝访问；PDF 使用 mock bytes 表达导出契约。
+
+### 第五切片执行记录（2026-07-05）
+
+- 已扩展 `application/services/recruit_task_api_service.py`：新增 report record、报告生成、过期检查、Markdown / mock PDF 导出能力。
+- 已新增 `api/v1/schemas/recruitment_reports.py` 与 `api/v1/endpoints/recruitment_reports.py`，实现报告生成、报告详情、`format=md|pdf` 导出，并挂载到 `/v1` 与 legacy `/api/recruitment/v1`。
+- 报告生成强制检查 `ReviewStatus.APPROVED`；未复核任务返回 `REVIEW_REQUIRED`；未知报告返回 `REPORT_NOT_FOUND`；过期报告返回 `REPORT_EXPIRED`。
+- 已覆盖未复核拒绝、生成与详情、Markdown/PDF 导出、未知报告 404、legacy prefix 集成测试；代码审查无 CRITICAL/HIGH 阻塞。
+- 本地门禁：`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv run pytest`（213 passed，86% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
 
 ## 第四块：RECRUIT-260 质量与验收
 
@@ -505,22 +561,34 @@
 - 目标：CI 跑 F1/F2/F3/F4 四个对抗样本，敏感属性替换后分数波动 < 5%。
 - 输出：`tests/evaluation/test_fairness.py`、20 份脱敏样本（10 正常 + 5 对抗 + 5 边缘）。
 - 约束：对抗样本失败阻断发布。
+- MVP 收口：当前课程版不扩建独立 evaluation harness，使用 `tests/unit/test_recruitment_workflow.py` 中的敏感属性参数化 fail-closed 测试作为阻断证据；真实评分波动评测留到业务权重真源确认后补。
 
 ### 第二切片：结构化准确性测试集
 
 - 目标：验证相同简历/JD 重复执行结果稳定；无证据项不被填充；引用片段可追溯到简历。
 - 输出：`tests/evaluation/test_structural_accuracy.py`、轨迹评测脚本。
+- MVP 收口：已由 `tests/unit/test_recruitment_workflow.py` 覆盖 mock resume/JD 结构化链路、无证据项不填充 evidence_snippet、节点轨迹稳定。
 
 ### 第三切片：恢复与性能测试
 
 - 目标：验证取消/重试/失败恢复；性能基线（单任务端到端 < 30s on mock）。
 - 输出：`tests/e2e/test_run_recovery.py`、`tests/e2e/test_performance_baseline.py`。
+- MVP 收口：已由 run API 集成测试覆盖取消幂等；新增 `tests/integration/test_recruitment_acceptance_api.py` 覆盖 mock 主链路 < 30s。
 
 ### 第四切片：CI/质量门禁汇总
 
 - 目标：汇总 `ruff/mypy/pytest/alembic/契约/迁移/安全/依赖/镜像` 全套门禁证据。
 - 输出：本阶段文件验证证据节、`docs/plans/current.md` 切到 RECRUIT-260 已完成、交付清单。
 - 验证命令：见下文「验证命令」节。
+
+### RECRUIT-260 执行记录（2026-07-05）
+
+- 已新增 `tests/integration/test_recruitment_acceptance_api.py`，覆盖创建任务、启动 mock run、SSE 事件、admin approved、manual override、报告生成、Markdown/PDF 导出与 < 30s mock 基线。
+- 公平性验收证据：`tests/unit/test_recruitment_workflow.py` 参数化覆盖 age/gender/marital_status/ethnicity/health/political_status/photo/id_card/hometown/religion/hukou，命中即 `FAIRNESS_VIOLATION` 并中断 persist。
+- 结构化准确性证据：同一工作流测试覆盖证据匹配、无证据项不填充 snippet、mock graph 节点轨迹稳定、DB unavailable 失败边界。
+- 恢复/取消证据：`tests/integration/test_recruitment_runs_api.py` 覆盖 cancel 幂等与 SSE stream；acceptance smoke 覆盖主链路耗时门槛。
+- 本地最终门禁：`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv run pytest`（214 passed，86% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
+- 未验证：真实 DeepSeek、真实 ClamAV、真实 Redis/SSE pubsub、真实 MySQL `upgrade -> downgrade -> upgrade`、真实 PDF 引擎、镜像构建与依赖安全扫描；均为本课程 MVP 范围内明确后置的 adapter / 部署项。
 
 ## 不做事项
 

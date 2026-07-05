@@ -34,6 +34,7 @@ export const legalApi = createHttpClient({
   baseURL: `${suiteEnv.apiBaseUrl}${suiteEnv.legalPrefix}`,
   getAccessToken: () => useAuthStore().accessToken,
   getUserPublicId: () => useAuthStore().profile?.public_id ?? null,
+  getUserRole: () => useAuthStore().profile?.role ?? null,
   onUnauthorized: () => handleUnauthorized(),
   onForbidden: () => handleForbidden(),
   onRateLimited: (error) => handleRateLimited(error),
@@ -43,6 +44,8 @@ export const legalApi = createHttpClient({
 export const recruitmentApi = createHttpClient({
   baseURL: `${suiteEnv.apiBaseUrl}${suiteEnv.recruitmentPrefix}`,
   getAccessToken: () => useAuthStore().accessToken,
+  getUserPublicId: () => useAuthStore().profile?.public_id ?? null,
+  getUserRole: () => useAuthStore().profile?.role ?? null,
   onUnauthorized: () => handleUnauthorized(),
   onForbidden: () => handleForbidden(),
   onRateLimited: (error) => handleRateLimited(error),
@@ -52,6 +55,8 @@ export const recruitmentApi = createHttpClient({
 export const dataApi = createHttpClient({
   baseURL: `${suiteEnv.apiBaseUrl}${suiteEnv.dataPrefix}`,
   getAccessToken: () => useAuthStore().accessToken,
+  getUserSubject: () => useAuthStore().profile?.public_id ?? null,
+  getUserRole: () => useAuthStore().profile?.role ?? null,
   onUnauthorized: () => handleUnauthorized(),
   onForbidden: () => handleForbidden(),
   onRateLimited: (error) => handleRateLimited(error),

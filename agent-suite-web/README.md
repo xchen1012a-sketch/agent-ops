@@ -44,7 +44,7 @@ src/
 
 ```bash
 pnpm install
-pnpm dev         # 启动 Vite dev server，默认 http://localhost:5173
+pnpm dev         # 启动 Vite dev server，默认 http://localhost:5666
 pnpm typecheck   # vue-tsc 类型检查
 pnpm test        # Vitest 单元测试
 pnpm build       # 构建到 dist/

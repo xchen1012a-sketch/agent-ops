@@ -129,7 +129,9 @@ class RecruitmentWorkflowState(TypedDict, total=False):
     # Test-only / adapter boundary inputs. Production callers should provide
     # these through explicit adapters in later slices, not from HTTP payloads.
     mock_resume: ResumeStructuredPayload
+    mock_resume_text: str
     mock_jd: JDStructuredPayload
+    mock_jd_text: str
     simulate_db_unavailable: bool
 
 

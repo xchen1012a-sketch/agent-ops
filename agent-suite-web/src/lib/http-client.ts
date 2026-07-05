@@ -14,10 +14,22 @@ export interface HttpClientOptions {
   timeoutMs?: number;
   getAccessToken: () => string | null;
   getUserPublicId?: () => string | null;
+  getUserSubject?: () => string | null;
+  getUserRole?: () => string | null;
   onUnauthorized?: (error: ApiError) => void;
   onForbidden?: (error: ApiError) => void;
   onRateLimited?: (error: ApiError) => void;
   onServerError?: (error: ApiError) => void;
+}
+
+interface BackendErrorEnvelope {
+  request_id?: string;
+  error?: {
+    code?: string;
+    message?: string;
+    retryable?: boolean;
+    details?: Record<string, unknown>;
+  };
 }
 
 export function createHttpClient(options: HttpClientOptions): AxiosInstance {
@@ -42,6 +54,16 @@ export function createHttpClient(options: HttpClientOptions): AxiosInstance {
       config.headers = config.headers ?? {};
       config.headers['x-user-public-id'] = userPublicId;
     }
+    const userSubject = options.getUserSubject?.();
+    if (userSubject) {
+      config.headers = config.headers ?? {};
+      config.headers['X-User-Subject'] = userSubject;
+    }
+    const userRole = options.getUserRole?.();
+    if (userRole) {
+      config.headers = config.headers ?? {};
+      config.headers['x-user-role'] = userRole;
+    }
     config.headers = config.headers ?? {};
     config.headers['X-Request-ID'] = generateRequestId();
     return config;
@@ -51,7 +73,10 @@ export function createHttpClient(options: HttpClientOptions): AxiosInstance {
     (response) => response,
     (error: AxiosError<ApiError>) => {
       const apiError = normalizeError(error);
-      routeError(apiError, options);
+      const requestConfig = error.config as SuiteAxiosRequestConfig | undefined;
+      if (!requestConfig?.suppressGlobalError) {
+        routeError(apiError, options);
+      }
       return Promise.reject(apiError);
     },
   );
@@ -69,12 +94,13 @@ export function generateRequestId(): string {
 function normalizeError(error: AxiosError<ApiError>): ApiError {
   if (error.response) {
     const { status, data } = error.response;
-    if (data && typeof data.error_code === 'string') {
-      return data;
+    const apiError = normalizeApiErrorPayload(data, status, error.message);
+    if (apiError) {
+      return apiError;
     }
     return {
       error_code: mapStatusToErrorCode(status),
-      message: data?.message ?? error.message ?? `HTTP ${status}`,
+      message: error.message ?? `HTTP ${status}`,
     };
   }
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
@@ -87,6 +113,38 @@ function normalizeError(error: AxiosError<ApiError>): ApiError {
     error_code: 'NETWORK_ERROR',
     message: error.message ?? '网络连接异常',
   };
+}
+
+function normalizeApiErrorPayload(
+  data: unknown,
+  status: number,
+  fallbackMessage?: string,
+): ApiError | null {
+  if (!data || typeof data !== 'object') return null;
+
+  const legacy = data as Partial<ApiError>;
+  if (typeof legacy.error_code === 'string') {
+    return {
+      error_code: legacy.error_code,
+      message: legacy.message ?? fallbackMessage ?? `HTTP ${status}`,
+      details: legacy.details,
+      retry_after_seconds: legacy.retry_after_seconds,
+      trace_id: legacy.trace_id,
+    };
+  }
+
+  const envelope = data as BackendErrorEnvelope;
+  const envelopeError = envelope.error;
+  if (envelopeError && typeof envelopeError.code === 'string') {
+    return {
+      error_code: envelopeError.code,
+      message: envelopeError.message ?? fallbackMessage ?? `HTTP ${status}`,
+      details: envelopeError.details,
+      trace_id: envelope.request_id,
+    };
+  }
+
+  return null;
 }
 
 function mapStatusToErrorCode(status: number): string {
@@ -127,6 +185,10 @@ function routeError(error: ApiError, options: HttpClientOptions): void {
         options.onServerError?.(error);
       }
   }
+}
+
+export interface SuiteAxiosRequestConfig extends AxiosRequestConfig {
+  suppressGlobalError?: boolean;
 }
 
 export type { AxiosRequestConfig };

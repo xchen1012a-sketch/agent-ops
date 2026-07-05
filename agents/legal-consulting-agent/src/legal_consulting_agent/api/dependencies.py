@@ -14,9 +14,13 @@ from legal_consulting_agent.application.services import (
     LegalReportService,
     LegalRunControlService,
 )
+from legal_consulting_agent.application.services.agent_api_config import ApiConfigCrypto
 from legal_consulting_agent.core.config import Settings, get_settings
-from legal_consulting_agent.core.errors import AuthError
+from legal_consulting_agent.core.errors import AuthError, ForbiddenError
 from legal_consulting_agent.core.request_context import REQUEST_ID_KEY, request_context
+from legal_consulting_agent.infrastructure.db.repositories.agent_api_config import (
+    SqlAlchemyAgentApiConfigRepository,
+)
 from legal_consulting_agent.infrastructure.db.repositories.legal_data import (
     SqlAlchemyLegalDataRepository,
 )
@@ -53,6 +57,38 @@ def get_current_user_public_id(
     return x_user_public_id.strip()
 
 
+def get_current_user_role(
+    x_user_role: Annotated[str | None, Header(alias="x-user-role")] = None,
+) -> str:
+    """Return the trusted upstream role injected by the gateway."""
+
+    if x_user_role is None or not x_user_role.strip():
+        raise AuthError("User role header is required")
+    return x_user_role.strip()
+
+
+def require_admin_role(
+    role: Annotated[str, Depends(get_current_user_role)],
+) -> str:
+    """Reject non-admin callers; gateway-injected role is the trust boundary."""
+
+    if role.lower() != "admin":
+        raise ForbiddenError("Admin role required")
+    return role
+
+
+def get_agent_api_config_crypto(settings: SettingsDep) -> ApiConfigCrypto:
+    """Build the Fernet crypto service from settings."""
+
+    return ApiConfigCrypto(settings.agent_config_encryption_key.get_secret_value())
+
+
+def get_agent_api_config_repository(session: SessionDep) -> SqlAlchemyAgentApiConfigRepository:
+    """Build the agent_api_config repository for the request scope."""
+
+    return SqlAlchemyAgentApiConfigRepository(session)
+
+
 def get_legal_data_service(session: SessionDep) -> LegalDataService:
     """Build the LEGAL data application service for request handlers."""
 
@@ -83,6 +119,11 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 RequestIdDep = Annotated[str, Depends(get_request_id)]
 CurrentUserPublicIdDep = Annotated[str, Depends(get_current_user_public_id)]
+AdminUserDep = Annotated[str, Depends(require_admin_role)]
+AgentApiConfigRepoDep = Annotated[
+    SqlAlchemyAgentApiConfigRepository, Depends(get_agent_api_config_repository)
+]
+AgentApiConfigCryptoDep = Annotated[ApiConfigCrypto, Depends(get_agent_api_config_crypto)]
 LegalDataServiceDep = Annotated[LegalDataService, Depends(get_legal_data_service)]
 LegalQuestionAnswerServiceDep = Annotated[
     LegalQuestionAnswerService,

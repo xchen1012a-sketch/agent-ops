@@ -1,48 +1,53 @@
 /**
  * Design tokens for agent-suite-web.
- * Source of truth: WEB-410 §8 视觉 Token (CSS 自定义属性).
+ * Source of truth: WEB-410 visual tokens.
  * Light theme is the default; dark theme is beta and gated by data-theme="dark".
  */
 :root,
 :root[data-theme='light'] {
-  --color-bg: oklch(99% 0 0);
-  --color-surface: oklch(98% 0 0);
-  --color-surface-muted: oklch(96% 0.005 250);
-  --color-border: oklch(92% 0.005 250);
-  --color-text: oklch(18% 0 0);
-  --color-text-muted: oklch(50% 0 0);
-  --color-text-inverse: oklch(99% 0 0);
+  --color-bg: #f8f8f6;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f1ee;
+  --color-surface-glass: rgba(255, 255, 255, 0.9);
+  --color-border: #d7d7d5;
+  --color-text: #2f2d2a;
+  --color-text-muted: #6f6b66;
+  --color-text-subtle: #8a8580;
+  --color-text-inverse: #ffffff;
 
-  --color-primary: oklch(58% 0.2 250);
-  --color-primary-hover: oklch(52% 0.2 250);
-  --color-primary-active: oklch(48% 0.2 250);
-  --color-primary-soft: oklch(94% 0.04 250);
-  --color-accent: oklch(65% 0.18 280);
+  --color-primary: #d97757;
+  --color-primary-hover: #c86648;
+  --color-primary-active: #a94f37;
+  --color-primary-soft: #f4e6df;
+  --color-accent: #b9822d;
 
-  --color-success: oklch(60% 0.15 145);
-  --color-success-soft: oklch(94% 0.05 145);
-  --color-warning: oklch(70% 0.15 75);
-  --color-warning-soft: oklch(95% 0.06 75);
-  --color-danger: oklch(58% 0.22 25);
-  --color-danger-soft: oklch(95% 0.05 25);
-  --color-info: oklch(60% 0.15 220);
-  --color-info-soft: oklch(94% 0.05 220);
+  --color-success: oklch(52% 0.12 145);
+  --color-success-soft: oklch(93% 0.04 140);
+  --color-warning: oklch(63% 0.13 72);
+  --color-warning-soft: oklch(93.5% 0.055 78);
+  --color-danger: oklch(52% 0.18 28);
+  --color-danger-soft: oklch(94% 0.045 28);
+  --color-info: oklch(53% 0.09 210);
+  --color-info-soft: oklch(92.5% 0.035 210);
 
-  --color-legal: oklch(58% 0.18 220);
-  --color-legal-soft: oklch(94% 0.05 220);
-  --color-recruit: oklch(60% 0.16 165);
-  --color-recruit-soft: oklch(94% 0.05 165);
-  --color-data: oklch(62% 0.18 295);
-  --color-data-soft: oklch(94% 0.05 295);
+  --color-legal: #b65f49;
+  --color-legal-soft: #f2e4de;
+  --color-recruit: #6f7b4a;
+  --color-recruit-soft: #e7eadb;
+  --color-data: #b9822d;
+  --color-data-soft: #f1e5cf;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
   --radius-pill: 9999px;
 
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --shadow-popover: 0 6px 16px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.06);
-  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 1px 2px rgba(64, 44, 24, 0.04), 0 8px 22px rgba(64, 44, 24, 0.055);
+  --shadow-soft: 0 16px 42px rgba(111, 72, 38, 0.08);
+  --shadow-floating: 0 18px 48px rgba(64, 44, 24, 0.11);
+  --shadow-popover: 0 6px 16px rgba(64, 44, 24, 0.08), 0 18px 38px rgba(64, 44, 24, 0.08);
+  --shadow-modal: 0 16px 48px rgba(64, 44, 24, 0.16);
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -69,7 +74,7 @@
   --duration-fast: 150ms;
   --duration-normal: 300ms;
   --duration-slow: 500ms;
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 0.3, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
   --font-sans:
@@ -86,10 +91,10 @@
   --z-popover: 500;
   --z-toast: 600;
 
-  --layout-sidebar-width: 240px;
-  --layout-sidebar-collapsed-width: 64px;
-  --layout-header-height: 56px;
-  --layout-content-max-width: 1200px;
+  --layout-sidebar-width: 248px;
+  --layout-sidebar-collapsed-width: 76px;
+  --layout-header-height: 72px;
+  --layout-content-max-width: 1180px;
 
   --breakpoint-xs: 375px;
   --breakpoint-sm: 768px;
@@ -98,29 +103,40 @@
 }
 
 :root[data-theme='dark'] {
-  --color-bg: oklch(15% 0.005 250);
-  --color-surface: oklch(19% 0.008 250);
-  --color-surface-muted: oklch(23% 0.01 250);
-  --color-border: oklch(28% 0.01 250);
-  --color-text: oklch(95% 0 0);
-  --color-text-muted: oklch(68% 0 0);
-  --color-text-inverse: oklch(15% 0 0);
+  --color-bg: oklch(17% 0.02 58);
+  --color-surface: oklch(21% 0.018 58);
+  --color-surface-muted: oklch(25% 0.018 58);
+  --color-surface-glass: rgba(45, 36, 27, 0.86);
+  --color-border: oklch(34% 0.025 58);
+  --color-text: oklch(94% 0.016 82);
+  --color-text-muted: oklch(73% 0.025 78);
+  --color-text-subtle: oklch(61% 0.022 76);
+  --color-text-inverse: oklch(18% 0.02 58);
 
-  --color-primary: oklch(65% 0.2 250);
-  --color-primary-hover: oklch(70% 0.2 250);
-  --color-primary-active: oklch(72% 0.2 250);
-  --color-primary-soft: oklch(28% 0.06 250);
+  --color-primary: oklch(68% 0.13 50);
+  --color-primary-hover: oklch(74% 0.13 52);
+  --color-primary-active: oklch(78% 0.12 55);
+  --color-primary-soft: oklch(31% 0.06 48);
 
-  --color-success-soft: oklch(28% 0.06 145);
-  --color-warning-soft: oklch(30% 0.07 75);
-  --color-danger-soft: oklch(30% 0.08 25);
-  --color-info-soft: oklch(28% 0.06 220);
+  --color-success: oklch(68% 0.11 145);
+  --color-warning: oklch(74% 0.12 78);
+  --color-danger: oklch(68% 0.16 28);
+  --color-info: oklch(70% 0.08 210);
+  --color-success-soft: oklch(31% 0.05 145);
+  --color-warning-soft: oklch(32% 0.06 78);
+  --color-danger-soft: oklch(31% 0.065 28);
+  --color-info-soft: oklch(31% 0.045 210);
 
-  --color-legal-soft: oklch(28% 0.06 220);
-  --color-recruit-soft: oklch(28% 0.06 165);
-  --color-data-soft: oklch(28% 0.06 295);
+  --color-legal: oklch(67% 0.115 38);
+  --color-recruit: oklch(70% 0.075 118);
+  --color-data: oklch(72% 0.105 72);
+  --color-legal-soft: oklch(31% 0.055 38);
+  --color-recruit-soft: oklch(31% 0.045 116);
+  --color-data-soft: oklch(32% 0.055 72);
 
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.28), 0 12px 32px rgba(0, 0, 0, 0.22);
+  --shadow-soft: 0 18px 50px rgba(0, 0, 0, 0.28);
+  --shadow-floating: 0 20px 60px rgba(0, 0, 0, 0.34);
   --shadow-popover: 0 6px 16px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.3);
   --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.55);
 }

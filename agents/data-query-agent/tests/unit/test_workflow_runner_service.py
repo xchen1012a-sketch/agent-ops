@@ -191,10 +191,6 @@ class FakeSqlAuditRepository:
             offset : offset + limit
         ]
 
-    async def list_sql_audits_for_admin(self, *, limit: int, offset: int) -> Sequence[SqlAudit]:
-        return tuple(self.audits[offset : offset + limit])
-
-
 class CountingAdapter(FakeReadOnlyQueryAdapter):
     """Fake adapter that counts execution attempts."""
 

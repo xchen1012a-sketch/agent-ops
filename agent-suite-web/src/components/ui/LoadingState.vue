@@ -37,14 +37,13 @@ const props = withDefaults(defineProps<Props>(), {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal-backdrop);
-  background-color: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(2px);
+  background-color: color-mix(in oklch, var(--color-surface-glass), transparent 12%);
   flex-direction: column;
   gap: var(--space-3);
 }
 
 :root[data-theme='dark'] .loading-state--fullscreen {
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: color-mix(in oklch, var(--color-surface-glass), transparent 8%);
 }
 
 .loading-state__spinner {

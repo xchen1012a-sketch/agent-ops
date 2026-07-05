@@ -62,6 +62,22 @@ class DBUnavailableError(AppError):
     retryable = True
 
 
+class ConfigNotFoundError(AppError):
+    code = "CONFIG_NOT_FOUND"
+    http_status = 404
+
+
+class ConfigKeyTooShortError(AppError):
+    code = "CONFIG_KEY_TOO_SHORT"
+    http_status = 422
+
+
+class ConfigDecryptError(AppError):
+    code = "CONFIG_DECRYPT_FAILED"
+    http_status = 500
+    retryable = False
+
+
 def build_error_envelope(
     request_id: str,
     code: str,

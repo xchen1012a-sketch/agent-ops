@@ -66,20 +66,6 @@ class SqlAlchemySqlAuditRepository:
         )
         return tuple(_to_entity(model) for model in result.scalars().all())
 
-    async def list_sql_audits_for_admin(
-        self,
-        *,
-        limit: int,
-        offset: int,
-    ) -> Sequence[SqlAudit]:
-        result = await self._session.execute(
-            select(SqlAuditModel)
-            .order_by(SqlAuditModel.created_at.desc(), SqlAuditModel.id.desc())
-            .limit(limit)
-            .offset(offset)
-        )
-        return tuple(_to_entity(model) for model in result.scalars().all())
-
 
 def _to_entity(model: SqlAuditModel) -> SqlAudit:
     return SqlAudit(
