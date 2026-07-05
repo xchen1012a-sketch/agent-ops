@@ -357,3 +357,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed（首次发现 `tests/unit/test_run_models.py` 需格式化，已格式化后通过）。
   - `uv run mypy src`：passed。
   - `uv run pytest -q`：54 passed，coverage 78%。
+- 2026-07-05：完成 `DATA-320` 循环 6。新增 sql_audits SQL 审计数据层切片，包含策略决策枚举、SQL 指纹、原始 SQL/脱敏摘要、策略摘要、结果摘要与 90 天 expires_at；普通用户仅返回脱敏摘要，admin 可查完整审计。未做 feedbacks、API/SSE、workflow runner，未连接真实数据库。验证：
+  - `uv run pytest tests/unit/test_audit_service.py tests/unit/test_audit_models.py tests/unit/test_migrations.py -q`：15 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed（首次发现 `tests/unit/test_audit_models.py` 需格式化，已格式化后通过）。
+  - `uv run mypy src`：passed。
+  - `uv run pytest -q`：62 passed，coverage 78%。

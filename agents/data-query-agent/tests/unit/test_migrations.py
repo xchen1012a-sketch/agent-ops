@@ -24,7 +24,7 @@ def _make_config() -> Config:
 
 def test_single_head_revision() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
-    assert script_dir.get_heads() == ["0004_query_runs_node_runs"]
+    assert script_dir.get_heads() == ["0005_sql_audits"]
 
 
 def test_baseline_has_no_down_revision() -> None:
@@ -43,6 +43,7 @@ def test_walk_revisions_returns_exactly_one() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
     revisions = list(script_dir.walk_revisions())
     assert [revision.revision for revision in revisions] == [
+        "0005_sql_audits",
         "0004_query_runs_node_runs",
         "0003_thread_messages",
         "0002_identity_threads",
@@ -69,3 +70,10 @@ def test_query_runs_revision_follows_thread_messages() -> None:
     run_revision = script_dir.get_revision("0004_query_runs_node_runs")
     assert run_revision is not None
     assert run_revision.down_revision == "0003_thread_messages"
+
+
+def test_sql_audits_revision_follows_query_runs() -> None:
+    script_dir = ScriptDirectory.from_config(_make_config())
+    audit_revision = script_dir.get_revision("0005_sql_audits")
+    assert audit_revision is not None
+    assert audit_revision.down_revision == "0004_query_runs_node_runs"

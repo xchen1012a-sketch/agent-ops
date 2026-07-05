@@ -1,5 +1,6 @@
 """SQLAlchemy ORM models."""
 
+from data_query_agent.infrastructure.db.models.audit import SqlAuditModel
 from data_query_agent.infrastructure.db.models.identity import (
     QueryThreadModel,
     ThreadMessageModel,
@@ -9,6 +10,7 @@ from data_query_agent.infrastructure.db.models.run import NodeRunModel, QueryRun
 
 __all__ = [
     "NodeRunModel",
+    "SqlAuditModel",
     "QueryRunModel",
     "QueryThreadModel",
     "ThreadMessageModel",
