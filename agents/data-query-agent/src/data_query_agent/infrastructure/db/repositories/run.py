@@ -40,6 +40,18 @@ class SqlAlchemyRunRepository:
         await self._session.flush()
         return _to_query_run_entity(model)
 
+    async def list_query_runs_for_user(
+        self, *, user_id: int, limit: int, offset: int
+    ) -> Sequence[QueryRun]:
+        result = await self._session.execute(
+            select(QueryRunModel)
+            .where(QueryRunModel.user_id == user_id)
+            .order_by(QueryRunModel.created_at.desc(), QueryRunModel.id.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return tuple(_to_query_run_entity(model) for model in result.scalars().all())
+
     async def get_query_run_for_user(
         self,
         *,

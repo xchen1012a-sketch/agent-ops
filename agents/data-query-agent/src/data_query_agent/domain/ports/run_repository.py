@@ -22,6 +22,11 @@ class RunRepository(Protocol):
     ) -> QueryRun:
         """Create a pending query run for an owned thread."""
 
+    async def list_query_runs_for_user(
+        self, *, user_id: int, limit: int, offset: int
+    ) -> Sequence[QueryRun]:
+        """List query runs owned by one user in reverse creation order."""
+
     async def get_query_run_for_user(
         self,
         *,

@@ -124,3 +124,24 @@ Event names:
 `POST /v1/runs/{run_id}/cancel` marks an ownership-scoped run as `canceled`. This slice does not interrupt a real background queue.
 
 `POST /v1/runs/{run_id}/retry` resets an ownership-scoped run to `retrying` through the application-layer retry boundary. This clears previous error/timestamp projection and prior node traces in the service/repository layer, but does not schedule workflow re-execution.
+
+## DATA-360 Query History API slice
+
+`GET /v1/query-history` returns paginated summaries for the current user's query runs only.
+
+`GET /v1/query-history/{query_id}` returns one ownership-scoped query summary by public run id.
+
+Response DTO fields:
+
+- `query_id`
+- `status`
+- `error_code`
+- `created_at`
+- `started_at`
+- `finished_at`
+
+Security boundary:
+
+- Ordinary users can only see their own query summaries.
+- Query history responses never expose generated SQL, SQL policy details, row data, or admin audit fields.
+- Admin SQL audit is intentionally not mixed into these ordinary-user endpoints.

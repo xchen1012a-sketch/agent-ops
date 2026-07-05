@@ -33,6 +33,16 @@ class QueryRunTraceService:
             question_message_id=question_message_id,
         )
 
+    async def list_runs_for_user(
+        self, *, user_id: int, limit: int = 20, offset: int = 0
+    ) -> Sequence[QueryRun]:
+        """List query runs owned by one user without exposing SQL details."""
+        return await self._repository.list_query_runs_for_user(
+            user_id=user_id,
+            limit=limit,
+            offset=offset,
+        )
+
     async def get_run_for_user(self, *, run_public_id: str, user_id: int) -> QueryRun | None:
         """Return a query run only when it belongs to the given user."""
         return await self._repository.get_query_run_for_user(

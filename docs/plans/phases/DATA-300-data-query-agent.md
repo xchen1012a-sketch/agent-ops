@@ -469,3 +469,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting `runs.py` and `test_run_api.py`.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 158 passed, 1 Starlette/httpx deprecation warning, coverage 87%.
+
+- 2026-07-05: Completed `DATA-360` cycle 23. Added `GET /v1/query-history` and `GET /v1/query-history/{query_id}` API slice with ownership-scoped run history summaries. List supports `limit`/`offset`; missing user gets an empty list but no detail access. Responses expose public query status/timestamps/error code only and intentionally do not expose generated SQL, SQL policy details, row data, or admin audit fields. Synchronized `agents/data-query-agent/docs/api-contract.md` for query history. Not included: admin SQL audit, frontend wiring, SQL detail projection, or result-table history.
+  Verification:
+  - `uv run pytest tests/unit/test_query_history_api.py tests/unit/test_run_service.py -q`: 11 passed, 1 Starlette/httpx deprecation warning.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting query history endpoint and tests.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 162 passed, 1 Starlette/httpx deprecation warning, coverage 88%.
