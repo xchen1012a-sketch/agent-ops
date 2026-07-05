@@ -9,10 +9,12 @@ from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data_query_agent.application.services.identity_service import IdentityThreadService
+from data_query_agent.application.services.run_service import QueryRunTraceService
 from data_query_agent.core.config import Settings, get_settings
 from data_query_agent.core.errors import AuthError
 from data_query_agent.core.request_context import REQUEST_ID_KEY, request_context
 from data_query_agent.infrastructure.db.repositories.identity import SqlAlchemyIdentityRepository
+from data_query_agent.infrastructure.db.repositories.run import SqlAlchemyRunRepository
 from data_query_agent.infrastructure.db.session import get_session_factory
 
 
@@ -40,6 +42,11 @@ def get_identity_thread_service(session: SessionDep) -> IdentityThreadService:
     return IdentityThreadService(SqlAlchemyIdentityRepository(session))
 
 
+def get_query_run_trace_service(session: SessionDep) -> QueryRunTraceService:
+    """Build query run trace service for request-scoped persistence."""
+    return QueryRunTraceService(SqlAlchemyRunRepository(session))
+
+
 def get_request_id(request: Request) -> str:
     """Return the request id assigned by middleware; fall back to header or unknown."""
     value = request_context.get(REQUEST_ID_KEY)
@@ -53,3 +60,4 @@ SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 RequestIdDep = Annotated[str, Depends(get_request_id)]
 CurrentSubjectDep = Annotated[str, Depends(get_current_subject)]
 IdentityThreadServiceDep = Annotated[IdentityThreadService, Depends(get_identity_thread_service)]
+QueryRunTraceServiceDep = Annotated[QueryRunTraceService, Depends(get_query_run_trace_service)]

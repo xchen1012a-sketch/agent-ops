@@ -441,3 +441,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 147 passed, 1 Starlette/httpx deprecation warning, coverage 87%.
+
+- 2026-07-05: Completed `DATA-360` cycle 19. Added `POST /v1/threads/{thread_id}/runs` API slice with request/response DTOs, subject ownership check, user question message creation, and pending query run creation via `QueryRunTraceService`. Response envelope exposes run/thread/status/question only and does not include generated SQL or execute the workflow. Synchronized `agents/data-query-agent/docs/api-contract.md` for run creation. Not included: idempotency dedup implementation, workflow execution, result details, SSE, cancel/retry API, or frontend wiring. Verification:
+  - `uv run pytest tests/unit/test_run_api.py -q`: 3 passed, 1 Starlette/httpx deprecation warning.
+  - `uv run ruff check src tests`: passed after organizing `test_run_api.py` imports.
+  - `uv run ruff format --check src tests`: passed after formatting `test_run_api.py`.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 150 passed, 1 Starlette/httpx deprecation warning, coverage 87%.

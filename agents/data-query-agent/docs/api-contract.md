@@ -68,3 +68,25 @@ Thread DTO fields:
 - `status`
 - `created_at`
 - `updated_at`
+
+## DATA-360 Run creation API slice
+
+`POST /v1/threads/{thread_id}/runs` creates a user question message and a pending run only. It does not execute workflow and does not return generated SQL.
+
+Request fields:
+
+- `question` required, 1..2000 chars
+- `timezone` optional
+- `locale` optional
+- `channel` optional: `web` or `feishu`, default `web`
+- `idempotency_key` optional placeholder; dedup semantics are not implemented in this slice
+
+Response DTO fields:
+
+- `run_id`
+- `thread_id`
+- `status`
+- `question`
+- `created_at`
+- `started_at`
+- `finished_at`
