@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="6" fill="oklch(58% 0.2 250)" />
+  <path
+    d="M9 21V11h2.4l3.6 6 3.6-6H21v10h-2.2v-6.2L15.4 20h-0.8L11 14.8V21H9z"
+    fill="white"
+  />
+  <circle cx="24" cy="9" r="2" fill="oklch(65% 0.18 280)" />
+</svg>

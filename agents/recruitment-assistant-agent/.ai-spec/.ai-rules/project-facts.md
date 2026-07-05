@@ -1,4 +1,4 @@
-﻿# Project facts
+# Project facts
 
 > [auto] is refreshed by AI or scripts from repository state and only records verifiable facts.
 > [manual] may be filled by AI from explicit sources and confirmed by humans. AI must mark uncertain entries as pending confirmation.
@@ -6,13 +6,13 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: fe31471fffd80bf8
-- last refresh: 2026-07-04 21:11:16 +08:00
-- refresh command: scripts/refresh-project-facts.ps1
+- source hash: 0196750549454de6
+- last refresh: 2026-07-05 09:44:59 +0800
+- refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack
 
-- No common framework or tool detected from package.json.
+- No package.json parser available.
 
 ## [auto] Scripts
 
@@ -22,23 +22,98 @@
 
 ```text
 recruitment-assistant-agent/
-|-- docs/
-|   |-- api-contract.md
-|   |-- architecture.md
-|   |-- specification.md
+|-- .coverage
+|-- .env.example
 |-- .gitignore
+|-- .mypy_cache
+|   |-- .mypy_cache/.gitignore
+|   |-- .mypy_cache/3.12
+|   |-- .mypy_cache/CACHEDIR.TAG
+|   |-- .mypy_cache/missing_stubs
+|-- .pytest_cache
+|   |-- .pytest_cache/.gitignore
+|   |-- .pytest_cache/CACHEDIR.TAG
+|   |-- .pytest_cache/README.md
+|   |-- .pytest_cache/v
+|-- .ruff_cache
+|   |-- .ruff_cache/.gitignore
+|   |-- .ruff_cache/0.15.20
+|   |-- .ruff_cache/CACHEDIR.TAG
+|-- .venv
+|   |-- .venv/.gitignore
+|   |-- .venv/.lock
+|   |-- .venv/CACHEDIR.TAG
+|   |-- .venv/Lib
+|   |-- .venv/Scripts
+|   |-- .venv/include
+|   |-- .venv/pyvenv.cfg
 |-- AGENTS.md
 |-- CLAUDE.md
+|-- Dockerfile
 |-- README.md
+|-- alembic.ini
+|-- docs
+|   |-- docs/api-contract.md
+|   |-- docs/architecture.md
+|   |-- docs/detailed-design.md
+|   |-- docs/specification.md
+|-- migrations
+|   |-- migrations/env.py
+|   |-- migrations/script.py.mako
+|   |-- migrations/versions
+|-- pyproject.toml
+|-- scripts
+|   |-- scripts/.gitkeep
+|-- src
+|   |-- src/recruitment_assistant_agent
+|-- tests
+|   |-- tests/__init__.py
+|   |-- tests/__pycache__
+|   |-- tests/conftest.py
+|   |-- tests/contract
+|   |-- tests/e2e
+|   |-- tests/evaluation
+|   |-- tests/integration
+|   |-- tests/unit
+|-- uv.lock
 ```
 
 ## [auto] Environment keys
 
-- No .env*.example keys detected.
+- APP_ENV
+- APP_NAME
+- APP_PORT
+- DATABASE_MAX_OVERFLOW
+- DATABASE_MIGRATION_URL
+- DATABASE_POOL_RECYCLE_SECONDS
+- DATABASE_POOL_SIZE
+- DATABASE_SLOW_QUERY_SECONDS
+- DATABASE_URL
+- DEEPSEEK_API_BASE
+- DEEPSEEK_API_KEY
+- DEEPSEEK_BACKOFF_SECONDS
+- DEEPSEEK_MAX_RETRIES
+- DEEPSEEK_MODEL
+- DEEPSEEK_TIMEOUT_SECONDS
+- JWT_ACCESS_TTL_SECONDS
+- JWT_REFRESH_TTL_SECONDS
+- JWT_SECRET
+- LOG_FORMAT
+- LOG_LEVEL
+- MAX_RESUME_SIZE_MB
+- RATE_LIMIT_API_PER_MINUTE
+- RATE_LIMIT_LOGIN_PER_MINUTE
+- REDIS_URL
+- SCORING_RULES_PATH
+- UPLOAD_PATH
 
 ## [auto] Git status
 
-- Git status check failed: fatal: not a git repository (or any of the parent directories): .git
+- Current branch: main
+- Working tree: has uncommitted changes
+- Remotes:
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (push)
 <!-- ai-facts:auto:end -->
 
 <!-- ai-facts:manual:start -->
@@ -73,8 +148,8 @@ recruitment-assistant-agent/
 
 | 字段 | 值 | 来源 | 状态 |
 |---|---|---|---|
-| 当前阶段 | DESIGN-002 模块详细设计对齐 | 父目录 `docs/plans/current.md` | 已确认 |
-| 下一步 | 确认材料格式、评分、公平性、保留和验收样本 | 父目录模块计划 | 已确认 |
+| 当前阶段 | FOUND-010 企业级工程基础 | 父目录 `docs/plans/current.md` | 已确认 |
+| 下一步 | 等待用户授权进入 RECRUIT-200；需先确认材料格式、评分、公平性、保留和验收样本 | 父目录 `docs/plans/current.md` + 父目录模块计划 | 已确认 |
 
 ## [manual] 外部服务
 

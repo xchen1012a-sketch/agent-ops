@@ -1,4 +1,4 @@
-﻿# Project facts
+# Project facts
 
 > [auto] is refreshed by AI or scripts from repository state and only records verifiable facts.
 > [manual] may be filled by AI from explicit sources and confirmed by humans. AI must mark uncertain entries as pending confirmation.
@@ -6,13 +6,13 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: c4fcb7b6e6945caf
-- last refresh: 2026-07-04 21:11:16 +08:00
-- refresh command: scripts/refresh-project-facts.ps1
+- source hash: e33d9b36f03d0dbf
+- last refresh: 2026-07-05 09:42:54 +0800
+- refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack
 
-- No common framework or tool detected from package.json.
+- No package.json parser available.
 
 ## [auto] Scripts
 
@@ -22,23 +22,110 @@
 
 ```text
 legal-consulting-agent/
-|-- docs/
-|   |-- api-contract.md
-|   |-- architecture.md
-|   |-- specification.md
+|-- .coverage
+|-- .env.example
 |-- .gitignore
+|-- .mypy_cache
+|   |-- .mypy_cache/.gitignore
+|   |-- .mypy_cache/3.12
+|   |-- .mypy_cache/CACHEDIR.TAG
+|-- .pytest_cache
+|   |-- .pytest_cache/.gitignore
+|   |-- .pytest_cache/CACHEDIR.TAG
+|   |-- .pytest_cache/README.md
+|   |-- .pytest_cache/v
+|-- .ruff_cache
+|   |-- .ruff_cache/.gitignore
+|   |-- .ruff_cache/0.15.20
+|   |-- .ruff_cache/CACHEDIR.TAG
+|-- .venv
+|   |-- .venv/.gitignore
+|   |-- .venv/.lock
+|   |-- .venv/CACHEDIR.TAG
+|   |-- .venv/Lib
+|   |-- .venv/Scripts
+|   |-- .venv/include
+|   |-- .venv/pyvenv.cfg
+|   |-- .venv/share
 |-- AGENTS.md
 |-- CLAUDE.md
+|-- Dockerfile
 |-- README.md
+|-- alembic.ini
+|-- docs
+|   |-- docs/api-contract.md
+|   |-- docs/architecture.md
+|   |-- docs/detailed-design.md
+|   |-- docs/specification.md
+|-- migrations
+|   |-- migrations/env.py
+|   |-- migrations/script.py.mako
+|   |-- migrations/versions
+|-- pyproject.toml
+|-- scripts
+|   |-- scripts/.gitkeep
+|-- src
+|   |-- src/legal_consulting_agent
+|-- tests
+|   |-- tests/__init__.py
+|   |-- tests/__pycache__
+|   |-- tests/conftest.py
+|   |-- tests/contract
+|   |-- tests/e2e
+|   |-- tests/evaluation
+|   |-- tests/integration
+|   |-- tests/unit
+|-- uv.lock
 ```
 
 ## [auto] Environment keys
 
-- No .env*.example keys detected.
+- APP_ENV
+- APP_NAME
+- APP_PORT
+- DATABASE_MAX_OVERFLOW
+- DATABASE_MIGRATION_URL
+- DATABASE_POOL_RECYCLE_SECONDS
+- DATABASE_POOL_SIZE
+- DATABASE_SLOW_QUERY_SECONDS
+- DATABASE_URL
+- DEEPSEEK_API_BASE
+- DEEPSEEK_API_KEY
+- DEEPSEEK_BACKOFF_SECONDS
+- DEEPSEEK_MAX_RETRIES
+- DEEPSEEK_MODEL
+- DEEPSEEK_TIMEOUT_SECONDS
+- EMBEDDING_BASE_URL
+- EMBEDDING_MODEL
+- HIGH_RISK_KEYWORDS_PATH
+- JWT_ACCESS_TTL_SECONDS
+- JWT_REFRESH_TTL_SECONDS
+- JWT_SECRET
+- LEGAL_KB_PATH
+- LOG_FORMAT
+- LOG_LEVEL
+- RAG_CATEGORY_FILTER_ENABLED
+- RAG_DENSE_WEIGHT
+- RAG_RECALL_TOP_N
+- RAG_RERANKER_BASE_URL
+- RAG_RERANKER_ENABLED
+- RAG_RERANKER_MODEL
+- RAG_RERANK_TOP_N
+- RAG_SIMILARITY_THRESHOLD
+- RAG_SPARSE_WEIGHT
+- RAG_VECTOR_COLLECTION
+- RAG_VECTOR_DB_URL
+- RATE_LIMIT_API_PER_MINUTE
+- RATE_LIMIT_LOGIN_PER_MINUTE
+- REDIS_URL
 
 ## [auto] Git status
 
-- Git status check failed: fatal: not a git repository (or any of the parent directories): .git
+- Current branch: main
+- Working tree: has uncommitted changes
+- Remotes:
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (push)
 <!-- ai-facts:auto:end -->
 
 <!-- ai-facts:manual:start -->
@@ -73,8 +160,8 @@ legal-consulting-agent/
 
 | 字段 | 值 | 来源 | 状态 |
 |---|---|---|---|
-| 当前阶段 | DESIGN-002 模块详细设计对齐 | 父目录 `docs/plans/current.md` | 已确认 |
-| 下一步 | 确认法律知识、认证、数据模型、API与验收样本 | 父目录模块计划 | 已确认 |
+| 当前阶段 | FOUND-010 企业级工程基础 | 父目录 `docs/plans/current.md` | 已确认 |
+| 下一步 | 等待用户授权进入 LEGAL-100；优先推进 LEGAL-130 身份与数据层 | 父目录 `docs/plans/current.md` + 父目录模块计划 | 已确认 |
 
 ## [manual] 外部服务
 

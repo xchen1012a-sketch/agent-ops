@@ -2,7 +2,7 @@
 
 ## 状态
 
-待 DESIGN-002 完成并经用户明确允许开发后开始。本文件是预先准备的执行计划，不代表已进入编码。
+已完成。工程基线、验证证据和已知技术债已记录，等待用户授权进入业务实现阶段。
 
 ## 目标
 
@@ -22,7 +22,9 @@
 - 不创建共享业务运行库或跨仓源码依赖。
 - 不硬编码地址、密钥、端口、模型或数据库。
 
-## 影响仓库
+## 影响模块
+
+> 单仓模块化（ADR-0006）后，下列模块均在同一 Git 仓库；按模块独立修改、独立验证，提交时按模块拆分 commit。
 
 - `agent-suite-web`
 - `agents/legal-consulting-agent`
@@ -30,7 +32,7 @@
 - `agents/data-query-agent`
 - `agent-suite-ops`
 
-每个仓库分别修改、分别验证；不得在父目录提交。
+每个模块分别修改、分别验证；提交说明按模块记录影响。
 
 ## 分阶段执行
 
@@ -61,3 +63,67 @@
 ## 回滚
 
 各仓独立回滚本阶段新增骨架文件；迁移基线使用downgrade验证；不删除规格、ADR和计划。未获得用户授权不执行Git提交或推送。
+
+## 验证证据（2026-07-05）
+
+执行人：AI（Claude Code，glm-5.2）。所有命令在 Windows 11 / bash 3.x + uv 0.11.2 + pnpm 11.8.0 + Node 22 + Docker Desktop 环境下执行。
+
+### 后端工程门禁（3 个 Agent 一致）
+
+| 项 | legal-consulting (8101) | recruitment-assistant (8102) | data-query (8103) |
+|---|---|---|---|
+| `ruff check` | 0 errors | 0 errors | 0 errors |
+| `ruff format --check` | 通过 | 通过 | 通过 |
+| `mypy src` (strict) | 通过 | 通过 | 通过 |
+| `pytest --cov` | 83% 覆盖率，全绿 | 83% 覆盖率，全绿 | 84% 覆盖率，全绿 |
+| Alembic `heads` | 单一 `0001_initial_baseline` | 单一 `0001_initial_baseline` | 单一 `0001_initial_baseline` |
+| Alembic 离线 upgrade/downgrade | 通过（ScriptDirectory 校验） | 同左 | 同左 |
+| Docker 构建 | 成功（python:3.12-slim, UID 1001, tini PID 1, HEALTHCHECK on `/health/live`） | 成功 | 成功（端口修正为 8103） |
+
+### 前端工程门禁（agent-suite-web）
+
+| 项 | 结果 |
+|---|---|
+| `pnpm lint` | 0 errors 0 warnings（ESLint 9 flat config，含 Vue + TS parser 串联） |
+| `pnpm format:check` | All files use Prettier code style |
+| `pnpm typecheck` | vue-tsc pass |
+| `pnpm test` | 19/19 通过（theme / toast / markdown / api-error-mapping） |
+| `pnpm build` | 成功（vue 115kb gzip 44kb，element-plus 898kb 待按需优化） |
+| Docker 构建 | 成功（node:22-alpine builder + nginx:1.27-alpine runtime, UID 1001, HEALTHCHECK on `/health/live`） |
+
+### 安全 / 依赖扫描
+
+数据源：pip-audit 2.10.1 + OSV（PyPI JSON API 网络受限，回退 OSV）；pnpm audit（npm registry）。
+
+**后端**（3 个 Agent 共 3 类漏洞）：
+
+| 漏洞 | 影响范围 | 处理 |
+|---|---|---|
+| asyncmy 0.2.11 (PYSEC-2026-286) | 3 个 Agent | 上游无 fix；MySQL 最小权限账号缓解（ADR-0011），监控上游 |
+| chromadb 1.5.9 (PYSEC-2026-311) | data-query-agent | 上游无 fix；内部使用不暴露公网 |
+| ecdsa 0.19.2 (CVE-2024-23342) | 3 个 Agent（经 python-jose 间接） | 当前未实际调用 JWT；业务实现阶段评估切换 PyJWT 或限制算法至 HS256/RS256 |
+
+**前端**（agent-suite-web 共 6 个漏洞：4 moderate / 1 high / 1 critical）：
+
+| 漏洞 | 严重性 | 处理 |
+|---|---|---|
+| vitest < 3.2.6 (GHSA-5xrq-8626-4rwp) | critical | WEB-400 阶段升 major v2→v3 |
+| vite ≤ 6.4.2 (GHSA-fx2h-pf6j-xcff) | high | WEB-400 阶段升 major v5→v6 |
+| vite ≤ 6.4.1 (GHSA-4w7w-66w2-5vf9, path traversal) | moderate | 同上 |
+| vite ≤ 6.4.2 (GHSA-v6wh-96g9-6wx3) | moderate | 同上 |
+| esbuild ≤ 0.24.2 (GHSA-67mh-4wv8-2f99, dev CSRF) | moderate | 随 vite 升级（dev only） |
+| echarts < 6.1.0 (GHSA-fgmj-fm8m-jvvx, XSS) | moderate | WEB-400 阶段升 major v5→v6 |
+
+**为何不在 FOUND-010 修复前端漏洞**：vite / vitest / echarts 三项均为 major version 升级，存在 breaking changes，需配合测试与视觉回归统一完成。FOUND-010 范围限定为「最小可运行骨架」（见「范围」section），major 升级纳入 WEB-400 阶段执行。
+
+### `.env.example` 检查
+
+3 个后端仓 + 1 个前端仓均通过：无真实密钥，关键配置（`JWT_SECRET >= 32 bytes`、`DATABASE_URL`、`DEEPSEEK_API_KEY` 等）启动时校验。
+
+### 未在本阶段验证的项
+
+- 真实 DeepSeek API、生产 MySQL、飞书接入（按计划在 LEGAL-100 / RECRUIT-200 / DATA-300 / FEISHU-500 进行）
+- LangGraph 业务节点（业务实现阶段）
+- Playwright E2E、Lighthouse 性能预算（WEB-400）
+- Alembic 真实 DB upgrade/downgrade（仅离线 ScriptDirectory 校验；真实 DB 需 MySQL 实例）
+- Git 提交（按规范「未获得用户授权不执行 Git 提交或推送」，所有改动停留在工作区）
