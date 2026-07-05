@@ -46,7 +46,7 @@ USER app
 EXPOSE 8101
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8101/health/live || exit 1
+    CMD curl -fsS http://127.0.0.1:8101/v1/health/live || exit 1
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["uvicorn", "legal_consulting_agent.main:app", "--host", "0.0.0.0", "--port", "8101"]

@@ -11,9 +11,9 @@ WORKDIR /app
 ENV CI=1 \
     NODE_OPTIONS='--max-old-space-size=2048'
 
-COPY package.json pnpm-lock.yaml* .npmrc* pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc* pnpm-workspace.yaml ./
 RUN npm install -g pnpm@11.8.0 \
-    && pnpm install --no-frozen-lockfile --ignore-scripts
+    && pnpm install --frozen-lockfile --ignore-scripts
 
 COPY . .
 RUN pnpm typecheck && pnpm build

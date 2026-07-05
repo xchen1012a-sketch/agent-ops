@@ -46,7 +46,7 @@ USER app
 EXPOSE 8103
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8103/health/live || exit 1
+    CMD curl -fsS http://127.0.0.1:8103/v1/health/live || exit 1
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["uvicorn", "data_query_agent.main:app", "--host", "0.0.0.0", "--port", "8103"]

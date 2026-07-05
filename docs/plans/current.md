@@ -1,36 +1,24 @@
 # 当前阶段
 
-- 阶段：`FOUND-010`
-- 名称：企业级工程基础
-- 状态：✅ **工程基线全部完成，等待用户授权进入 LEGAL-100**
-- 阶段文件：`docs/plans/phases/FOUND-010-enterprise-foundation.md`（含完整验证证据 section）
-- 已完成的设计产出（DESIGN-002）：
-  - 5 项关键决策（ADR-0007~0012）
-  - 4 个模块 specification.md 同步更新
-  - 5 份模块详细设计：
-    - `agent-suite-ops/docs/runbooks/deployment-design.md`（OPS-610）
-    - `agent-suite-web/docs/detailed-design.md`（WEB-410）
-    - `agents/legal-consulting-agent/docs/detailed-design.md`（LEGAL-110）
-    - `agents/recruitment-assistant-agent/docs/detailed-design.md`（RECRUIT-210）
-    - `agents/data-query-agent/docs/detailed-design.md`（DATA-310）
-- 已完成的工程基线（FOUND-010）：
-  1. ✅ 兼容版本矩阵和许可证检查（pyproject.toml / package.json 锁版本）
-  2. ✅ 三个后端同构骨架（FastAPI + LangGraph factory + Settings + live/ready）
-  3. ✅ 前端应用壳（Vite + Vue 3 + Element Plus + Pinia + Vue Router + SSE 客户端 + 安全 Markdown）
-  4. ✅ 迁移基线（Alembic init + 空 schema + 单一 head + 离线 upgrade/downgrade 校验）
-  5. ✅ Docker 和健康检查（4 个镜像均非 root UID 1001 + tini PID 1 + HEALTHCHECK）
-  6. ✅ 工程门禁证据（详见阶段文件「验证证据」section，2026-07-05）
-- 已知技术债（不阻塞 LEGAL-100 启动）：
-  - 后端 3 类依赖漏洞（asyncmy / chromadb / ecdsa）— 见各仓库 README
-  - 前端 6 个依赖漏洞（vite / vitest / esbuild / echarts）— major 升级纳入 WEB-400
-  - Playwright E2E、Lighthouse 视觉回归 — 纳入 WEB-400
-- 代码状态：工程基线就绪，可启动业务实现（LEG-100/RECRUIT-200/DATA-300）
-- Git 状态：所有改动停留在工作区，未提交（按规范等待用户授权）
-- 仍待用户提供的输入（业务阶段启动前需提供）：
-  - 课件法律知识库样本（用于 LEGAL-120）
-  - 是否认可 20 份合成脱敏样本作为招聘验收基线（用于 RECRUIT-210）
-  - 是否需要预置的初始岗位说明模板
-- 下一步候选：
-  - **方案 A**：用户授权 Git 提交 FOUND-010 工作区改动
-  - **方案 B**：用户授权进入 LEGAL-100（法律咨询 Agent 业务实现）
-  - **方案 C**：用户授权进入 RECRUIT-200 或 DATA-300
+- 阶段：`LEGAL-100`
+- 名称：法律咨询 Agent 业务实现
+- 状态：`LEGAL-130 身份与数据层` 第一批 6 张表已实现并通过本地验证
+- 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
+- 上一阶段：`FOUND-010 企业级工程基础`
+  - 状态：已完成
+  - 本地提交：`9286bdd feat(foundation): complete enterprise baseline`
+  - 验证证据：见 `docs/plans/phases/FOUND-010-enterprise-foundation.md`
+- 用户确认的阶段决策（2026-07-05）：
+  1. 切换到 `LEGAL-100`
+  2. 第一块先做 `LEGAL-130 身份与数据层`
+  3. RAG 和知识库索引放到 `LEGAL-140`
+  4. 法律分类先只建表，不预置分类数据
+- 当前执行入口：
+  - 模块：`agents/legal-consulting-agent`
+  - 第一批对象：`users`、`legal_categories`、`sessions`、`messages`、`agent_runs`、`node_runs`
+- 暂不具备 / 后置依赖：
+  - 课件法律知识库样本未提供；不阻塞 `LEGAL-130`
+  - 知识材料导入、Qdrant 索引、BGE embedding/reranker、RAG 检索和 DeepSeek 真实问答放到 `LEGAL-140`
+- 下一步：
+  - 继续 `LEGAL-130` 后续表：`consultation_records`、`prompt_versions`、`feedbacks`、`reports` / `export_tasks`、`high_risk_reviews`
+  - `knowledge_materials` 可先建元数据表，但导入、切分、向量索引和检索仍放到 `LEGAL-140`

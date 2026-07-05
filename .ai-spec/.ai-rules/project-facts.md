@@ -1,4 +1,4 @@
-﻿# Project facts
+# Project facts
 
 > [auto] is refreshed by AI or scripts from repository state and only records verifiable facts.
 > [manual] may be filled by AI from explicit sources and confirmed by humans. AI must mark uncertain entries as pending confirmation.
@@ -6,13 +6,13 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: bbb828acf33e5bd2
-- last refresh: 2026-07-05 09:58:24 +08:00
-- refresh command: scripts/refresh-project-facts.ps1
+- source hash: f59f0d7848480325
+- last refresh: 2026-07-05 10:10:31 +0800
+- refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack
 
-- No common framework or tool detected from package.json.
+- No package.json parser available.
 
 ## [auto] Scripts
 
@@ -22,53 +22,60 @@
 
 ```text
 agent/
-|-- .claude/
-|   |-- hooks/
-|   |-- state/
-|   |-- settings.json
-|   |-- settings.local.json
-|-- agents/
-|   |-- data-query-agent/
-|   |-- legal-consulting-agent/
-|   |-- recruitment-assistant-agent/
-|-- agent-suite-ops/
-|   |-- docs/
-|   |-- nginx/
-|   |-- scripts/
-|   |-- .env.example
-|   |-- .gitignore
-|   |-- AGENTS.md
-|   |-- CLAUDE.md
-|   |-- docker-compose.yml
-|   |-- README.md
-|-- agent-suite-web/
-|   |-- docs/
-|   |-- nginx/
-|   |-- public/
-|   |-- src/
-|   |-- tests/
-|   |-- .dockerignore
-|   |-- .editorconfig
-|   |-- .env.example
-|   |-- .eslintrc-auto-import.json
-|   |-- .gitignore
-|   |-- .npmrc
-|   |-- AGENTS.md
-|   |-- auto-imports.d.ts
-|   |-- CLAUDE.md
-|   |-- components.d.ts
-|   |-- Dockerfile
-|   |-- eslint.config.mjs
-|   |-- index.html
-|   |-- package.json
-|   |-- playwright.config.ts
-|-- docs/
-|   |-- homework/
-|   |-- plans/
+|-- .claude
+|   |-- .claude/hooks
+|   |-- .claude/settings.json
+|   |-- .claude/settings.local.json
+|   |-- .claude/state
 |-- .gitignore
 |-- AGENTS.md
 |-- CLAUDE.md
 |-- README.md
+|-- agent-suite-ops
+|   |-- agent-suite-ops/.env.example
+|   |-- agent-suite-ops/.gitignore
+|   |-- agent-suite-ops/AGENTS.md
+|   |-- agent-suite-ops/CLAUDE.md
+|   |-- agent-suite-ops/README.md
+|   |-- agent-suite-ops/docker-compose.yml
+|   |-- agent-suite-ops/docs
+|   |-- agent-suite-ops/nginx
+|   |-- agent-suite-ops/scripts
+|-- agent-suite-web
+|   |-- agent-suite-web/.dockerignore
+|   |-- agent-suite-web/.editorconfig
+|   |-- agent-suite-web/.env.example
+|   |-- agent-suite-web/.eslintrc-auto-import.json
+|   |-- agent-suite-web/.gitignore
+|   |-- agent-suite-web/.npmrc
+|   |-- agent-suite-web/AGENTS.md
+|   |-- agent-suite-web/CLAUDE.md
+|   |-- agent-suite-web/Dockerfile
+|   |-- agent-suite-web/README.md
+|   |-- agent-suite-web/auto-imports.d.ts
+|   |-- agent-suite-web/components.d.ts
+|   |-- agent-suite-web/docs
+|   |-- agent-suite-web/eslint.config.mjs
+|   |-- agent-suite-web/index.html
+|   |-- agent-suite-web/nginx
+|   |-- agent-suite-web/package.json
+|   |-- agent-suite-web/playwright.config.ts
+|   |-- agent-suite-web/pnpm-lock.yaml
+|   |-- agent-suite-web/pnpm-workspace.yaml
+|   |-- agent-suite-web/public
+|   |-- agent-suite-web/src
+|   |-- agent-suite-web/tests
+|   |-- agent-suite-web/tsconfig.json
+|   |-- agent-suite-web/tsconfig.node.json
+|   |-- agent-suite-web/vite.config.ts
+|   |-- agent-suite-web/vitest.config.ts
+|-- agents
+|   |-- agents/data-query-agent
+|   |-- agents/legal-consulting-agent
+|   |-- agents/recruitment-assistant-agent
+|-- docs
+|   |-- docs/homework
+|   |-- docs/plans
 ```
 
 ## [auto] Environment keys
@@ -126,8 +133,8 @@ agent/
 
 | 字段 | 值 | 来源 | 状态 |
 |---|---|---|---|
-| 当前阶段 | FOUND-010 企业级工程基础 | `docs/plans/current.md` | 已确认 |
-| 状态 | 工程基线全部完成，等待用户授权进入 LEGAL-100 或其他业务阶段 | `docs/plans/current.md` | 已确认 |
+| 当前阶段 | LEGAL-100 法律咨询 Agent 业务实现 | `docs/plans/current.md` | 已确认 |
+| 状态 | `LEGAL-130 身份与数据层` 第一批 6 张表已实现并通过本地验证 | `docs/plans/current.md` + `docs/plans/phases/LEGAL-100-legal-consulting-agent.md` | 已确认 |
 | 已落地 | ADR-0007 统一认证、ADR-0008 法律 RAG、ADR-0009 招聘公平性、ADR-0010 SQL 安全、ADR-0011 部署参数、ADR-0012 法律混合检索修订 | `agent-suite-ops/docs/adr/` + `docs/plans/current.md` | 已确认 |
 
 ## [manual] 外部服务

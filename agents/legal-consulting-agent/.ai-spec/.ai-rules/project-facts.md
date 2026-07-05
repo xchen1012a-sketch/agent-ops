@@ -160,8 +160,8 @@ legal-consulting-agent/
 
 | 字段 | 值 | 来源 | 状态 |
 |---|---|---|---|
-| 当前阶段 | FOUND-010 企业级工程基础 | 父目录 `docs/plans/current.md` | 已确认 |
-| 下一步 | 等待用户授权进入 LEGAL-100；优先推进 LEGAL-130 身份与数据层 | 父目录 `docs/plans/current.md` + 父目录模块计划 | 已确认 |
+| 当前阶段 | LEGAL-100 法律咨询 Agent 业务实现 | 父目录 `docs/plans/current.md` | 已确认 |
+| 下一步 | 继续 `LEGAL-130` 后续表；RAG、知识库索引和真实 DeepSeek 调用后置到 `LEGAL-140` | 父目录 `docs/plans/current.md` + `docs/plans/phases/LEGAL-100-legal-consulting-agent.md` | 已确认 |
 
 ## [manual] 外部服务
 

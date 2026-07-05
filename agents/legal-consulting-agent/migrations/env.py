@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from legal_consulting_agent.core.config import get_settings
 from legal_consulting_agent.infrastructure.db.base import Base
+import legal_consulting_agent.infrastructure.db.models  # noqa: F401
 
 config = context.config
 

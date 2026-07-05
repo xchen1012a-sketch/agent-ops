@@ -24,7 +24,7 @@ def _make_config() -> Config:
 
 def test_single_head_revision() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
-    assert script_dir.get_heads() == ["0001_initial_baseline"]
+    assert script_dir.get_heads() == ["fcecead92ecd"]
 
 
 def test_baseline_has_no_down_revision() -> None:
@@ -39,8 +39,10 @@ def test_baseline_migration_file_exists() -> None:
     assert "0001_initial_baseline" in files
 
 
-def test_walk_revisions_returns_exactly_one() -> None:
+def test_walk_revisions_returns_current_chain() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
     revisions = list(script_dir.walk_revisions())
-    assert len(revisions) == 1
-    assert revisions[0].revision == "0001_initial_baseline"
+    assert [revision.revision for revision in revisions] == [
+        "fcecead92ecd",
+        "0001_initial_baseline",
+    ]
