@@ -375,3 +375,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed。
   - `uv run mypy src`：passed。
   - `uv run pytest -q`：80 passed，coverage 77%。
+- 2026-07-05：完成 `DATA-330` 循环 9。新增 sqlglot AST 基础安全校验，支持单 SELECT 解析与标准化，拦截 INSERT/UPDATE/DELETE/DROP/ALTER/TRUNCATE、多语句、注释绕过、UNION、系统 schema 与解析错误；未做完整表/列/函数白名单，未接真实 DB。验证：
+  - `uv run pytest tests/unit/test_sql_ast_policy.py -q`：19 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed。
+  - `uv run mypy src`：首次发现 sqlglot parse 类型收窄问题，已增加空值校验和 `cast(exp.Expression, ...)` 后 passed。
+  - `uv run pytest -q`：99 passed，coverage 78%。
