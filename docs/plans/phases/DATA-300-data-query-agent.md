@@ -532,3 +532,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed.
   - `uv run mypy src`: passed after casting the LangGraph compiled object at the mock flow boundary.
   - `uv run pytest -q`: 184 passed, 1 Starlette/httpx deprecation warning, coverage 89%.
+
+- 2026-07-05: Completed `DATA-390` cycle 31. Ran full module quality gate for the intelligent data-query Agent after DATA-310..DATA-380 local scope. All checks passed in local fake/mock boundaries. OpenAPI smoke confirmed the application schema includes thread, Feishu mock event, and admin SQL audit paths. Remaining outside this module scope: real DeepSeek network integration, real MySQL execution, real Feishu tenant integration, frontend rendering, and production deployment validation.
+  Verification:
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: 133 files already formatted.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 184 passed, 1 Starlette/httpx deprecation warning, coverage 89%.
+  - `uv run python -c "from data_query_agent.main import create_app; app=create_app(); schema=app.openapi(); assert '/v1/threads' in schema['paths']; assert '/v1/integrations/feishu/events' in schema['paths']; assert '/v1/admin/sql-audit' in schema['paths']; print('openapi smoke passed', len(schema['paths']))"`: `openapi smoke passed 26`.
