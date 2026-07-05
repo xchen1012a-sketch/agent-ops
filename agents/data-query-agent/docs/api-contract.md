@@ -105,3 +105,16 @@ Response DTO fields:
 - `started_at`
 - `finished_at`
 
+## DATA-360 SSE event contract slice
+
+`GET /v1/runs/{run_id}/stream` returns an ownership-scoped SSE projection for current run and node states. This slice emits contract events only; it does not implement token-level streaming or subscribe to a real background queue.
+
+Event names:
+
+- `run.started`
+- `node.started`
+- `node.completed`
+- `node.failed`
+- `run.completed`
+- `run.failed`
+

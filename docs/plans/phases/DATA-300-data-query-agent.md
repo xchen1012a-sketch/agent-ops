@@ -455,3 +455,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting `test_run_api.py`.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 152 passed, 1 Starlette/httpx deprecation warning, coverage 87%.
+
+- 2026-07-05: Completed `DATA-360` cycle 21. Added `GET /v1/runs/{run_id}/stream` SSE contract projection for run/node state events: `run.started`, `node.started`, `node.completed`, `node.failed`, `run.completed`, and `run.failed`. Stream access is ownership-scoped through the same run lookup boundary, and the projection intentionally avoids token-level streaming and real queue subscription. Synchronized `agents/data-query-agent/docs/api-contract.md` for SSE event names. Not included: live background worker subscription, token streaming, browser EventSource integration, or frontend wiring. Verification:
+  - `uv run pytest tests/unit/test_run_stream_api.py -q`: 3 passed, 1 Starlette/httpx deprecation warning.
+  - `uv run ruff check src tests`: passed after organizing `test_run_stream_api.py` imports.
+  - `uv run ruff format --check src tests`: passed after formatting `runs.py` and `test_run_stream_api.py`.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 155 passed, 1 Starlette/httpx deprecation warning, coverage 87%.
