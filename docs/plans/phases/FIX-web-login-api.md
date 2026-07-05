@@ -66,3 +66,44 @@
 ## 当前状态
 
 - 2026-07-05：计划创建，准备执行阶段 1。
+
+## 阶段执行记录
+
+### 阶段 1 结果
+
+状态：已完成。
+
+修复点：
+- 重写 `agent-suite-web/src/views/auth/LoginPage.vue` 中损坏的中文文案和非法模板结构。
+- 修复密码输入框 `placeholder` 未闭合导致后续属性/事件可能被吞的问题。
+- 登录按钮改为 `native-type="submit"`，由 `<el-form @submit.prevent="handleSubmit">` 统一触发提交。
+- 新增 `agent-suite-web/tests/unit/login-page.spec.ts`，覆盖表单提交会调用 `auth.login()`。
+
+验证证据：
+- `pnpm.cmd typecheck`：通过。
+- `pnpm.cmd test -- tests\\unit\\login-page.spec.ts`：通过，7 files / 34 tests passed（该 pnpm 参数会跑全量 vitest）。
+- `pnpm.cmd lint`：通过。
+- `pnpm.cmd format:check`：通过。
+- `pnpm.cmd test`：通过，7 files / 34 tests passed。
+- `pnpm.cmd build`：通过；保留既有 warning：Element Plus chunk > 500k、echarts empty chunk、@vueuse/core PURE 注释 warning。
+
+### 阶段 2 结果
+
+状态：已完成。
+
+验证证据：
+- `POST http://127.0.0.1:5666/api/auth/login` 已进入前端 Vite 代理层。
+- Vite 日志显示：`http proxy error: /api/auth/login`，根因是 `connect ECONNREFUSED 127.0.0.1:8081`。
+
+结论：
+- 登录页现在会发出 `/api/auth/login` 请求。
+- 当前仍不能登录的原因不是前端点击未触发，而是统一认证服务 `8081` 未启动/未实现。
+
+### 阶段 3：本地开发认证 mock
+
+状态：准备执行。
+
+原因：当前统一认证服务 8081 未启动/未实现，前端登录接口会代理失败；为保证本地 Web 可演示和联调法律模块，新增仅 Vite dev server 生效的 /api/auth mock，不连接真实数据库、不写入真实密钥。
+
+验证：登录按钮点击应触发 /api/auth/login，使用本地测试账号返回 token 和 profile，随后可进入 /legal。
+
