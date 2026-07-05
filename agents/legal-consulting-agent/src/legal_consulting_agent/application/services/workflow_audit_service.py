@@ -34,6 +34,8 @@ def map_workflow_error(error_code: str | None) -> WorkflowErrorMapping:
 
     if error_code is None:
         return WorkflowErrorMapping(status=RunStatus.SUCCESS, retryable=False)
+    if error_code == "CANCELED":
+        return WorkflowErrorMapping(status=RunStatus.CANCELED, retryable=False)
     if error_code in RETRYABLE_WORKFLOW_ERRORS:
         return WorkflowErrorMapping(status=RunStatus.RETRYING, retryable=True)
     return WorkflowErrorMapping(status=RunStatus.FAILED, retryable=False)

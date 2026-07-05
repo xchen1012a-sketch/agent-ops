@@ -254,6 +254,55 @@
 - 取消/重试入口：先做应用层纯测试，不暴露 HTTP API。
 - AgentRun 终态更新需要 repository update 能力；若进入该切片，先确认是否允许扩展 repository port / SQLAlchemy repository。
 
+### 第三切片执行范围：workflow runner 应用边界
+
+- 目标：在不暴露 HTTP API、不接真实外部服务的条件下，提供顺序执行纯节点的应用层 runner。
+- 输入：`LegalWorkflowState`、`LegalWorkflowAuditService`、节点规格列表和可注入 clock。
+- 输出：`LegalWorkflowRunnerService`、`WorkflowNodeSpec`、`WorkflowRunResult`、`prepare_retry_state()`、`mark_canceled()`。
+- 行为：按节点顺序记录 started / finished 审计；每个节点执行后合并 state；遇到 `error_code` 立即停止；取消入口在运行节点前标记 `CANCELED`；重试入口清理 `error_code`、`message_id` 和 `node_trace`。
+- 约束：不新增数据库表；不改 API / SSE；不接 DeepSeek、Qdrant、BGE、Redis；不修改其他 Agent；不实现 AgentRun 终态 update。
+- 不做：真实异步队列、HTTP cancel/retry API、节点 update SQL、外部服务调用、知识库导入和前端。
+
+### 第三切片执行记录（2026-07-05）
+
+- 已新增 `application/services/workflow_runner_service.py`，串联默认节点序列和审计 service。
+- 已支持成功路径顺序执行、`INPUT_BLOCKED` 非重试错误中断、`DB_UNAVAILABLE` retrying 中断、取消入口和重试 state 清理。
+- 已将 `CANCELED` 映射到 `RunStatus.CANCELED`。
+- `uv run pytest tests/unit/test_workflow_runner_service.py tests/unit/test_workflow_audit_service.py tests/unit/test_legal_workflow.py -q`：15 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，64 files already formatted。
+- `uv run mypy src`：通过，47 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：71 passed，总覆盖率 83%。
+
+### LEGAL-140 下一切片建议
+
+- 若要让 `agent_runs` / `node_runs` 从追加记录升级为真实状态更新，需要先扩展 repository port / SQLAlchemy repository，并补迁移无关的 update 测试。
+- 若不扩展 repository，则下一步可先做 prompt 模板加载边界或 API/SSE 契约前置设计。
+
+### 第四切片执行范围：Prompt 模板加载边界
+
+- 目标：在不调用真实 LLM、不改 API、不改数据库的条件下，提供版本化 Prompt 模板安全加载与变量渲染边界。
+- 输入：`PromptVersion` 元数据、受控 `templates_root`、调用方显式变量。
+- 输出：`PromptTemplateLoader`、`PromptRenderResult`、`PromptTemplateError`、`validate_template_key()`、`extract_required_variables()`。
+- 行为：校验 `template_key` 为安全相对 POSIX key；阻止绝对路径、路径穿越、Windows 分隔符和盘符；从受控根读取 UTF-8 模板；按 `variables.required` 校验必填变量；渲染 `{variable}` 占位符；返回 prompt 名称、版本、模板 key、渲染内容和输出 schema。
+- 约束：不把 Prompt 文案硬编码到业务代码；不读取受控根外文件；不调用 DeepSeek；不改 PromptVersion 表结构；不修改其他 Agent。
+- 不做：真实 Prompt 文件落库、Prompt 激活/退役 API、LLM 调用、输出 JSON schema 校验、节点接入。
+
+### 第四切片执行记录（2026-07-05）
+
+- 已新增 `prompts/template_loader.py`，并在 `prompts/__init__.py` 导出安全加载接口。
+- 已覆盖正常模板渲染、危险 template key 拒绝、必填变量缺失、模板未知占位符缺失和非法 variables schema。
+- `uv run pytest tests/unit/test_prompt_template_loader.py -q`：9 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，66 files already formatted。
+- `uv run mypy src`：通过，48 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：80 passed，总覆盖率 84%。
+
+### LEGAL-140 下一切片建议
+
+- Prompt 输出 schema 校验边界：对 mock LLM 输出进行结构化校验，不执行模型输出中的命令、SQL 或路径。
+- 或将 `classification` 节点改为消费 Prompt loader + mock LLM adapter，仍不接真实 DeepSeek。
+
 ## 验收标准
 
 ### LEGAL-130
