@@ -695,6 +695,37 @@
 - Real DeepSeek/RAG, token streaming, and frontend pages remain follow-up integration phases unless new local service fixtures are provided.
 
 
+## LEGAL-160 quality acceptance record (2026-07-05)
+
+### Completed acceptance checks
+
+- `uv run ruff check src tests`: passed.
+- `uv run ruff format --check src tests`: passed, 105 files already formatted.
+- `uv run mypy src`: passed, 72 source files.
+- `uv run pytest --cov=legal_consulting_agent -q`: 133 passed, total coverage 90%.
+- `uv run alembic heads`: single head `ceeb31ed5ac6 (head)`.
+- OpenAPI smoke: `create_app().openapi()` generated 28 paths and included session creation, question answering, SSE events, consultation record history, high-risk review admin, and workflow run preview endpoints.
+
+### Accepted legal Agent module scope
+
+- Data layer: user mirror, categories, sessions, messages, run/node audit, consultation records, feedbacks, high-risk reviews, prompt versions, and knowledge material metadata are implemented with migrations, repositories, services, and tests.
+- Workflow layer: deterministic LangGraph nodes, audit runner, retry/cancel state helpers, prompt template loader, prompt output validator, and prompt-backed classification/generation/risk-check assembly are implemented and tested.
+- API layer: session creation, question answering, message history, feedback, high-risk review enqueue/admin review, Markdown report projection, SSE event contract, workflow run cancel/retry preview, and consultation record history are implemented and tested.
+
+### Deferred integration notes
+
+- Real DeepSeek adapter is not connected; deterministic and prompt-backed boundaries remain test fixtures until service credentials and model gateway are provided.
+- Real RAG/Qdrant/BGE indexing and retrieval are not connected; knowledge material metadata exists, but source samples and local service boundaries are still required.
+- SSE endpoint freezes event contract only; it is not token-level LLM streaming.
+- Report export returns synchronous Markdown projection only; no PDF generation, object storage, or async export queue is included.
+- No new DB migrations were added after LEGAL-130; live MySQL upgrade/downgrade was not rerun during LEGAL-150/160 because these slices did not change schema.
+
+### LEGAL-100 status
+
+- Legal Agent business module is complete for the current planned local scope.
+- Remaining DeepSeek/RAG/token-streaming/frontend work should be tracked as separate integration phases after fixtures and service boundaries are confirmed.
+
+
 ## 验收标准
 
 ### LEGAL-130
