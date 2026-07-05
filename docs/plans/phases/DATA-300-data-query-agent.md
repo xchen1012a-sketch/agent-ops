@@ -516,3 +516,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 177 passed, 1 Starlette/httpx deprecation warning, coverage 89%.
+
+- 2026-07-05: Completed `DATA-380` cycle 29. Added mock Feishu card projection service for answer/result/chart payloads. Text answers become markdown cards with up to three follow-up buttons; table results become truncated table cards; chart semantics become chart cards without calling Feishu APIs. Synchronized `agents/data-query-agent/docs/api-contract.md` for the card projection boundary. Not included: real Feishu card schema validation, upload/send APIs, tenant token handling, or frontend rendering.
+  Verification:
+  - `uv run pytest tests/unit/test_feishu_card_projection.py -q`: 3 passed.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 180 passed, 1 Starlette/httpx deprecation warning, coverage 89%.

@@ -188,3 +188,19 @@ Security and integration boundary:
 - Does not connect to a real Feishu tenant, does not use real app secrets, and does not send messages.
 - Deduplication is process-local and fixture-only in this slice.
 - Real Feishu signing, tenant credentials, token exchange, and callback delivery remain outside `DATA-380`.
+
+## DATA-380 Feishu card projection slice
+
+Mock Feishu card projection converts answer/result/chart semantics to local card payloads only.
+
+Card types:
+
+- `text`: answer-only response with optional recommendation buttons.
+- `table`: structured table result, truncated to five rows for card safety.
+- `chart`: chart semantic payload plus answer text.
+
+Boundary:
+
+- Projection is deterministic and does not call Feishu APIs.
+- Recommendation buttons use existing follow-up text only.
+- Real card schema validation, upload/send APIs, tenant tokens, and UI rendering remain outside this slice.
