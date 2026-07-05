@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from data_query_agent.core.config import get_settings
 from data_query_agent.infrastructure.db.base import Base
+from data_query_agent.infrastructure.db import models as _models  # noqa: F401
 
 config = context.config
 
