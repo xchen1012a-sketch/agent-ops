@@ -1,0 +1,22 @@
+{
+  "name": "nl2sql",
+  "version": "v1",
+  "template": "Convert the user question into a JSON SQL candidate. Question: {question}. Available schema summary: {schema_summary}.",
+  "variables_schema": {
+    "type": "object",
+    "required": ["question", "schema_summary"],
+    "properties": {
+      "question": {"type": "string"},
+      "schema_summary": {"type": "string"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["sql", "confidence"],
+    "properties": {
+      "sql": {"type": "string"},
+      "confidence": {"type": "number"},
+      "reasoning_summary": {"type": "string"}
+    }
+  }
+}

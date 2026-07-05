@@ -1,0 +1,22 @@
+{
+  "name": "interpret_result",
+  "version": "v1",
+  "template": "Explain the validated query result as concise business language. Question: {question}. Result summary: {result_summary}.",
+  "variables_schema": {
+    "type": "object",
+    "required": ["question", "result_summary"],
+    "properties": {
+      "question": {"type": "string"},
+      "result_summary": {"type": "string"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["answer"],
+    "properties": {
+      "answer": {"type": "string"},
+      "chart": {"type": "object"},
+      "followups": {"type": "array"}
+    }
+  }
+}

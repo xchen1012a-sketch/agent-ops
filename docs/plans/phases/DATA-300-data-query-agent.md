@@ -413,3 +413,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting run service/repository files and tests.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 123 passed, coverage 81%.
+
+- 2026-07-05: Completed `DATA-350` cycle 15. Added versioned prompt template resources for `nl2sql` and `interpret_result`, plus `PromptTemplateService` for package-resource loading, declared-variable rendering, and structured JSON output validation. Missing variables, unknown variables, non-JSON output, missing required fields, and type mismatches are rejected before workflow use. Not included: real DeepSeek calls, prompt-backed workflow node replacement, API exposure, or DB prompt version seeding. Verification:
+  - `uv run pytest tests/unit/test_prompt_template_service.py -q`: 8 passed before formatting.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting prompt template service.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 131 passed, coverage 81%.
