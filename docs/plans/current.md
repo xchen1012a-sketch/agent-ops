@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-140 Agent 工作流` 第四切片已落地：Prompt 模板安全加载、变量校验和渲染边界测试通过
+- 状态：`LEGAL-140 Agent 工作流` 第七切片已落地：generation 节点可注入 Prompt loader + mock LLM adapter + output validator，并继续保持引用校验边界
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -19,10 +19,12 @@
   - 已实现工作流边界：`LegalWorkflowState`、`input_safety`、`classification`、`context_build`、`retrieval`、`generation`、`citation_check`、`risk_check`、`persist`、`build_legal_workflow_graph`
   - 已实现审计边界：`LegalWorkflowAuditService`、`map_workflow_error`、节点 started/finished 记录、retryable 错误到 `RunStatus.RETRYING` 映射
   - 已实现 runner 边界：`LegalWorkflowRunnerService`、`WorkflowNodeSpec`、`WorkflowRunResult`、`prepare_retry_state`、`mark_canceled`
-  - 已实现 Prompt 边界：`PromptTemplateLoader`、`PromptRenderResult`、`validate_template_key`、`extract_required_variables`
+  - 已实现 Prompt 边界：`PromptTemplateLoader`、`PromptRenderResult`、`validate_template_key`、`extract_required_variables`、`PromptOutputValidator`、`parse_json_object_output`
+  - 已实现 Prompt-backed classification 边界：`LegalClassificationPromptService`、`TextLLMAdapter`、`make_prompt_classification_node`、graph classification handler 注入
+  - 已实现 Prompt-backed generation 边界：`LegalGenerationPromptService`、`LegalGenerationResult`、`make_prompt_generation_node`、graph generation handler 注入
 - 暂不具备 / 后置依赖：
   - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
   - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - 继续 `LEGAL-140` 第五切片：Prompt 输出 schema 校验边界或 classification 节点改为消费 Prompt loader + mock LLM adapter。
+  - 继续 `LEGAL-140` 第八切片：risk_check 节点接入 Prompt loader + mock LLM adapter + output validator，仍不接真实 DeepSeek、不接审核 API。
   - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。

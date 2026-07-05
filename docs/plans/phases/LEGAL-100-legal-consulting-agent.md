@@ -303,6 +303,55 @@
 - Prompt 输出 schema 校验边界：对 mock LLM 输出进行结构化校验，不执行模型输出中的命令、SQL 或路径。
 - 或将 `classification` 节点改为消费 Prompt loader + mock LLM adapter，仍不接真实 DeepSeek。
 
+### 第五切片执行范围：Prompt 输出 schema 校验边界
+
+- 目标：在不调用真实 LLM、不接 workflow 节点的条件下，对 Prompt / mock LLM 输出建立结构化校验边界。
+- 输入：`PromptVersion.output_schema` 和 raw JSON 字符串或已解析对象。
+- 输出：`PromptOutputValidator`、`PromptValidatedOutput`、`PromptOutputValidationError`、`parse_json_object_output()`。
+- 行为：解析 raw JSON；要求顶层为 JSON object；校验 `output_schema.type == object`；校验 required 字段；按 properties 中的 `type` 校验 string、boolean、integer、number、object、array、null。
+- 约束：不执行模型输出中的命令、SQL 或路径；不接 DeepSeek；不改 API / DB；不修改 workflow 节点；不引入新依赖。
+- 不做：完整 JSON Schema 引擎、Prompt 文件真源、真实 LLM adapter、classification 节点接入。
+
+### 第五切片执行记录（2026-07-05）
+
+- 已新增 `prompts/output_validator.py`，并在 `prompts/__init__.py` 导出结构化校验接口。
+- 已覆盖 JSON 对象解析、非法 JSON / 非对象拒绝、classification 输出通过、必填字段缺失、字段类型错误和非法 schema。
+- `uv run pytest tests/unit/test_prompt_output_validator.py tests/unit/test_prompt_template_loader.py -q`：17 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，68 files already formatted。
+- `uv run mypy src`：通过，49 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：88 passed，总覆盖率 83%。
+
+### LEGAL-140 下一切片建议
+
+- 将 `classification` 节点改为消费 Prompt loader + mock LLM adapter + output validator。
+- 仍不接真实 DeepSeek；mock adapter 只返回测试用 JSON 字符串，并通过 output validator 后进入 state。
+
+### 第六切片执行范围：Prompt-backed classification 节点
+
+- 目标：让 classification 可通过 Prompt loader + mock LLM adapter + output validator 生成结构化分类结果。
+- 输入：`safe_question`、`PromptVersion`、模板文件、mock LLM raw JSON 输出。
+- 输出：`LegalClassificationPromptService`、`LegalClassificationResult`、`TextLLMAdapter`、`make_prompt_classification_node()`，以及 `build_legal_workflow_graph(classification_handler=...)` 注入点。
+- 行为：渲染 `legal_classification` Prompt；调用注入的文本 LLM adapter；通过 `PromptOutputValidator` 校验输出；将 `category`、`intent`、`legal_entities` 写入 workflow state；输出异常时降级 `category=other` 并设置 `CLASSIFY_FAILED`。
+- 约束：不接真实 DeepSeek；不改默认 graph 行为；不改 API / DB；不改其他 Agent。
+- 不做：真实 LLM adapter、Prompt 文件真源、classification API、重试 runner 接入。
+
+### 第六切片执行记录（2026-07-05）
+
+- 已新增 `application/services/classification_prompt_service.py`。
+- 已支持 Prompt-backed classification node factory，并让 `build_legal_workflow_graph()` 支持注入 classification handler。
+- 已覆盖 Prompt 渲染、mock LLM 输出校验、节点 state 更新、非法输出映射 `CLASSIFY_FAILED`、graph 注入执行。
+- `uv run pytest tests/unit/test_classification_prompt_service.py tests/unit/test_prompt_output_validator.py tests/unit/test_prompt_template_loader.py -q`：21 passed。
+- `uv run mypy src`：通过，50 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：92 passed，总覆盖率 84%。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，70 files already formatted。
+
+### LEGAL-140 下一切片建议
+
+- generation 节点接入 Prompt loader + mock LLM adapter + output validator。
+- 仍不接真实 DeepSeek；mock 输出需包含 `{answer: str, citations: list}` 并通过引用校验节点。
+
 ## 验收标准
 
 ### LEGAL-130
