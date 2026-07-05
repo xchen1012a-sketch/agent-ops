@@ -383,6 +383,59 @@ class LegalDataService:
             )
         )
 
+    async def list_high_risk_reviews(
+        self,
+        *,
+        reviewer_public_id: str,
+        review_status: ReviewStatus,
+        limit: int,
+        offset: int,
+    ) -> list[HighRiskReview]:
+        """List high-risk reviews for an administrator queue."""
+
+        if limit < 1 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+        if offset < 0:
+            raise ValueError("offset must be greater than or equal to 0")
+        reviewer = await self.get_user_mirror(reviewer_public_id)
+        if reviewer.role is not UserRole.ADMIN:
+            raise ForbiddenError("Administrator role required")
+        return await self._repository.list_high_risk_reviews(
+            status=review_status,
+            limit=limit,
+            offset=offset,
+        )
+
+    async def resolve_high_risk_review(
+        self,
+        *,
+        reviewer_public_id: str,
+        review_id: int,
+        review_status: ReviewStatus,
+        resolution: str,
+        reviewed_at: datetime | None = None,
+    ) -> HighRiskReview:
+        """Resolve or mark reviewed a high-risk review as an administrator."""
+
+        if review_status is ReviewStatus.PENDING:
+            raise ValueError("review_status must be reviewed or resolved")
+        normalized_resolution = resolution.strip()
+        if not normalized_resolution:
+            raise ValueError("resolution is required")
+        reviewer = await self.get_user_mirror(reviewer_public_id)
+        if reviewer.role is not UserRole.ADMIN:
+            raise ForbiddenError("Administrator role required")
+        review = await self._repository.update_high_risk_review_resolution(
+            review_id=review_id,
+            reviewer_id=reviewer.id or 0,
+            status=review_status,
+            resolution=normalized_resolution,
+            reviewed_at=reviewed_at or datetime.utcnow(),
+        )
+        if review is None:
+            raise LegalDataNotFoundError("High-risk review not found")
+        return review
+
     async def create_prompt_version(
         self,
         *,

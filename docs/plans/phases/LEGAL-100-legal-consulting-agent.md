@@ -668,6 +668,33 @@
 - Real DeepSeek/RAG, token streaming, and frontend pages remain independent later slices.
 
 
+### Slice 10 scope: admin high-risk review list/resolve API
+
+- Goal: expose administrator review queue operations over existing `high_risk_reviews` without adding tables or changing the user-facing high-risk enqueue API.
+- Input: trusted upstream identity boundary `x-user-public-id`; list query accepts `status`, `limit`, `offset`; resolution accepts `status` (`reviewed` or `resolved`) and `resolution`.
+- Output: `GET /v1/high-risk-reviews` and `POST /v1/high-risk-reviews/{review_id}/resolution`, plus equivalent `/api/legal/v1` paths.
+- Behavior: service requires administrator user mirror, validates pagination, rejects `pending` as a resolution target, persists reviewer/resolution/reviewed_at, and returns standard envelopes.
+- Constraints: no DB schema change, no claim/lock workflow, no RBAC redesign, no frontend page, and no changes to other Agents.
+- Not included: bulk review, reviewer assignment, SLA metrics, notification, or audit event table.
+
+### Slice 10 execution record (2026-07-05)
+
+- Added high-risk review list/update methods to the repository port and SQLAlchemy repository.
+- Added `LegalDataService.list_high_risk_reviews()` and `resolve_high_risk_review()` with administrator checks.
+- Extended high-risk review DTOs and endpoints for administrator list/resolve contracts.
+- Covered list success envelope, resolve success envelope, pending status validation, service admin filtering, resolution update, and non-admin rejection.
+- `uv run pytest tests/unit/test_legal_reviews_api.py tests/unit/test_legal_data_service.py -q`: 38 passed.
+- `uv run ruff check src tests`: passed.
+- `uv run ruff format --check src tests`: passed, 105 files already formatted.
+- `uv run mypy src`: passed, 72 source files.
+- `uv run pytest --cov=legal_consulting_agent -q`: 133 passed, total coverage 90%.
+
+### LEGAL-150 next slice recommendation
+
+- LEGAL-160 quality acceptance: run smoke/OpenAPI checks, record unresolved DeepSeek/RAG/token streaming limits, and freeze the legal Agent module acceptance evidence.
+- Real DeepSeek/RAG, token streaming, and frontend pages remain follow-up integration phases unless new local service fixtures are provided.
+
+
 ## 验收标准
 
 ### LEGAL-130

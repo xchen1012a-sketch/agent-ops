@@ -222,6 +222,41 @@ class FakeLegalDataRepository:
         self.high_risk_reviews.append(persisted)
         return persisted
 
+    async def list_high_risk_reviews(
+        self,
+        *,
+        status: ReviewStatus,
+        limit: int,
+        offset: int,
+    ) -> list[HighRiskReview]:
+        reviews = [review for review in self.high_risk_reviews if review.status is status]
+        return reviews[offset : offset + limit]
+
+    async def update_high_risk_review_resolution(
+        self,
+        *,
+        review_id: int,
+        reviewer_id: int,
+        status: ReviewStatus,
+        resolution: str,
+        reviewed_at: datetime,
+    ) -> HighRiskReview | None:
+        for index, review in enumerate(self.high_risk_reviews):
+            if review.id == review_id:
+                updated = HighRiskReview(
+                    id=review.id,
+                    message_id=review.message_id,
+                    user_id=review.user_id,
+                    reason=review.reason,
+                    status=status,
+                    reviewed_by=reviewer_id,
+                    resolution=resolution,
+                    reviewed_at=reviewed_at,
+                )
+                self.high_risk_reviews[index] = updated
+                return updated
+        return None
+
     async def create_prompt_version(self, prompt: PromptVersion) -> PromptVersion:
         persisted = PromptVersion(
             id=70,
@@ -963,6 +998,111 @@ async def test_create_high_risk_review_rejects_unmarked_message() -> None:
         )
 
     assert repo.high_risk_reviews == []
+
+
+@pytest.mark.asyncio
+async def test_admin_lists_high_risk_reviews_by_status() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=99,
+        public_id="admin-public-id",
+        email="admin@example.test",
+        display_name="Admin",
+        role=UserRole.ADMIN,
+        status=UserStatus.ACTIVE,
+    )
+    repo.high_risk_reviews = [
+        HighRiskReview(
+            id=60,
+            message_id=12,
+            user_id=1,
+            reason="personal_safety",
+            status=ReviewStatus.PENDING,
+            reviewed_by=None,
+            resolution=None,
+            reviewed_at=None,
+        ),
+        HighRiskReview(
+            id=61,
+            message_id=13,
+            user_id=1,
+            reason="reviewed",
+            status=ReviewStatus.REVIEWED,
+            reviewed_by=99,
+            resolution="reviewed",
+            reviewed_at=datetime(2026, 7, 5, 15, 0, 0),
+        ),
+    ]
+    service = LegalDataService(repo)
+
+    reviews = await service.list_high_risk_reviews(
+        reviewer_public_id="admin-public-id",
+        review_status=ReviewStatus.PENDING,
+        limit=20,
+        offset=0,
+    )
+
+    assert [review.id for review in reviews] == [60]
+
+
+@pytest.mark.asyncio
+async def test_admin_resolves_high_risk_review() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=99,
+        public_id="admin-public-id",
+        email="admin@example.test",
+        display_name="Admin",
+        role=UserRole.ADMIN,
+        status=UserStatus.ACTIVE,
+    )
+    repo.high_risk_reviews = [
+        HighRiskReview(
+            id=60,
+            message_id=12,
+            user_id=1,
+            reason="personal_safety",
+            status=ReviewStatus.PENDING,
+            reviewed_by=None,
+            resolution=None,
+            reviewed_at=None,
+        )
+    ]
+    service = LegalDataService(repo)
+
+    review = await service.resolve_high_risk_review(
+        reviewer_public_id="admin-public-id",
+        review_id=60,
+        review_status=ReviewStatus.RESOLVED,
+        resolution="Escalated to offline legal support.",
+        reviewed_at=datetime(2026, 7, 5, 16, 0, 0),
+    )
+
+    assert review.status is ReviewStatus.RESOLVED
+    assert review.reviewed_by == 99
+    assert review.resolution == "Escalated to offline legal support."
+
+
+@pytest.mark.asyncio
+async def test_high_risk_review_admin_actions_reject_non_admin() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    service = LegalDataService(repo)
+
+    with pytest.raises(ForbiddenError):
+        await service.list_high_risk_reviews(
+            reviewer_public_id="user-public-id",
+            review_status=ReviewStatus.PENDING,
+            limit=20,
+            offset=0,
+        )
 
 
 @pytest.mark.asyncio

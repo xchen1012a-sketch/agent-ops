@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-150 领域 API 与课件功能` 第九切片已落地：咨询记录列表/搜索 API 契约
+- 状态：`LEGAL-150 领域 API 与课件功能` 第十切片已落地：管理员高风险审核列表/复核 API 契约
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -33,11 +33,12 @@
   - 已实现 LEGAL-150 SSE 问答事件 API：`POST /v1/sessions/{session_public_id}/questions/events`，返回 started/completed 事件
   - Implemented LEGAL-150 cancel/retry Preview APIs: `POST /v1/workflow-runs/cancel-preview`, `POST /v1/workflow-runs/retry-preview`; returns pure workflow state projections.
   - Implemented LEGAL-150 consultation record list/search API: `GET /v1/consultation-records`; returns user-owned paginated history projections.
+  - Implemented LEGAL-150 admin high-risk review APIs: `GET /v1/high-risk-reviews`, `POST /v1/high-risk-reviews/{review_id}/resolution`; requires administrator user mirror.
 - 暂不具备 / 后置依赖：
   - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
   - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - Continue LEGAL-150 later thin slices: admin high-risk review list/resolve API, then quality acceptance; keep DeepSeek/RAG and frontend as separate slices.
+  - Continue `LEGAL-160` quality acceptance: smoke/OpenAPI checks, unresolved integration notes, and final legal Agent acceptance evidence.
   - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。
 
 ## 并行阶段：RECRUIT-200 智能招聘 Agent

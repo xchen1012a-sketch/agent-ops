@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 
 from legal_consulting_agent.domain.entities.legal_data import (
@@ -17,7 +18,7 @@ from legal_consulting_agent.domain.entities.legal_data import (
     PromptVersion,
     UserMirror,
 )
-from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole
+from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole, ReviewStatus
 
 
 class LegalDataRepository(Protocol):
@@ -98,6 +99,26 @@ class LegalDataRepository(Protocol):
 
     async def create_high_risk_review(self, review: HighRiskReview) -> HighRiskReview:
         """Persist a pending high-risk review queue record."""
+
+    async def list_high_risk_reviews(
+        self,
+        *,
+        status: ReviewStatus,
+        limit: int,
+        offset: int,
+    ) -> list[HighRiskReview]:
+        """Return high-risk reviews for administrator queues."""
+
+    async def update_high_risk_review_resolution(
+        self,
+        *,
+        review_id: int,
+        reviewer_id: int,
+        status: ReviewStatus,
+        resolution: str,
+        reviewed_at: datetime,
+    ) -> HighRiskReview | None:
+        """Persist an administrator review resolution."""
 
     async def create_prompt_version(self, prompt: PromptVersion) -> PromptVersion:
         """Persist versioned Prompt metadata."""
