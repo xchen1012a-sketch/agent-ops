@@ -204,3 +204,21 @@ Boundary:
 - Projection is deterministic and does not call Feishu APIs.
 - Recommendation buttons use existing follow-up text only.
 - Real card schema validation, upload/send APIs, tenant tokens, and UI rendering remain outside this slice.
+
+## DATA-380 Feishu end-to-end mock flow slice
+
+The mock flow combines local Feishu event validation, deterministic data-query workflow execution, and card projection.
+
+Flow:
+
+1. Validate mock signature and event shape.
+2. Return challenge directly for `url_verification`.
+3. Deduplicate message events by `header.event_id`.
+4. Extract message content as the question.
+5. Run the same deterministic data-query workflow used by Web semantics.
+6. Project answer/result/chart/followups to a local card payload.
+
+Boundary:
+
+- Duplicate message events return no card and do not re-run workflow semantics.
+- The flow uses no real Feishu tenant, no real app secret, no outgoing webhook/client, and no external model/DB.

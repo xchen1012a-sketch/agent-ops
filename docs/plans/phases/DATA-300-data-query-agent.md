@@ -524,3 +524,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 180 passed, 1 Starlette/httpx deprecation warning, coverage 89%.
+
+- 2026-07-05: Completed `DATA-380` cycle 30. Added end-to-end mock Feishu flow service combining mock signature/event validation, challenge handling, process-local message deduplication, deterministic data-query workflow execution, and local card projection. Duplicate message events return no card and do not re-run workflow semantics. Synchronized `agents/data-query-agent/docs/api-contract.md` for the end-to-end mock flow. Not included: real Feishu tenant, real app secret, outgoing Feishu client, persistent dedupe store, external LLM, or real DB execution.
+  Verification:
+  - `uv run pytest tests/unit/test_feishu_mock_flow.py -q`: 4 passed.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed.
+  - `uv run mypy src`: passed after casting the LangGraph compiled object at the mock flow boundary.
+  - `uv run pytest -q`: 184 passed, 1 Starlette/httpx deprecation warning, coverage 89%.
