@@ -184,6 +184,19 @@ class FakeLegalDataRepository:
             None,
         )
 
+    async def list_consultation_records_for_user(
+        self,
+        *,
+        user_id: int,
+        limit: int,
+        offset: int,
+        query: str | None,
+    ) -> list[ConsultationRecord]:
+        records = [record for record in self.consultation_records if record.user_id == user_id]
+        if query is not None:
+            records = [record for record in records if query in record.summary]
+        return records[offset : offset + limit]
+
     async def create_feedback(self, feedback: Feedback) -> Feedback:
         persisted = Feedback(
             id=50,
@@ -440,6 +453,83 @@ async def test_list_session_messages_rejects_invalid_pagination() -> None:
             session_public_id="thread-public-id",
             limit=101,
             offset=0,
+        )
+
+
+@pytest.mark.asyncio
+async def test_list_consultation_records_filters_by_user_query_and_pagination() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.consultation_records = [
+        ConsultationRecord(
+            id=40,
+            public_id="record-1",
+            user_id=1,
+            session_id=10,
+            category_id=2,
+            question_message_id=11,
+            answer_message_id=12,
+            summary="labor contract role change",
+            citations=None,
+            high_risk=False,
+            disclaimer="reference only",
+        ),
+        ConsultationRecord(
+            id=41,
+            public_id="record-2",
+            user_id=1,
+            session_id=10,
+            category_id=2,
+            question_message_id=13,
+            answer_message_id=14,
+            summary="housing lease deposit dispute",
+            citations=None,
+            high_risk=True,
+            disclaimer="reference only",
+        ),
+        ConsultationRecord(
+            id=42,
+            public_id="other-user-record",
+            user_id=2,
+            session_id=20,
+            category_id=3,
+            question_message_id=21,
+            answer_message_id=22,
+            summary="labor contract outside owner",
+            citations=None,
+            high_risk=False,
+            disclaimer="reference only",
+        ),
+    ]
+    service = LegalDataService(repo)
+
+    records = await service.list_consultation_records(
+        user_public_id="user-public-id",
+        limit=1,
+        offset=0,
+        query="labor",
+    )
+
+    assert [record.public_id for record in records] == ["record-1"]
+
+
+@pytest.mark.asyncio
+async def test_list_consultation_records_rejects_invalid_pagination() -> None:
+    service = LegalDataService(FakeLegalDataRepository())
+
+    with pytest.raises(ValueError, match="limit"):
+        await service.list_consultation_records(
+            user_public_id="user-public-id",
+            limit=0,
+            offset=0,
+            query=None,
         )
 
 

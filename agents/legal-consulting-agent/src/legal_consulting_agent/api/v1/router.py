@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from legal_consulting_agent.api.v1.endpoints import (
     health,
+    legal_consultation_records,
     legal_feedbacks,
     legal_messages,
     legal_questions,
@@ -17,6 +18,7 @@ from legal_consulting_agent.api.v1.endpoints import (
 
 router = APIRouter()
 router.include_router(health.router, prefix="/health", tags=["health"])
+router.include_router(legal_consultation_records.router, tags=["legal-consultation-records"])
 router.include_router(legal_sessions.router, tags=["legal-sessions"])
 router.include_router(legal_questions.router, tags=["legal-questions"])
 router.include_router(legal_messages.router, tags=["legal-messages"])

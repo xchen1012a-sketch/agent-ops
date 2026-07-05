@@ -641,6 +641,33 @@
 - Admin review list/resolve API, real DeepSeek/RAG, and frontend pages remain independent later slices.
 
 
+### Slice 9 scope: consultation record list/search API
+
+- Goal: expose read-only paginated history lookup over `consultation_records` to cover the courseware history/search path without introducing full-text search or RAG.
+- Input: trusted upstream identity boundary `x-user-public-id`, `limit`, `offset`, and optional `q` summary query.
+- Output: `GET /v1/consultation-records` and equivalent `/api/legal/v1` path, returning a standard envelope with `items`, `limit`, `offset`, and `query`.
+- Behavior: service validates pagination, normalizes blank query to no query, enforces user ownership through the user mirror, and repository orders records by newest id first.
+- Constraints: no DB schema change, no full-text index, no RAG/vector search, no cross-user results, no frontend page.
+- Not included: record detail expansion, report generation changes, saved search, admin history search, or external search engine integration.
+
+### Slice 9 execution record (2026-07-05)
+
+- Added `list_consultation_records_for_user()` to the repository port and SQLAlchemy repository.
+- Added `LegalDataService.list_consultation_records()` with bounded pagination and query normalization.
+- Added `api/v1/schemas/legal_consultation_records.py` and `api/v1/endpoints/legal_consultation_records.py`, registered in the v1 router.
+- Covered success envelope, identity header requirement, invalid limit 422, service ownership/query filtering, and pagination validation.
+- `uv run pytest tests/unit/test_legal_consultation_records_api.py tests/unit/test_legal_data_service.py -q`: 33 passed.
+- `uv run ruff check src tests`: passed.
+- `uv run ruff format --check src tests`: passed, 105 files already formatted.
+- `uv run mypy src`: passed, 72 source files.
+- `uv run pytest --cov=legal_consulting_agent -q`: 127 passed, total coverage 91%.
+
+### LEGAL-150 next slice recommendation
+
+- Admin high-risk review list/resolve API: expose read-only pending review list and minimal resolve action, reusing existing `high_risk_reviews`; keep authorization boundary explicit and do not add new schema unless required.
+- Real DeepSeek/RAG, token streaming, and frontend pages remain independent later slices.
+
+
 ## 验收标准
 
 ### LEGAL-130

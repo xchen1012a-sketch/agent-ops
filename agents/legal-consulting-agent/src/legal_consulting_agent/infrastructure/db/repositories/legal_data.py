@@ -196,6 +196,27 @@ class SqlAlchemyLegalDataRepository:
         model = result.scalar_one_or_none()
         return self._to_consultation_record(model) if model is not None else None
 
+    async def list_consultation_records_for_user(
+        self,
+        *,
+        user_id: int,
+        limit: int,
+        offset: int,
+        query: str | None,
+    ) -> list[ConsultationRecord]:
+        """Return user-owned consultation records ordered by newest first."""
+        statement = select(ConsultationRecordModel).where(
+            ConsultationRecordModel.user_id == user_id
+        )
+        if query is not None:
+            statement = statement.where(
+                ConsultationRecordModel.summary.contains(query, autoescape=True)
+            )
+        result = await self._session.execute(
+            statement.order_by(ConsultationRecordModel.id.desc()).limit(limit).offset(offset)
+        )
+        return [self._to_consultation_record(model) for model in result.scalars().all()]
+
     async def create_feedback(self, feedback: Feedback) -> Feedback:
         """Persist user feedback without committing."""
         model = FeedbackModel(

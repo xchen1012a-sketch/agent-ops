@@ -275,6 +275,31 @@ class LegalDataService:
             raise LegalDataNotFoundError("Consultation record not found")
         return record
 
+    async def list_consultation_records(
+        self,
+        *,
+        user_public_id: str,
+        limit: int,
+        offset: int,
+        query: str | None,
+    ) -> list[ConsultationRecord]:
+        """List user-owned consultation records with bounded pagination."""
+
+        if limit < 1 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+        if offset < 0:
+            raise ValueError("offset must be greater than or equal to 0")
+        normalized_query = query.strip() if query is not None else None
+        if normalized_query == "":
+            normalized_query = None
+        user = await self.get_user_mirror(user_public_id)
+        return await self._repository.list_consultation_records_for_user(
+            user_id=user.id or 0,
+            limit=limit,
+            offset=offset,
+            query=normalized_query,
+        )
+
     async def create_feedback(
         self,
         *,

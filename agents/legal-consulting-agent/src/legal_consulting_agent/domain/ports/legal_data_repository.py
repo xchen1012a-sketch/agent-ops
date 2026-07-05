@@ -83,6 +83,16 @@ class LegalDataRepository(Protocol):
     ) -> ConsultationRecord | None:
         """Return a user-owned consultation record, or None."""
 
+    async def list_consultation_records_for_user(
+        self,
+        *,
+        user_id: int,
+        limit: int,
+        offset: int,
+        query: str | None,
+    ) -> list[ConsultationRecord]:
+        """Return user-owned consultation records ordered by newest first."""
+
     async def create_feedback(self, feedback: Feedback) -> Feedback:
         """Persist user feedback for an assistant message."""
 
