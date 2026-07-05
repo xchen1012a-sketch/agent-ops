@@ -114,3 +114,20 @@ def test_answer_question_rejects_empty_question() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_answer_question_events_returns_sse_started_and_completed() -> None:
+    fake_service = FakeQuestionAnswerService()
+    client = build_client(fake_service)
+
+    response = client.post(
+        "/v1/sessions/thread-public-id/questions/events",
+        headers={"x-user-public-id": "user-public-id"},
+        json={"question": "Can my employer transfer me?"},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert "event: started" in response.text
+    assert "event: completed" in response.text
+    assert '"answer":"Mock legal answer"' in response.text

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
+from collections.abc import AsyncIterator
+
 from fastapi import APIRouter, status
+from fastapi.responses import StreamingResponse
 
 from legal_consulting_agent.api.dependencies import (
     CurrentUserPublicIdDep,
@@ -53,3 +57,53 @@ async def answer_question(
         question=payload.question,
     )
     return LegalQuestionAnswerEnvelope(data=_to_question_answer_response(result))
+
+
+@router.post("/sessions/{session_public_id}/questions/events")
+async def answer_question_events(
+    session_public_id: str,
+    payload: LegalQuestionRequest,
+    user_public_id: CurrentUserPublicIdDep,
+    question_answer_service: LegalQuestionAnswerServiceDep,
+) -> StreamingResponse:
+    """Return deterministic question-answer progress as SSE events."""
+
+    return StreamingResponse(
+        _stream_question_answer_events(
+            session_public_id=session_public_id,
+            payload=payload,
+            user_public_id=user_public_id,
+            question_answer_service=question_answer_service,
+        ),
+        media_type="text/event-stream",
+    )
+
+
+async def _stream_question_answer_events(
+    *,
+    session_public_id: str,
+    payload: LegalQuestionRequest,
+    user_public_id: str,
+    question_answer_service: LegalQuestionAnswerServiceDep,
+) -> AsyncIterator[str]:
+    yield _sse_event(
+        "started",
+        {
+            "session_public_id": session_public_id,
+        },
+    )
+    result = await question_answer_service.answer_question(
+        user_public_id=user_public_id,
+        session_public_id=session_public_id,
+        question=payload.question,
+    )
+    yield _sse_event(
+        "completed",
+        _to_question_answer_response(result).model_dump(mode="json"),
+    )
+
+
+def _sse_event(event: str, data: dict[str, object]) -> str:
+    return (
+        f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, separators=(',', ':'))}\n\n"
+    )

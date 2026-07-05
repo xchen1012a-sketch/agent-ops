@@ -589,6 +589,31 @@
 - SSE 事件契约与同步问答事件投影：先输出 deterministic workflow 的 started/node/answer/completed 事件结构，仍不接真实流式 LLM。
 - 真实 DeepSeek/RAG、取消/重试 HTTP API、前端页面继续独立成片。
 
+### 第七切片执行范围：SSE 问答事件契约
+
+- 目标：提供 deterministic 问答入口的 SSE 事件格式，为后续真实流式 LLM 输出冻结前端可消费契约。
+- 输入：受信任上游身份边界 `x-user-public-id`、`session_public_id`、`question`。
+- 输出：`POST /v1/sessions/{session_public_id}/questions/events` 与 `/api/legal/v1` 等价路径，`text/event-stream`。
+- 行为：先输出 `started` 事件，再复用 `LegalQuestionAnswerService.answer_question()` 执行同步问答，最后输出 `completed` 事件；事件 `data` 使用紧凑 JSON。
+- 约束：不接真实流式 DeepSeek；不引入队列；不改变现有同步问答 API；不修改其他 Agent。
+- 不做：token 级流式输出、取消/重试 API、真实 LLM adapter、前端页面。
+
+### 第七切片执行记录（2026-07-05）
+
+- 已扩展 `api/v1/endpoints/legal_questions.py`，新增 SSE endpoint。
+- 已覆盖 SSE content-type、`started` / `completed` 事件和 completed answer 数据。
+- 首次测试发现 JSON 序列化空格导致断言不匹配，已改为 `separators=(',', ':')` 的紧凑 JSON。
+- `uv run pytest tests/unit/test_legal_questions_api.py -q`：3 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，98 files already formatted。
+- `uv run mypy src`：通过，67 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：119 passed，总覆盖率 91%。
+
+### LEGAL-150 下一切片建议
+
+- 取消/重试 API 契约：复用已有 `mark_canceled()` / `prepare_retry_state()`，先做纯应用层状态投影，不接真实后台任务队列。
+- 真实 DeepSeek/RAG 和前端页面继续独立成片。
+
 ## 验收标准
 
 ### LEGAL-130
