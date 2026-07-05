@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-140 Agent 工作流` 第一切片已落地：workflow state、纯函数节点、LangGraph graph factory 和 mock 边界测试通过
+- 状态：`LEGAL-140 Agent 工作流` 第二切片已落地：workflow 节点审计映射、retryable 失败状态和 node_runs 写入边界测试通过
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -17,10 +17,10 @@
   - 模块：`agents/legal-consulting-agent`
   - 已实现对象：`users`、`legal_categories`、`sessions`、`messages`、`agent_runs`、`node_runs`、`consultation_records`、`feedbacks`、`high_risk_reviews`、`prompt_versions`、`knowledge_materials`
   - 已实现工作流边界：`LegalWorkflowState`、`input_safety`、`classification`、`context_build`、`retrieval`、`generation`、`citation_check`、`risk_check`、`persist`、`build_legal_workflow_graph`
+  - 已实现审计边界：`LegalWorkflowAuditService`、`map_workflow_error`、节点 started/finished 记录、retryable 错误到 `RunStatus.RETRYING` 映射
 - 暂不具备 / 后置依赖：
   - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
   - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - 处理当前工作区内计划外模块配置变更的归属：`data-query-agent` / `recruitment-assistant-agent` config 改动需确认是否纳入本轮。
-  - 继续 `LEGAL-140` 第二切片：为 workflow 增加节点运行审计集成、重试/失败状态映射，仍不接真实外部服务。
+  - 继续 `LEGAL-140` 第三切片：补 runner 层顺序执行、错误中断、取消/重试入口的纯应用层测试，仍不接真实外部服务。
   - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。

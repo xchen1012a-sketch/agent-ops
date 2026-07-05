@@ -7,7 +7,7 @@
 ## [auto] Refresh info
 
 - source hash: f59f0d7848480325
-- last refresh: 2026-07-05 11:40:42 +0800
+- last refresh: 2026-07-05 11:49:33 +0800
 - refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack
@@ -84,7 +84,7 @@ agent/
 
 ## [auto] Git status
 
-- Current branch: main
+- Current branch: legal-100-data-workflow-local
 - Working tree: has uncommitted changes
 - Remotes:
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)

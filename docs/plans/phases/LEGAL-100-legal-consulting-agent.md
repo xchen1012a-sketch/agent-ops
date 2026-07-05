@@ -226,6 +226,34 @@
 - 重试/失败边界：补 `RETRIEVAL_FAILED`、`LLM_TIMEOUT`、`DB_UNAVAILABLE` 的 runner 层状态流转测试。
 - 仍不接真实 Qdrant/BGE/DeepSeek，直到知识库样本和本地服务配置确认。
 
+### 第二切片执行范围：workflow 审计映射
+
+- 目标：把 workflow state / error code 映射到已有 `agent_runs` / `node_runs` 审计模型。
+- 输入：`LegalWorkflowState`、节点名、`started_at` / `finished_at` 和已有 `LegalDataService`。
+- 输出：`LegalWorkflowAuditService`、`WorkflowErrorMapping`、`map_workflow_error()`，以及节点 started / finished 审计写入边界。
+- 约束：不新增数据库表；不改 API / SSE；不接真实 DeepSeek、Qdrant、BGE、Redis；不修改其他 Agent。
+- 失败映射：无错误 → `success`；`CLASSIFY_FAILED` / `RETRIEVAL_FAILED` / `LLM_TIMEOUT` / `DB_UNAVAILABLE` / `RATE_LIMITED` → `retrying` 且 `retryable=true`；其他错误如 `INPUT_BLOCKED` / `CITATION_INVALID` → `failed` 且 `retryable=false`。
+- 审计最小化：metadata 只记录节点名、事件、retryable、分类、chunks_count、高风险标记；不记录完整 Prompt、完整对话或外部响应。
+- 不做：真实 runner、取消/重试 API、节点状态更新 SQL、AgentRun 终态更新、外部服务调用、知识库导入和前端。
+
+### 第二切片执行记录（2026-07-05）
+
+- 已新增 `application/services/workflow_audit_service.py`，保持 `workflows/` 纯流程不直接写数据库。
+- 已最小扩展 `LegalDataService.create_node_run()` 参数，支持写入 `finished_at`、`duration_ms`、`error_code` 和 metadata；不改 schema、不改 repository 边界。
+- 已覆盖 retryable / non-retryable 错误映射、run 创建、node started 记录、成功 finished 记录、`DB_UNAVAILABLE` retrying 记录。
+- `uv run pytest tests/unit/test_workflow_audit_service.py tests/unit/test_legal_workflow.py -q`：10 passed。
+- `uv run pytest tests/unit/test_legal_data_service.py -q`：26 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，62 files already formatted。
+- `uv run mypy src`：通过，46 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：66 passed，总覆盖率 82%。
+
+### LEGAL-140 下一切片建议
+
+- Runner 层顺序执行：串联 graph 节点、审计 service 和错误中断逻辑。
+- 取消/重试入口：先做应用层纯测试，不暴露 HTTP API。
+- AgentRun 终态更新需要 repository update 能力；若进入该切片，先确认是否允许扩展 repository port / SQLAlchemy repository。
+
 ## 验收标准
 
 ### LEGAL-130

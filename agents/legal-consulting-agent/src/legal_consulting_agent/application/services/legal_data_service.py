@@ -394,6 +394,9 @@ class LegalDataService:
         node_name: str,
         status: RunStatus,
         started_at: datetime,
+        finished_at: datetime | None = None,
+        duration_ms: int | None = None,
+        error_code: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> NodeRun:
         """Create a node run audit record for an existing Agent run."""
@@ -402,10 +405,10 @@ class LegalDataService:
                 run_id=run_id,
                 node_name=node_name,
                 status=status,
-                duration_ms=None,
-                error_code=None,
+                duration_ms=duration_ms,
+                error_code=error_code,
                 metadata=metadata,
                 started_at=started_at,
-                finished_at=None,
+                finished_at=finished_at,
             )
         )
