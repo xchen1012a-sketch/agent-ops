@@ -399,3 +399,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed（首次发现 workflow 测试需格式化，已格式化后通过）。
   - `uv run mypy src`：首次发现 Literal 类型收窄问题，已修复后 passed。
   - `uv run pytest -q`：117 passed，coverage 81%。
+
+- 2026-07-05: Completed `DATA-340` cycle 13. Added workflow runner application service for run/node trace, SQL audit, SQL policy, and fake query adapter boundaries. Success path records run started/completed, node started/finished, and `ALLOWED` audit. SQL policy blocked path records `BLOCKED` audit and does not execute query adapter. timeout/connection failed are retryable; result too large is non-retryable. Not included: cancel/retry API, real background queue interruption, real DB/LLM integration. Verification:
+  - `uv run pytest tests/unit/test_workflow_runner_service.py -q`: 5 passed.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting workflow runner and its tests.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 122 passed, coverage 82%.
