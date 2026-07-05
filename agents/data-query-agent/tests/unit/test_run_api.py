@@ -92,6 +92,25 @@ class FakeRunTraceService:
                 return run
         return None
 
+    async def cancel_run(self, *, run_id: int) -> QueryRun:
+        existing = self.runs[run_id - 1]
+        canceled = _replace_run(existing, status=RunStatus.CANCELED, finished_at=_now())
+        self.runs[run_id - 1] = canceled
+        return canceled
+
+    async def retry_run(self, *, run_id: int) -> QueryRun:
+        existing = self.runs[run_id - 1]
+        retried = _replace_run(
+            existing,
+            status=RunStatus.RETRYING,
+            error_code=None,
+            error_message=None,
+            started_at=None,
+            finished_at=None,
+        )
+        self.runs[run_id - 1] = retried
+        return retried
+
     async def create_run_for_thread(
         self,
         *,
@@ -215,3 +234,93 @@ def test_get_run_blocks_cross_subject_access() -> None:
 
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "NOT_FOUND"
+
+
+def test_cancel_run_marks_owned_run_canceled_without_queue_interrupt() -> None:
+    identity_service = FakeIdentityThreadService()
+    run_service = FakeRunTraceService()
+    client = _client(identity_service, run_service)
+    client.post(
+        "/v1/threads/thread-1/runs",
+        headers={"X-User-Subject": "owner"},
+        json={"question": "What are total sales?"},
+    )
+
+    response = client.post("/v1/runs/run-1/cancel", headers={"X-User-Subject": "owner"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["data"]["status"] == "canceled"
+    assert body["data"]["finished_at"] is not None
+    assert "sql" not in body["data"]
+
+
+def test_retry_run_resets_error_projection_without_workflow_execution() -> None:
+    identity_service = FakeIdentityThreadService()
+    run_service = FakeRunTraceService()
+    client = _client(identity_service, run_service)
+    client.post(
+        "/v1/threads/thread-1/runs",
+        headers={"X-User-Subject": "owner"},
+        json={"question": "What are total sales?"},
+    )
+    run_service.runs[0] = _replace_run(
+        run_service.runs[0],
+        status=RunStatus.FAILED,
+        error_code="QUERY_TIMEOUT",
+        error_message="query timeout",
+        started_at=_now(),
+        finished_at=_now(),
+    )
+
+    response = client.post("/v1/runs/run-1/retry", headers={"X-User-Subject": "owner"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["data"]["status"] == "retrying"
+    assert body["data"]["error_code"] is None
+    assert body["data"]["error_message"] is None
+    assert body["data"]["started_at"] is None
+    assert body["data"]["finished_at"] is None
+
+
+def test_cancel_and_retry_block_cross_subject_access() -> None:
+    identity_service = FakeIdentityThreadService()
+    run_service = FakeRunTraceService()
+    client = _client(identity_service, run_service)
+    client.post(
+        "/v1/threads/thread-1/runs",
+        headers={"X-User-Subject": "owner"},
+        json={"question": "What are total sales?"},
+    )
+
+    cancel_response = client.post("/v1/runs/run-1/cancel", headers={"X-User-Subject": "other"})
+    retry_response = client.post("/v1/runs/run-1/retry", headers={"X-User-Subject": "other"})
+
+    assert cancel_response.status_code == 404
+    assert retry_response.status_code == 404
+
+
+def _replace_run(
+    run: QueryRun,
+    *,
+    status: RunStatus,
+    error_code: str | None = None,
+    error_message: str | None = None,
+    started_at: datetime | None = None,
+    finished_at: datetime | None = None,
+) -> QueryRun:
+    return QueryRun(
+        id=run.id,
+        public_id=run.public_id,
+        thread_id=run.thread_id,
+        user_id=run.user_id,
+        status=status,
+        question_message_id=run.question_message_id,
+        error_code=error_code,
+        error_message=error_message,
+        started_at=started_at,
+        finished_at=finished_at,
+        created_at=run.created_at,
+        updated_at=_now(),
+    )

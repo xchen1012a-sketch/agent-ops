@@ -462,3 +462,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting `runs.py` and `test_run_stream_api.py`.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 155 passed, 1 Starlette/httpx deprecation warning, coverage 87%.
+
+- 2026-07-05: Completed `DATA-360` cycle 22. Added `POST /v1/runs/{run_id}/cancel` and `POST /v1/runs/{run_id}/retry` API slice with ownership-scoped run lookup. Cancel marks the run as `canceled`; retry uses the existing application-layer retry boundary to clear error/timestamp projection and prepare state for retry. Responses reuse the public run detail envelope and do not expose SQL. Not included: real background queue interruption, workflow re-execution scheduling, browser integration, or frontend wiring. Verification:
+  - `uv run pytest tests/unit/test_run_api.py tests/unit/test_run_service.py -q`: 15 passed, 1 Starlette/httpx deprecation warning.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting `runs.py` and `test_run_api.py`.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 158 passed, 1 Starlette/httpx deprecation warning, coverage 87%.

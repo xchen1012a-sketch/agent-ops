@@ -99,6 +99,46 @@ async def stream_run_events(
     )
 
 
+@router.post("/runs/{run_id}/cancel", response_model=RunDetailEnvelope)
+async def cancel_run(
+    run_id: str,
+    subject: CurrentSubjectDep,
+    identity_service: IdentityThreadServiceDep,
+    run_trace_service: QueryRunTraceServiceDep,
+) -> RunDetailEnvelope:
+    """Mark an owned run as canceled without interrupting a real queue."""
+    run = await _get_owned_run(
+        run_id=run_id,
+        subject=subject,
+        identity_service=identity_service,
+        run_trace_service=run_trace_service,
+    )
+    if run.id is None:
+        raise NotFoundError("run not found")
+    canceled = await run_trace_service.cancel_run(run_id=run.id)
+    return RunDetailEnvelope(data=RunDetailResponse.from_entity(canceled))
+
+
+@router.post("/runs/{run_id}/retry", response_model=RunDetailEnvelope)
+async def retry_run(
+    run_id: str,
+    subject: CurrentSubjectDep,
+    identity_service: IdentityThreadServiceDep,
+    run_trace_service: QueryRunTraceServiceDep,
+) -> RunDetailEnvelope:
+    """Reset an owned run for retry without scheduling workflow execution."""
+    run = await _get_owned_run(
+        run_id=run_id,
+        subject=subject,
+        identity_service=identity_service,
+        run_trace_service=run_trace_service,
+    )
+    if run.id is None:
+        raise NotFoundError("run not found")
+    retried = await run_trace_service.retry_run(run_id=run.id)
+    return RunDetailEnvelope(data=RunDetailResponse.from_entity(retried))
+
+
 async def _get_owned_run(
     *,
     run_id: str,

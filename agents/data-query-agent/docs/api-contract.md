@@ -118,3 +118,9 @@ Event names:
 - `run.completed`
 - `run.failed`
 
+
+## DATA-360 Cancel/Retry API slice
+
+`POST /v1/runs/{run_id}/cancel` marks an ownership-scoped run as `canceled`. This slice does not interrupt a real background queue.
+
+`POST /v1/runs/{run_id}/retry` resets an ownership-scoped run to `retrying` through the application-layer retry boundary. This clears previous error/timestamp projection and prior node traces in the service/repository layer, but does not schedule workflow re-execution.
