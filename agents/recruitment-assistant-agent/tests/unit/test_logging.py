@@ -5,7 +5,12 @@ from __future__ import annotations
 from loguru import logger
 
 from recruitment_assistant_agent.core.config import Settings
-from recruitment_assistant_agent.core.logging import SENSITIVE_KEYS, _scrub, configure_logging, get_logger
+from recruitment_assistant_agent.core.logging import (
+    SENSITIVE_KEYS,
+    _scrub,
+    configure_logging,
+    get_logger,
+)
 
 
 def _make_settings(log_format: str = "json") -> Settings:
