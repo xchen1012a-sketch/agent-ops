@@ -420,3 +420,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting prompt template service.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 131 passed, coverage 81%.
+
+- 2026-07-05: Completed `DATA-350` cycle 16. Added LLM adapter port/DTOs, deterministic `FakeLlmAdapter`, and prompt-backed workflow node boundary for `sql_generate` and `interpret`. Generated SQL and interpretation outputs are rendered through versioned prompts and must pass structured output validation before entering workflow state; tests cover fake adapter success and malformed LLM output rejection. Not included: real DeepSeek adapter/config, switching the default deterministic graph to LLM mode, API exposure, or external network calls. Verification:
+  - `uv run pytest tests/unit/test_prompt_backed_workflow_nodes.py -q`: 4 passed before formatting/type fix.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting prompt-backed nodes and tests.
+  - `uv run mypy src`: passed after narrowing node trace status to Literal.
+  - `uv run pytest -q`: 135 passed, coverage 82%.

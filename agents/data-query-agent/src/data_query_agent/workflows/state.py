@@ -24,4 +24,7 @@ class DataQueryState(TypedDict, total=False):
     policy_error_code: str
     query_result: dict[str, Any]
     answer: str
+    chart: object
+    followups: object
+    llm_output: dict[str, Any]
     node_trace: list[NodeTrace]
