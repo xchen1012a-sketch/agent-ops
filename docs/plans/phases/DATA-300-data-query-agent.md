@@ -540,3 +540,8 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 184 passed, 1 Starlette/httpx deprecation warning, coverage 89%.
   - `uv run python -c "from data_query_agent.main import create_app; app=create_app(); schema=app.openapi(); assert '/v1/threads' in schema['paths']; assert '/v1/integrations/feishu/events' in schema['paths']; assert '/v1/admin/sql-audit' in schema['paths']; print('openapi smoke passed', len(schema['paths']))"`: `openapi smoke passed 26`.
+
+- 2026-07-05: Completed `DATA-390` cycle 32. Marked the intelligent data-query Agent local planned module scope complete and updated `docs/plans/current.md`. Current local completion covers data catalog sources, SQL whitelist/policy, migrations and repositories, workflow runner state/audit semantics, prompt and DeepSeek adapter boundaries, thread/run/query-history/admin-audit APIs, SSE contract, evaluation fixtures/harnesses, result projection, and Feishu mock event/card/flow boundaries. Intentional exclusions remain: real DeepSeek API calls, real MySQL/shop database execution, real Feishu tenant credentials/callback delivery, frontend rendering/integration, production deployment, and persistent external queue/worker integration. These require separate external-service integration planning before activation.
+  Verification:
+  - Reused cycle 31 full quality evidence: Ruff, format check, MyPy, Pytest 184 passed with 89% coverage, and OpenAPI smoke 26 paths.
+  - Documentation updated: `docs/plans/current.md` and this phase file.
