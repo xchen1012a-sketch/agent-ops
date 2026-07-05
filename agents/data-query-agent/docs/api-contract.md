@@ -40,3 +40,31 @@ POST   /v1/integrations/feishu/events
 
 默认不向普通用户暴露原始 SQL；管理员调试权限和脱敏规则在 `DATA-310` 确认。
 
+## DATA-360 Thread API slice
+
+Authentication boundary for local API tests uses gateway-provided `X-User-Subject` as the upstream subject placeholder. Production auth integration remains outside this slice.
+
+Thread endpoints return public DTOs only; internal `user_id` is not exposed.
+
+```text
+POST /v1/threads
+GET  /v1/threads?limit=20&offset=0
+GET  /v1/threads/{thread_id}
+```
+
+Success envelope:
+
+```json
+{
+  "data": {},
+  "error": null
+}
+```
+
+Thread DTO fields:
+
+- `thread_id`
+- `title`
+- `status`
+- `created_at`
+- `updated_at`

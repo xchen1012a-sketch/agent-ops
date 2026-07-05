@@ -434,3 +434,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting DeepSeek adapter.
   - `uv run mypy src`: passed after wrapping httpx responses behind the internal response protocol.
   - `uv run pytest -q`: 143 passed, coverage 82%.
+
+- 2026-07-05: Completed `DATA-360` cycle 18. Added thread API slice for `POST /v1/threads`, `GET /v1/threads`, and `GET /v1/threads/{thread_id}` with request/response DTOs, subject header dependency, identity service wiring, ownership-scoped access, pagination, and public thread envelopes that do not expose internal user IDs. Synchronized `agents/data-query-agent/docs/api-contract.md` for the thread slice. Not included: run execution logic, workflow trigger, SSE, real auth gateway integration, or frontend wiring. Verification:
+  - `uv run pytest tests/unit/test_thread_api.py -q`: 4 passed, 1 Starlette/httpx deprecation warning.
+  - `uv run ruff check src tests`: passed after replacing an object-call default in the test fake.
+  - `uv run ruff format --check src tests`: passed.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 147 passed, 1 Starlette/httpx deprecation warning, coverage 87%.

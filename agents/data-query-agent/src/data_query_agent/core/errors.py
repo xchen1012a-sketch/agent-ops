@@ -44,6 +44,11 @@ class InputBlockedError(AppError):
     http_status = 422
 
 
+class NotFoundError(AppError):
+    code = "NOT_FOUND"
+    http_status = 404
+
+
 class LLMTimeoutError(AppError):
     code = "LLM_TIMEOUT"
     http_status = 504
