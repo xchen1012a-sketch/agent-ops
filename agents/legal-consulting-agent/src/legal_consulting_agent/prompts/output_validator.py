@@ -69,6 +69,17 @@ def _matches_json_type(value: object, expected_type: str) -> bool:
     raise PromptOutputValidationError(f"unsupported output schema type: {expected_type}")
 
 
+def _extract_expected_types(field_name: str, field_schema: Mapping[str, object]) -> tuple[str, ...]:
+    expected_type = field_schema.get("type")
+    if isinstance(expected_type, str):
+        return (expected_type,)
+    if isinstance(expected_type, list) and all(isinstance(item, str) for item in expected_type):
+        return tuple(expected_type)
+    raise PromptOutputValidationError(
+        f"output_schema.properties.{field_name}.type must be a string or list of strings"
+    )
+
+
 class PromptOutputValidator:
     """Validate prompt outputs against the stored PromptVersion output schema."""
 
@@ -92,14 +103,13 @@ class PromptOutputValidator:
         for field_name, field_schema in properties.items():
             if field_name not in output:
                 continue
-            expected_type = cast(Mapping[str, object], field_schema).get("type")
-            if not isinstance(expected_type, str):
+            expected_types = _extract_expected_types(
+                field_name,
+                cast(Mapping[str, object], field_schema),
+            )
+            if not any(_matches_json_type(output[field_name], item) for item in expected_types):
                 raise PromptOutputValidationError(
-                    f"output_schema.properties.{field_name}.type must be a string"
-                )
-            if not _matches_json_type(output[field_name], expected_type):
-                raise PromptOutputValidationError(
-                    f"output field {field_name} must be {expected_type}"
+                    f"output field {field_name} must be {' or '.join(expected_types)}"
                 )
 
         return PromptValidatedOutput(

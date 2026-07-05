@@ -25,6 +25,7 @@ def build_legal_workflow_graph(
     *,
     classification_handler: WorkflowNode | None = None,
     generation_handler: WorkflowNode | None = None,
+    risk_check_handler: WorkflowNode | None = None,
 ) -> object:
     """Build the LEGAL-140 graph with deterministic first-slice nodes."""
 
@@ -35,7 +36,7 @@ def build_legal_workflow_graph(
     graph.add_node("retrieval", retrieval_node)
     graph.add_node("generation", generation_handler or generation_node)  # type: ignore[arg-type]
     graph.add_node("citation_check", citation_check_node)
-    graph.add_node("risk_check", risk_check_node)
+    graph.add_node("risk_check", risk_check_handler or risk_check_node)  # type: ignore[arg-type]
     graph.add_node("persist", persist_node)
 
     graph.set_entry_point("input_safety")

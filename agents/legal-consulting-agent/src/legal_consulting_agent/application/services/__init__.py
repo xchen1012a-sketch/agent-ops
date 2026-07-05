@@ -15,6 +15,11 @@ from legal_consulting_agent.application.services.legal_data_service import (
     LegalDataNotFoundError,
     LegalDataService,
 )
+from legal_consulting_agent.application.services.risk_prompt_service import (
+    LegalRiskCheckPromptService,
+    LegalRiskCheckResult,
+    make_prompt_risk_check_node,
+)
 from legal_consulting_agent.application.services.workflow_audit_service import (
     LegalWorkflowAuditService,
     WorkflowErrorMapping,
@@ -35,6 +40,8 @@ __all__ = [
     "LegalDataService",
     "LegalGenerationPromptService",
     "LegalGenerationResult",
+    "LegalRiskCheckPromptService",
+    "LegalRiskCheckResult",
     "LegalWorkflowAuditService",
     "LegalWorkflowRunnerService",
     "TextLLMAdapter",
@@ -45,5 +52,6 @@ __all__ = [
     "map_workflow_error",
     "make_prompt_classification_node",
     "make_prompt_generation_node",
+    "make_prompt_risk_check_node",
     "prepare_retry_state",
 ]

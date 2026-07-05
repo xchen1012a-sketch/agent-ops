@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-140 Agent 工作流` 第七切片已落地：generation 节点可注入 Prompt loader + mock LLM adapter + output validator，并继续保持引用校验边界
+- 状态：`LEGAL-140 Agent 工作流` 第八切片已落地：risk_check 节点可注入 Prompt loader + mock LLM adapter + output validator，并采用校验失败 fail-closed 高风险策略
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -22,9 +22,10 @@
   - 已实现 Prompt 边界：`PromptTemplateLoader`、`PromptRenderResult`、`validate_template_key`、`extract_required_variables`、`PromptOutputValidator`、`parse_json_object_output`
   - 已实现 Prompt-backed classification 边界：`LegalClassificationPromptService`、`TextLLMAdapter`、`make_prompt_classification_node`、graph classification handler 注入
   - 已实现 Prompt-backed generation 边界：`LegalGenerationPromptService`、`LegalGenerationResult`、`make_prompt_generation_node`、graph generation handler 注入
+  - 已实现 Prompt-backed risk_check 边界：`LegalRiskCheckPromptService`、`LegalRiskCheckResult`、`make_prompt_risk_check_node`、graph risk_check handler 注入
 - 暂不具备 / 后置依赖：
   - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
   - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - 继续 `LEGAL-140` 第八切片：risk_check 节点接入 Prompt loader + mock LLM adapter + output validator，仍不接真实 DeepSeek、不接审核 API。
+  - 继续 `LEGAL-140` 第九切片：整理 prompt-backed 工作流装配边界，保持真实 DeepSeek、RAG、DB 写入和 API 后置。
   - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。

@@ -352,6 +352,57 @@
 - generation 节点接入 Prompt loader + mock LLM adapter + output validator。
 - 仍不接真实 DeepSeek；mock 输出需包含 `{answer: str, citations: list}` 并通过引用校验节点。
 
+### 第七切片执行范围：Prompt-backed generation 节点
+
+- 目标：让 generation 可通过 Prompt loader + mock LLM adapter + output validator 生成结构化回答草稿和引用列表。
+- 输入：`safe_question`、`context_messages`、`chunks`、`category`、`PromptVersion`、模板文件、mock LLM raw JSON 输出。
+- 输出：`LegalGenerationPromptService`、`LegalGenerationResult`、`make_prompt_generation_node()`，以及 `build_legal_workflow_graph(generation_handler=...)` 注入点。
+- 行为：渲染 `legal_generation` Prompt；调用注入的文本 LLM adapter；通过 `PromptOutputValidator` 校验输出；将 `answer_draft`、`citations` 写入 workflow state；非法引用结构映射 `CITATION_INVALID`，并交由后续 `citation_check` 节点继续校验来源一致性。
+- 约束：不接真实 DeepSeek；不改默认 graph 行为；不改 API / DB；不改其他 Agent；不绕过引用校验节点。
+- 不做：真实 LLM adapter、Prompt 文件真源、generation API、RAG 检索接入、重试 runner 接入。
+
+### 第七切片执行记录（2026-07-05）
+
+- 已新增 `application/services/generation_prompt_service.py`。
+- 已支持 Prompt-backed generation node factory，并让 `build_legal_workflow_graph()` 支持注入 generation handler。
+- 已覆盖 Prompt 渲染、mock LLM 输出校验、节点 state 更新、非法引用结构映射 `CITATION_INVALID`、graph 注入执行。
+- `uv run pytest tests/unit/test_generation_prompt_service.py tests/unit/test_classification_prompt_service.py tests/unit/test_prompt_output_validator.py tests/unit/test_prompt_template_loader.py -q`：25 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，72 files already formatted。
+- `uv run mypy src`：通过，51 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：96 passed，总覆盖率 84%。
+
+### LEGAL-140 下一切片建议
+
+- risk_check 节点接入 Prompt loader + mock LLM adapter + output validator。
+- 仍不接真实 DeepSeek；mock 输出需包含 `{high_risk: bool, risk_reason: str | null}`，并保持高风险审核入库/API 后置。
+
+### 第八切片执行范围：Prompt-backed risk_check 节点
+
+- 目标：让 risk_check 可通过 Prompt loader + mock LLM adapter + output validator 输出结构化高风险判断。
+- 输入：`safe_question`、`validated_answer` / `answer_draft`、`citations`、`category`、`PromptVersion`、模板文件、mock LLM raw JSON 输出。
+- 输出：`LegalRiskCheckPromptService`、`LegalRiskCheckResult`、`make_prompt_risk_check_node()`，以及 `build_legal_workflow_graph(risk_check_handler=...)` 注入点。
+- 行为：渲染 `legal_risk_check` Prompt；调用注入的文本 LLM adapter；通过 `PromptOutputValidator` 校验 `high_risk` 和 nullable `risk_reason`；高风险时要求 `risk_reason` 非空；模型输出非法时不采信模型结果，fail-closed 标记 `high_risk=true` 和 `risk_reason=risk_check_validation_failed`。
+- 约束：不接真实 DeepSeek；不改默认 graph 行为；不改 API / DB；不把高风险审核入库提前接入 workflow；不修改其他 Agent。
+- 不做：真实 LLM adapter、Prompt 文件真源、审核 API、`high_risk_reviews` 自动入队、重试 runner 接入。
+
+### 第八切片执行记录（2026-07-05）
+
+- 已新增 `application/services/risk_prompt_service.py`。
+- 已支持 Prompt-backed risk_check node factory，并让 `build_legal_workflow_graph()` 支持注入 risk_check handler。
+- 已最小扩展 `PromptOutputValidator`，支持字段 `type` 为字符串列表，用于 `["string", "null"]` 这类 nullable 输出；仍不引入完整 JSON Schema 引擎。
+- 已覆盖高风险原因、低风险 null reason、非法高风险输出 fail-closed、graph 注入执行。
+- `uv run pytest tests/unit/test_risk_prompt_service.py tests/unit/test_prompt_output_validator.py -q`：12 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，74 files already formatted。
+- `uv run mypy src`：通过，52 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：100 passed，总覆盖率 85%。
+
+### LEGAL-140 下一切片建议
+
+- 整理 prompt-backed 工作流装配边界：集中组装 classification / generation / risk_check 注入节点，仍只使用 mock adapter 和受控 PromptVersion。
+- 真实 DeepSeek、RAG 检索、DB 写入、API/SSE、审核入队继续后置到独立切片。
+
 ## 验收标准
 
 ### LEGAL-130
