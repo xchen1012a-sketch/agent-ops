@@ -24,7 +24,10 @@ from sqlalchemy.dialects import mysql
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from legal_consulting_agent.domain.value_objects.legal_enums import (
+    MaterialStatus,
     MessageRole,
+    PromptStatus,
+    ReviewStatus,
     RunStatus,
     SessionStatus,
     UserRole,
@@ -41,6 +44,9 @@ def _enum_values(
     | type[UserStatus]
     | type[SessionStatus]
     | type[MessageRole]
+    | type[MaterialStatus]
+    | type[PromptStatus]
+    | type[ReviewStatus]
     | type[RunStatus],
 ) -> list[str]:
     return [member.value for member in enum_cls]
@@ -245,6 +251,108 @@ class FeedbackModel(Base):
         DateTimeFsp,
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP(6)"),
+    )
+
+
+class HighRiskReviewModel(Base):
+    """Human-review queue entry for a high-risk assistant answer."""
+
+    __tablename__ = "high_risk_reviews"
+    __table_args__ = (Index("idx_reviews_status", "status", "created_at"),)
+
+    id: Mapped[int] = mapped_column(UnsignedBigInteger, primary_key=True, autoincrement=True)
+    message_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("messages.id", name="fk_review_message"),
+        nullable=False,
+    )
+    user_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("users.id", name="fk_review_user"),
+        nullable=False,
+    )
+    reason: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[ReviewStatus] = mapped_column(
+        SAEnum(ReviewStatus, values_callable=_enum_values, name="review_status"),
+        nullable=False,
+        default=ReviewStatus.PENDING,
+        server_default=ReviewStatus.PENDING.value,
+    )
+    reviewed_by: Mapped[int | None] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("users.id", name="fk_review_reviewer"),
+    )
+    resolution: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTimeFsp,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(6)"),
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTimeFsp)
+
+
+class PromptVersionModel(Base):
+    """Versioned Prompt metadata with an external relative template key."""
+
+    __tablename__ = "prompt_versions"
+    __table_args__ = (UniqueConstraint("prompt_name", "version", name="uk_prompt_name_version"),)
+
+    id: Mapped[int] = mapped_column(UnsignedBigInteger, primary_key=True, autoincrement=True)
+    prompt_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[str] = mapped_column(String(32), nullable=False)
+    template_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    variables: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    output_schema: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    status: Mapped[PromptStatus] = mapped_column(
+        SAEnum(PromptStatus, values_callable=_enum_values, name="prompt_status"),
+        nullable=False,
+        default=PromptStatus.DRAFT,
+        server_default=PromptStatus.DRAFT.value,
+    )
+    created_by: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("users.id", name="fk_prompt_creator"),
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTimeFsp,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(6)"),
+    )
+
+
+class KnowledgeMaterialModel(TimestampMixin, Base):
+    """Metadata for a legal source whose content remains outside MySQL."""
+
+    __tablename__ = "knowledge_materials"
+    __table_args__ = (
+        Index("idx_material_status", "status"),
+        Index("idx_material_hash", "file_hash"),
+    )
+
+    id: Mapped[int] = mapped_column(UnsignedBigInteger, primary_key=True, autoincrement=True)
+    public_id: Mapped[str] = mapped_column(mysql.CHAR(36), nullable=False, unique=True)
+    category_id: Mapped[int | None] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("legal_categories.id", name="fk_material_category"),
+    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    source_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    source_section: Mapped[str | None] = mapped_column(String(255))
+    file_hash: Mapped[str] = mapped_column(mysql.CHAR(64), nullable=False)
+    file_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    chunk_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    status: Mapped[MaterialStatus] = mapped_column(
+        SAEnum(MaterialStatus, values_callable=_enum_values, name="material_status"),
+        nullable=False,
+        default=MaterialStatus.INDEXING,
+        server_default=MaterialStatus.INDEXING.value,
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    uploaded_by: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("users.id", name="fk_material_uploader"),
+        nullable=False,
     )
 
 

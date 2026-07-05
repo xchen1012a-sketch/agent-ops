@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-130 身份与数据层` 已完成前三批 8 张表；设计完整性修复已完成
+- 状态：`LEGAL-140 Agent 工作流` 第一切片已落地：workflow state、纯函数节点、LangGraph graph factory 和 mock 边界测试通过
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -15,11 +15,12 @@
   - Docker 健康检查路径后由 `76556f5` 修正为 `/v1/health/live`。
 - 当前执行入口：
   - 模块：`agents/legal-consulting-agent`
-  - 已实现对象：`users`、`legal_categories`、`sessions`、`messages`、`agent_runs`、`node_runs`、`consultation_records`、`feedbacks`
+  - 已实现对象：`users`、`legal_categories`、`sessions`、`messages`、`agent_runs`、`node_runs`、`consultation_records`、`feedbacks`、`high_risk_reviews`、`prompt_versions`、`knowledge_materials`
+  - 已实现工作流边界：`LegalWorkflowState`、`input_safety`、`classification`、`context_build`、`retrieval`、`generation`、`citation_check`、`risk_check`、`persist`、`build_legal_workflow_graph`
 - 暂不具备 / 后置依赖：
-  - 课件法律知识库样本未提供；不阻塞 `LEGAL-130`。
-  - 知识材料导入、Qdrant 索引、BGE embedding/reranker、RAG 检索和 DeepSeek 真实问答放到 `LEGAL-140`。
+  - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
+  - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - 按已确认设计继续分批实现 `high_risk_reviews`、`prompt_versions`。
-  - `knowledge_materials` 可先建元数据表，但导入、切分、向量索引和检索仍放到 `LEGAL-140`。
-  - 报告由 `consultation_records` 生成同步 API 投影，本阶段不创建 `reports` / `export_tasks` 表。
+  - 处理当前工作区内计划外模块配置变更的归属：`data-query-agent` / `recruitment-assistant-agent` config 改动需确认是否纳入本轮。
+  - 继续 `LEGAL-140` 第二切片：为 workflow 增加节点运行审计集成、重试/失败状态映射，仍不接真实外部服务。
+  - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。

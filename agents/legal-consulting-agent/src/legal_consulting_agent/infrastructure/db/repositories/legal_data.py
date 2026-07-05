@@ -9,10 +9,13 @@ from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
     ConsultationRecord,
     Feedback,
+    HighRiskReview,
+    KnowledgeMaterial,
     LegalCategory,
     LegalMessage,
     LegalSession,
     NodeRun,
+    PromptVersion,
     UserMirror,
 )
 from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole
@@ -20,10 +23,13 @@ from legal_consulting_agent.infrastructure.db.models.legal_data import (
     AgentRunModel,
     ConsultationRecordModel,
     FeedbackModel,
+    HighRiskReviewModel,
+    KnowledgeMaterialModel,
     LegalCategoryModel,
     LegalMessageModel,
     LegalSessionModel,
     NodeRunModel,
+    PromptVersionModel,
     UserModel,
 )
 
@@ -164,6 +170,58 @@ class SqlAlchemyLegalDataRepository:
         await self._session.flush()
         return self._to_feedback(model)
 
+    async def create_high_risk_review(self, review: HighRiskReview) -> HighRiskReview:
+        """Persist a pending high-risk review without committing."""
+        model = HighRiskReviewModel(
+            message_id=review.message_id,
+            user_id=review.user_id,
+            reason=review.reason,
+            status=review.status,
+            reviewed_by=review.reviewed_by,
+            resolution=review.resolution,
+            reviewed_at=review.reviewed_at,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        return self._to_high_risk_review(model)
+
+    async def create_prompt_version(self, prompt: PromptVersion) -> PromptVersion:
+        """Persist Prompt metadata without committing."""
+        model = PromptVersionModel(
+            prompt_name=prompt.prompt_name,
+            version=prompt.version,
+            template_key=prompt.template_key,
+            variables=prompt.variables,
+            output_schema=prompt.output_schema,
+            status=prompt.status,
+            created_by=prompt.created_by,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        return self._to_prompt_version(model)
+
+    async def create_knowledge_material(
+        self,
+        material: KnowledgeMaterial,
+    ) -> KnowledgeMaterial:
+        """Persist knowledge material metadata without committing."""
+        model = KnowledgeMaterialModel(
+            public_id=material.public_id,
+            category_id=material.category_id,
+            title=material.title,
+            source_name=material.source_name,
+            source_section=material.source_section,
+            file_hash=material.file_hash,
+            file_key=material.file_key,
+            chunk_count=material.chunk_count,
+            status=material.status,
+            version=material.version,
+            uploaded_by=material.uploaded_by,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        return self._to_knowledge_material(model)
+
     async def create_agent_run(self, run: AgentRun) -> AgentRun:
         """Persist an Agent run audit record."""
         model = AgentRunModel(
@@ -277,6 +335,49 @@ class SqlAlchemyLegalDataRepository:
             user_id=model.user_id,
             rating=model.rating,
             comment=model.comment,
+        )
+
+    @staticmethod
+    def _to_high_risk_review(model: HighRiskReviewModel) -> HighRiskReview:
+        return HighRiskReview(
+            id=model.id,
+            message_id=model.message_id,
+            user_id=model.user_id,
+            reason=model.reason,
+            status=model.status,
+            reviewed_by=model.reviewed_by,
+            resolution=model.resolution,
+            reviewed_at=model.reviewed_at,
+        )
+
+    @staticmethod
+    def _to_prompt_version(model: PromptVersionModel) -> PromptVersion:
+        return PromptVersion(
+            id=model.id,
+            prompt_name=model.prompt_name,
+            version=model.version,
+            template_key=model.template_key,
+            variables=model.variables,
+            output_schema=model.output_schema,
+            status=model.status,
+            created_by=model.created_by,
+        )
+
+    @staticmethod
+    def _to_knowledge_material(model: KnowledgeMaterialModel) -> KnowledgeMaterial:
+        return KnowledgeMaterial(
+            id=model.id,
+            public_id=model.public_id,
+            category_id=model.category_id,
+            title=model.title,
+            source_name=model.source_name,
+            source_section=model.source_section,
+            file_hash=model.file_hash,
+            file_key=model.file_key,
+            chunk_count=model.chunk_count,
+            status=model.status,
+            version=model.version,
+            uploaded_by=model.uploaded_by,
         )
 
     @staticmethod

@@ -10,18 +10,25 @@ from legal_consulting_agent.application.services import (
     LegalDataNotFoundError,
     LegalDataService,
 )
+from legal_consulting_agent.core.errors import ForbiddenError
 from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
     ConsultationRecord,
     Feedback,
+    HighRiskReview,
+    KnowledgeMaterial,
     LegalCategory,
     LegalMessage,
     LegalSession,
     NodeRun,
+    PromptVersion,
     UserMirror,
 )
 from legal_consulting_agent.domain.value_objects.legal_enums import (
+    MaterialStatus,
     MessageRole,
+    PromptStatus,
+    ReviewStatus,
     RunStatus,
     SessionStatus,
     UserRole,
@@ -39,6 +46,9 @@ class FakeLegalDataRepository:
         self.messages: list[LegalMessage] = []
         self.consultation_records: list[ConsultationRecord] = []
         self.feedbacks: list[Feedback] = []
+        self.high_risk_reviews: list[HighRiskReview] = []
+        self.prompt_versions: list[PromptVersion] = []
+        self.knowledge_materials: list[KnowledgeMaterial] = []
         self.agent_runs: list[AgentRun] = []
         self.node_runs: list[NodeRun] = []
 
@@ -150,6 +160,55 @@ class FakeLegalDataRepository:
             comment=feedback.comment,
         )
         self.feedbacks.append(persisted)
+        return persisted
+
+    async def create_high_risk_review(self, review: HighRiskReview) -> HighRiskReview:
+        persisted = HighRiskReview(
+            id=60,
+            message_id=review.message_id,
+            user_id=review.user_id,
+            reason=review.reason,
+            status=review.status,
+            reviewed_by=review.reviewed_by,
+            resolution=review.resolution,
+            reviewed_at=review.reviewed_at,
+        )
+        self.high_risk_reviews.append(persisted)
+        return persisted
+
+    async def create_prompt_version(self, prompt: PromptVersion) -> PromptVersion:
+        persisted = PromptVersion(
+            id=70,
+            prompt_name=prompt.prompt_name,
+            version=prompt.version,
+            template_key=prompt.template_key,
+            variables=prompt.variables,
+            output_schema=prompt.output_schema,
+            status=prompt.status,
+            created_by=prompt.created_by,
+        )
+        self.prompt_versions.append(persisted)
+        return persisted
+
+    async def create_knowledge_material(
+        self,
+        material: KnowledgeMaterial,
+    ) -> KnowledgeMaterial:
+        persisted = KnowledgeMaterial(
+            id=80,
+            public_id=material.public_id,
+            category_id=material.category_id,
+            title=material.title,
+            source_name=material.source_name,
+            source_section=material.source_section,
+            file_hash=material.file_hash,
+            file_key=material.file_key,
+            chunk_count=material.chunk_count,
+            status=material.status,
+            version=material.version,
+            uploaded_by=material.uploaded_by,
+        )
+        self.knowledge_materials.append(persisted)
         return persisted
 
     async def create_agent_run(self, run: AgentRun) -> AgentRun:
@@ -620,3 +679,318 @@ async def test_create_feedback_rejects_user_message() -> None:
         )
 
     assert repo.feedbacks == []
+
+
+@pytest.mark.asyncio
+async def test_create_high_risk_review_queues_pending_assistant_message() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    repo.messages = [
+        LegalMessage(
+            id=12,
+            public_id="answer-public-id",
+            session_id=10,
+            role=MessageRole.ASSISTANT,
+            content="如有人身安全危险，请立即联系紧急渠道。",
+            citations=None,
+            high_risk=True,
+            prompt_version="legal_generation:v1",
+        )
+    ]
+    service = LegalDataService(repo)
+
+    review = await service.create_high_risk_review(
+        user_public_id="user-public-id",
+        session_public_id="thread-public-id",
+        message_public_id="answer-public-id",
+        reason="personal_safety",
+    )
+
+    assert review.id == 60
+    assert review.message_id == 12
+    assert review.user_id == 1
+    assert review.status is ReviewStatus.PENDING
+    assert review.reviewed_by is None
+    assert review.reviewed_at is None
+
+
+@pytest.mark.asyncio
+async def test_create_high_risk_review_rejects_unmarked_message() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    repo.messages = [
+        LegalMessage(
+            id=12,
+            public_id="answer-public-id",
+            session_id=10,
+            role=MessageRole.ASSISTANT,
+            content="普通回答",
+            citations=None,
+            high_risk=False,
+            prompt_version="legal_generation:v1",
+        )
+    ]
+    service = LegalDataService(repo)
+
+    with pytest.raises(ValueError, match="message is not marked high risk"):
+        await service.create_high_risk_review(
+            user_public_id="user-public-id",
+            session_public_id="thread-public-id",
+            message_public_id="answer-public-id",
+            reason="personal_safety",
+        )
+
+    assert repo.high_risk_reviews == []
+
+
+@pytest.mark.asyncio
+async def test_create_prompt_version_allows_admin_with_relative_key() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="admin-public-id",
+        email="admin@example.test",
+        display_name="Admin",
+        role=UserRole.ADMIN,
+        status=UserStatus.ACTIVE,
+    )
+    service = LegalDataService(repo)
+
+    prompt = await service.create_prompt_version(
+        creator_public_id="admin-public-id",
+        prompt_name="legal_classification",
+        version="v1",
+        template_key="legal_classification/v1/template.txt",
+        variables={"required": ["question"]},
+        output_schema={"type": "object"},
+    )
+
+    assert prompt.id == 70
+    assert prompt.status is PromptStatus.DRAFT
+    assert prompt.created_by == 1
+    assert prompt.template_key == "legal_classification/v1/template.txt"
+
+
+@pytest.mark.asyncio
+async def test_create_prompt_version_rejects_non_admin() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    service = LegalDataService(repo)
+
+    with pytest.raises(ForbiddenError):
+        await service.create_prompt_version(
+            creator_public_id="user-public-id",
+            prompt_name="legal_classification",
+            version="v1",
+            template_key="legal_classification/v1/template.txt",
+            variables={"required": ["question"]},
+            output_schema={"type": "object"},
+        )
+
+    assert repo.prompt_versions == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "template_key",
+    [
+        "/absolute/template.txt",
+        "../outside/template.txt",
+        "legal\\template.txt",
+        "C:/template.txt",
+        "",
+    ],
+)
+async def test_create_prompt_version_rejects_unsafe_template_key(template_key: str) -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="admin-public-id",
+        email="admin@example.test",
+        display_name="Admin",
+        role=UserRole.ADMIN,
+        status=UserStatus.ACTIVE,
+    )
+    service = LegalDataService(repo)
+
+    with pytest.raises(ValueError, match="safe relative POSIX key"):
+        await service.create_prompt_version(
+            creator_public_id="admin-public-id",
+            prompt_name="legal_classification",
+            version="v1",
+            template_key=template_key,
+            variables={"required": ["question"]},
+            output_schema={"type": "object"},
+        )
+
+    assert repo.prompt_versions == []
+
+
+@pytest.mark.asyncio
+async def test_create_knowledge_material_allows_admin_metadata() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="admin-public-id",
+        email="admin@example.test",
+        display_name="Admin",
+        role=UserRole.ADMIN,
+        status=UserStatus.ACTIVE,
+    )
+    repo.category = LegalCategory(
+        id=2,
+        public_id="category-public-id",
+        code="civil_labor",
+        display_name="劳动争议",
+        description=None,
+        sort_order=0,
+    )
+    service = LegalDataService(repo)
+
+    material = await service.create_knowledge_material(
+        uploader_public_id="admin-public-id",
+        category_code="civil_labor",
+        title="劳动合同法",
+        source_name="中华人民共和国劳动合同法",
+        source_section="第三十五条",
+        file_hash="A" * 64,
+        file_key="civil_labor/labor-contract-law.txt",
+    )
+
+    assert material.id == 80
+    assert material.category_id == 2
+    assert material.file_hash == "a" * 64
+    assert material.status is MaterialStatus.INDEXING
+    assert material.chunk_count == 0
+    assert material.version == 1
+
+
+@pytest.mark.asyncio
+async def test_create_knowledge_material_rejects_non_admin() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    service = LegalDataService(repo)
+
+    with pytest.raises(ForbiddenError):
+        await service.create_knowledge_material(
+            uploader_public_id="user-public-id",
+            category_code=None,
+            title="材料",
+            source_name="来源",
+            source_section=None,
+            file_hash="a" * 64,
+            file_key="materials/source.txt",
+        )
+
+    assert repo.knowledge_materials == []
+
+
+@pytest.mark.asyncio
+async def test_create_knowledge_material_requires_existing_category() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="admin-public-id",
+        email="admin@example.test",
+        display_name="Admin",
+        role=UserRole.ADMIN,
+        status=UserStatus.ACTIVE,
+    )
+    service = LegalDataService(repo)
+
+    with pytest.raises(LegalDataNotFoundError):
+        await service.create_knowledge_material(
+            uploader_public_id="admin-public-id",
+            category_code="missing",
+            title="材料",
+            source_name="来源",
+            source_section=None,
+            file_hash="a" * 64,
+            file_key="materials/source.txt",
+        )
+
+    assert repo.knowledge_materials == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("file_hash", "file_key", "message"),
+    [
+        ("not-a-sha256", "materials/source.txt", "SHA-256"),
+        ("a" * 64, "../outside/source.txt", "safe relative POSIX key"),
+    ],
+)
+async def test_create_knowledge_material_rejects_invalid_storage_metadata(
+    file_hash: str,
+    file_key: str,
+    message: str,
+) -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="admin-public-id",
+        email="admin@example.test",
+        display_name="Admin",
+        role=UserRole.ADMIN,
+        status=UserStatus.ACTIVE,
+    )
+    service = LegalDataService(repo)
+
+    with pytest.raises(ValueError, match=message):
+        await service.create_knowledge_material(
+            uploader_public_id="admin-public-id",
+            category_code=None,
+            title="材料",
+            source_name="来源",
+            source_section=None,
+            file_hash=file_hash,
+            file_key=file_key,
+        )
+
+    assert repo.knowledge_materials == []

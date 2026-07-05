@@ -3,22 +3,30 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import PurePosixPath
+from string import hexdigits
 from typing import Any
 from uuid import uuid4
 
-from legal_consulting_agent.core.errors import AppError
+from legal_consulting_agent.core.errors import AppError, ForbiddenError
 from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
     ConsultationRecord,
     Feedback,
+    HighRiskReview,
+    KnowledgeMaterial,
     LegalMessage,
     LegalSession,
     NodeRun,
+    PromptVersion,
     UserMirror,
 )
 from legal_consulting_agent.domain.ports.legal_data_repository import LegalDataRepository
 from legal_consulting_agent.domain.value_objects.legal_enums import (
+    MaterialStatus,
     MessageRole,
+    PromptStatus,
+    ReviewStatus,
     RunStatus,
     SessionStatus,
     UserRole,
@@ -31,6 +39,18 @@ class LegalDataNotFoundError(AppError):
 
     code = "LEGAL_DATA_NOT_FOUND"
     http_status = 404
+
+
+def _validate_relative_posix_key(value: str, *, field_name: str) -> None:
+    key_path = PurePosixPath(value)
+    if (
+        not value
+        or key_path.is_absolute()
+        or ".." in key_path.parts
+        or "\\" in value
+        or ":" in value
+    ):
+        raise ValueError(f"{field_name} must be a safe relative POSIX key")
 
 
 class LegalDataService:
@@ -246,6 +266,124 @@ class LegalDataService:
                 user_id=user.id,
                 rating=rating,
                 comment=comment,
+            )
+        )
+
+    async def create_high_risk_review(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        message_public_id: str,
+        reason: str,
+    ) -> HighRiskReview:
+        """Queue a high-risk assistant message for later human review."""
+        user = await self._repository.get_user_by_public_id(user_public_id)
+        if user is None or user.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+
+        session = await self._repository.get_session_for_user(
+            session_public_id=session_public_id,
+            user_id=user.id,
+        )
+        if session is None or session.id is None:
+            raise LegalDataNotFoundError("Legal session not found")
+
+        message = await self._repository.get_message_for_session(
+            message_public_id=message_public_id,
+            session_id=session.id,
+            role=MessageRole.ASSISTANT,
+        )
+        if message is None or message.id is None:
+            raise LegalDataNotFoundError("Assistant message not found")
+        if not message.high_risk:
+            raise ValueError("message is not marked high risk")
+
+        return await self._repository.create_high_risk_review(
+            HighRiskReview(
+                message_id=message.id,
+                user_id=user.id,
+                reason=reason,
+                status=ReviewStatus.PENDING,
+                reviewed_by=None,
+                resolution=None,
+                reviewed_at=None,
+            )
+        )
+
+    async def create_prompt_version(
+        self,
+        *,
+        creator_public_id: str,
+        prompt_name: str,
+        version: str,
+        template_key: str,
+        variables: dict[str, Any],
+        output_schema: dict[str, Any],
+    ) -> PromptVersion:
+        """Create draft Prompt metadata for an administrator."""
+        creator = await self._repository.get_user_by_public_id(creator_public_id)
+        if creator is None or creator.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+        if creator.role is not UserRole.ADMIN:
+            raise ForbiddenError("Administrator role required")
+
+        _validate_relative_posix_key(template_key, field_name="template_key")
+
+        return await self._repository.create_prompt_version(
+            PromptVersion(
+                prompt_name=prompt_name,
+                version=version,
+                template_key=template_key,
+                variables=variables,
+                output_schema=output_schema,
+                status=PromptStatus.DRAFT,
+                created_by=creator.id,
+            )
+        )
+
+    async def create_knowledge_material(
+        self,
+        *,
+        uploader_public_id: str,
+        category_code: str | None,
+        title: str,
+        source_name: str,
+        source_section: str | None,
+        file_hash: str,
+        file_key: str,
+    ) -> KnowledgeMaterial:
+        """Create indexing metadata without reading or writing source content."""
+        uploader = await self._repository.get_user_by_public_id(uploader_public_id)
+        if uploader is None or uploader.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+        if uploader.role is not UserRole.ADMIN:
+            raise ForbiddenError("Administrator role required")
+
+        category_id: int | None = None
+        if category_code is not None:
+            category = await self._repository.get_category_by_code(category_code)
+            if category is None or category.id is None:
+                raise LegalDataNotFoundError("Legal category not found")
+            category_id = category.id
+
+        if len(file_hash) != 64 or any(character not in hexdigits for character in file_hash):
+            raise ValueError("file_hash must be a SHA-256 hexadecimal digest")
+        _validate_relative_posix_key(file_key, field_name="file_key")
+
+        return await self._repository.create_knowledge_material(
+            KnowledgeMaterial(
+                public_id=str(uuid4()),
+                category_id=category_id,
+                title=title,
+                source_name=source_name,
+                source_section=source_section,
+                file_hash=file_hash.lower(),
+                file_key=file_key,
+                chunk_count=0,
+                status=MaterialStatus.INDEXING,
+                version=1,
+                uploaded_by=uploader.id,
             )
         )
 

@@ -7,7 +7,7 @@
 ## [auto] Refresh info
 
 - source hash: f59f0d7848480325
-- last refresh: 2026-07-05 10:10:31 +0800
+- last refresh: 2026-07-05 11:40:42 +0800
 - refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack

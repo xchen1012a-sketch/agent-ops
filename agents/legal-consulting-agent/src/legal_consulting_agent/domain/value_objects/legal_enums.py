@@ -43,3 +43,27 @@ class RunStatus(StrEnum):
     FAILED = "failed"
     RETRYING = "retrying"
     CANCELED = "canceled"
+
+
+class ReviewStatus(StrEnum):
+    """Lifecycle states for a high-risk human review."""
+
+    PENDING = "pending"
+    REVIEWED = "reviewed"
+    RESOLVED = "resolved"
+
+
+class PromptStatus(StrEnum):
+    """Lifecycle states for versioned Prompt metadata."""
+
+    DRAFT = "draft"
+    ACTIVE = "active"
+    RETIRED = "retired"
+
+
+class MaterialStatus(StrEnum):
+    """Indexing lifecycle states for legal knowledge materials."""
+
+    INDEXING = "indexing"
+    READY = "ready"
+    FAILED = "failed"

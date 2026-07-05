@@ -7,7 +7,10 @@ from datetime import datetime
 from typing import Any
 
 from legal_consulting_agent.domain.value_objects.legal_enums import (
+    MaterialStatus,
     MessageRole,
+    PromptStatus,
+    ReviewStatus,
     RunStatus,
     SessionStatus,
     UserRole,
@@ -94,6 +97,52 @@ class Feedback:
     user_id: int
     rating: int
     comment: str | None
+    id: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class HighRiskReview:
+    """Human-review queue record for a high-risk assistant answer."""
+
+    message_id: int
+    user_id: int
+    reason: str
+    status: ReviewStatus
+    reviewed_by: int | None
+    resolution: str | None
+    reviewed_at: datetime | None
+    id: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PromptVersion:
+    """Versioned Prompt metadata created by an administrator."""
+
+    prompt_name: str
+    version: str
+    template_key: str
+    variables: dict[str, Any]
+    output_schema: dict[str, Any]
+    status: PromptStatus
+    created_by: int
+    id: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class KnowledgeMaterial:
+    """Metadata for one legal knowledge source stored outside MySQL."""
+
+    public_id: str
+    category_id: int | None
+    title: str
+    source_name: str
+    source_section: str | None
+    file_hash: str
+    file_key: str
+    chunk_count: int
+    status: MaterialStatus
+    version: int
+    uploaded_by: int
     id: int | None = None
 
 

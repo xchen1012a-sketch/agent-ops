@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: e33d9b36f03d0dbf
-- last refresh: 2026-07-05 09:42:54 +0800
+- source hash: d57ec15539527d74
+- last refresh: 2026-07-05 10:53:47 +0800
 - refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack
@@ -38,6 +38,12 @@ legal-consulting-agent/
 |   |-- .ruff_cache/.gitignore
 |   |-- .ruff_cache/0.15.20
 |   |-- .ruff_cache/CACHEDIR.TAG
+|-- .uv-cache
+|   |-- .uv-cache/.gitignore
+|   |-- .uv-cache/.lock
+|   |-- .uv-cache/CACHEDIR.TAG
+|   |-- .uv-cache/interpreter-v4
+|   |-- .uv-cache/sdists-v9
 |-- .venv
 |   |-- .venv/.gitignore
 |   |-- .venv/.lock
@@ -58,6 +64,7 @@ legal-consulting-agent/
 |   |-- docs/detailed-design.md
 |   |-- docs/specification.md
 |-- migrations
+|   |-- migrations/__pycache__
 |   |-- migrations/env.py
 |   |-- migrations/script.py.mako
 |   |-- migrations/versions

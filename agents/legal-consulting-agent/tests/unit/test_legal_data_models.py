@@ -7,10 +7,13 @@ from legal_consulting_agent.infrastructure.db.models import (
     AgentRunModel,
     ConsultationRecordModel,
     FeedbackModel,
+    HighRiskReviewModel,
+    KnowledgeMaterialModel,
     LegalCategoryModel,
     LegalMessageModel,
     LegalSessionModel,
     NodeRunModel,
+    PromptVersionModel,
     UserModel,
 )
 
@@ -27,6 +30,9 @@ def test_legal_130_tables_are_registered() -> None:
         "node_runs",
         "consultation_records",
         "feedbacks",
+        "high_risk_reviews",
+        "prompt_versions",
+        "knowledge_materials",
     }.issubset(tables.keys())
 
 
@@ -107,3 +113,51 @@ def test_feedback_constraints_match_detailed_design() -> None:
     assert {"fk_feedback_message", "fk_feedback_user"} == foreign_keys
     assert "idx_feedback_message" in indexes
     assert {"ck_feedback_rating", "uk_feedback_user_message"}.issubset(named_constraints)
+
+
+def test_high_risk_review_constraints_match_detailed_design() -> None:
+    foreign_keys = {
+        fk.constraint.name
+        for column in HighRiskReviewModel.__table__.columns
+        for fk in column.foreign_keys
+    }
+    indexes = {index.name for index in HighRiskReviewModel.__table__.indexes}
+
+    assert {
+        "fk_review_message",
+        "fk_review_user",
+        "fk_review_reviewer",
+    } == foreign_keys
+    assert "idx_reviews_status" in indexes
+    assert HighRiskReviewModel.__table__.columns["reviewed_by"].nullable is True
+
+
+def test_prompt_version_constraints_match_detailed_design() -> None:
+    foreign_keys = {
+        fk.constraint.name
+        for column in PromptVersionModel.__table__.columns
+        for fk in column.foreign_keys
+    }
+    named_constraints = {
+        constraint.name
+        for constraint in PromptVersionModel.__table__.constraints
+        if constraint.name is not None
+    }
+
+    assert foreign_keys == {"fk_prompt_creator"}
+    assert "uk_prompt_name_version" in named_constraints
+    assert PromptVersionModel.__table__.columns["template_key"].nullable is False
+
+
+def test_knowledge_material_constraints_match_detailed_design() -> None:
+    foreign_keys = {
+        fk.constraint.name
+        for column in KnowledgeMaterialModel.__table__.columns
+        for fk in column.foreign_keys
+    }
+    indexes = {index.name for index in KnowledgeMaterialModel.__table__.indexes}
+
+    assert foreign_keys == {"fk_material_category", "fk_material_uploader"}
+    assert {"idx_material_status", "idx_material_hash"}.issubset(indexes)
+    assert KnowledgeMaterialModel.__table__.columns["category_id"].nullable is True
+    assert {"created_at", "updated_at"}.issubset(KnowledgeMaterialModel.__table__.columns.keys())

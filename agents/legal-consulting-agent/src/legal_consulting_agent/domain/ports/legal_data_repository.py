@@ -8,10 +8,13 @@ from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
     ConsultationRecord,
     Feedback,
+    HighRiskReview,
+    KnowledgeMaterial,
     LegalCategory,
     LegalMessage,
     LegalSession,
     NodeRun,
+    PromptVersion,
     UserMirror,
 )
 from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole
@@ -64,6 +67,18 @@ class LegalDataRepository(Protocol):
 
     async def create_feedback(self, feedback: Feedback) -> Feedback:
         """Persist user feedback for an assistant message."""
+
+    async def create_high_risk_review(self, review: HighRiskReview) -> HighRiskReview:
+        """Persist a pending high-risk review queue record."""
+
+    async def create_prompt_version(self, prompt: PromptVersion) -> PromptVersion:
+        """Persist versioned Prompt metadata."""
+
+    async def create_knowledge_material(
+        self,
+        material: KnowledgeMaterial,
+    ) -> KnowledgeMaterial:
+        """Persist legal knowledge material metadata."""
 
     async def create_agent_run(self, run: AgentRun) -> AgentRun:
         """Persist an Agent run audit record."""

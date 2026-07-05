@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: e2adba4cc895b039
-- last refresh: 2026-07-05 09:46:09 +0800
+- source hash: cb88dfbc6dc4bad2
+- last refresh: 2026-07-05 10:54:44 +0800
 - refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack
@@ -29,7 +29,6 @@ data-query-agent/
 |   |-- .mypy_cache/.gitignore
 |   |-- .mypy_cache/3.12
 |   |-- .mypy_cache/CACHEDIR.TAG
-|   |-- .mypy_cache/missing_stubs
 |-- .pytest_cache
 |   |-- .pytest_cache/.gitignore
 |   |-- .pytest_cache/CACHEDIR.TAG
