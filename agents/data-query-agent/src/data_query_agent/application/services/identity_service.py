@@ -42,6 +42,13 @@ class IdentityThreadService:
             display_name=display_name,
         )
 
+    async def get_user_for_subject(self, *, external_subject: str) -> UserMirror | None:
+        """Return an existing local user mirror without creating one."""
+        user = await self._repository.get_user_by_external_subject(external_subject)
+        if user is not None and user.id is None:
+            raise ValueError("persisted user mirror must have an id")
+        return user
+
     async def create_thread_for_subject(
         self,
         *,

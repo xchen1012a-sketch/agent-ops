@@ -90,3 +90,18 @@ Response DTO fields:
 - `created_at`
 - `started_at`
 - `finished_at`
+
+## DATA-360 Run detail API slice
+
+`GET /v1/runs/{run_id}` returns an ownership-scoped run status projection. It does not trigger workflow execution and does not expose generated SQL.
+
+Response DTO fields:
+
+- `run_id`
+- `status`
+- `error_code`
+- `error_message`
+- `created_at`
+- `started_at`
+- `finished_at`
+

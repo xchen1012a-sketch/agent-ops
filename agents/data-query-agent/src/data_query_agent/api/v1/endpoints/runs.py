@@ -9,7 +9,13 @@ from data_query_agent.api.dependencies import (
     IdentityThreadServiceDep,
     QueryRunTraceServiceDep,
 )
-from data_query_agent.api.v1.schemas.runs import RunCreateRequest, RunDataEnvelope, RunResponse
+from data_query_agent.api.v1.schemas.runs import (
+    RunCreateRequest,
+    RunDataEnvelope,
+    RunDetailEnvelope,
+    RunDetailResponse,
+    RunResponse,
+)
 from data_query_agent.core.errors import NotFoundError
 from data_query_agent.domain.entities.identity import MessageRole
 
@@ -48,3 +54,20 @@ async def create_run(
             question=payload.question,
         )
     )
+
+
+@router.get("/runs/{run_id}", response_model=RunDetailEnvelope)
+async def get_run(
+    run_id: str,
+    subject: CurrentSubjectDep,
+    identity_service: IdentityThreadServiceDep,
+    run_trace_service: QueryRunTraceServiceDep,
+) -> RunDetailEnvelope:
+    """Return run status projection without exposing generated SQL."""
+    user = await identity_service.get_user_for_subject(external_subject=subject)
+    if user is None or user.id is None:
+        raise NotFoundError("run not found")
+    run = await run_trace_service.get_run_for_user(run_public_id=run_id, user_id=user.id)
+    if run is None:
+        raise NotFoundError("run not found")
+    return RunDetailEnvelope(data=RunDetailResponse.from_entity(run))

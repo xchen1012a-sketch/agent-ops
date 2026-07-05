@@ -6,8 +6,16 @@ from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
 
-from data_query_agent.api.dependencies import get_identity_thread_service, get_query_run_trace_service
-from data_query_agent.domain.entities.identity import MessageRole, QueryThread, ThreadMessage, ThreadStatus
+from data_query_agent.api.dependencies import (
+    get_identity_thread_service,
+    get_query_run_trace_service,
+)
+from data_query_agent.domain.entities.identity import (
+    MessageRole,
+    QueryThread,
+    ThreadMessage,
+    ThreadStatus,
+)
 from data_query_agent.domain.entities.run import QueryRun, RunStatus
 from data_query_agent.main import create_app
 
@@ -28,7 +36,25 @@ class FakeIdentityThreadService:
         )
         self.messages: list[ThreadMessage] = []
 
-    async def get_owned_thread(self, *, thread_public_id: str, external_subject: str) -> QueryThread | None:
+    async def get_user_for_subject(self, *, external_subject: str):
+        if external_subject != "owner":
+            return None
+        from data_query_agent.domain.entities.identity import UserMirror, UserRole
+
+        return UserMirror(
+            id=self.thread.user_id,
+            public_id="user-20",
+            external_subject=external_subject,
+            role=UserRole.USER,
+            display_name=None,
+            created_at=_now(),
+            updated_at=_now(),
+            last_seen_at=_now(),
+        )
+
+    async def get_owned_thread(
+        self, *, thread_public_id: str, external_subject: str
+    ) -> QueryThread | None:
         if external_subject == "owner" and thread_public_id == self.thread.public_id:
             return self.thread
         return None
@@ -59,6 +85,12 @@ class FakeRunTraceService:
 
     def __init__(self) -> None:
         self.runs: list[QueryRun] = []
+
+    async def get_run_for_user(self, *, run_public_id: str, user_id: int) -> QueryRun | None:
+        for run in self.runs:
+            if run.public_id == run_public_id and run.user_id == user_id:
+                return run
+        return None
 
     async def create_run_for_thread(
         self,
@@ -145,3 +177,41 @@ def test_create_run_validates_question_body() -> None:
 
 def _now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
+
+
+def test_get_run_returns_status_projection_without_sql() -> None:
+    identity_service = FakeIdentityThreadService()
+    run_service = FakeRunTraceService()
+    client = _client(identity_service, run_service)
+    created = client.post(
+        "/v1/threads/thread-1/runs",
+        headers={"X-User-Subject": "owner"},
+        json={"question": "What are total sales?"},
+    ).json()
+
+    response = client.get(
+        f"/v1/runs/{created['data']['run_id']}",
+        headers={"X-User-Subject": "owner"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["data"]["run_id"] == "run-1"
+    assert body["data"]["status"] == "pending"
+    assert "sql" not in body["data"]
+
+
+def test_get_run_blocks_cross_subject_access() -> None:
+    identity_service = FakeIdentityThreadService()
+    run_service = FakeRunTraceService()
+    client = _client(identity_service, run_service)
+    client.post(
+        "/v1/threads/thread-1/runs",
+        headers={"X-User-Subject": "owner"},
+        json={"question": "What are total sales?"},
+    )
+
+    response = client.get("/v1/runs/run-1", headers={"X-User-Subject": "other"})
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "NOT_FOUND"

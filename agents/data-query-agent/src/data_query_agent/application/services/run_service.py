@@ -33,6 +33,13 @@ class QueryRunTraceService:
             question_message_id=question_message_id,
         )
 
+    async def get_run_for_user(self, *, run_public_id: str, user_id: int) -> QueryRun | None:
+        """Return a query run only when it belongs to the given user."""
+        return await self._repository.get_query_run_for_user(
+            run_public_id=run_public_id,
+            user_id=user_id,
+        )
+
     async def start_run(self, *, run_id: int) -> QueryRun:
         """Mark a query run as running."""
         return await self._repository.update_query_run_status(

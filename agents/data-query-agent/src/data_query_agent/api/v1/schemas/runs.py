@@ -45,10 +45,42 @@ class RunResponse(BaseModel):
         )
 
 
+class RunDetailResponse(BaseModel):
+    """Public run detail DTO without SQL exposure."""
+
+    run_id: str
+    status: str
+    error_code: str | None
+    error_message: str | None
+    started_at: datetime | None
+    finished_at: datetime | None
+    created_at: datetime
+
+    @classmethod
+    def from_entity(cls, run: QueryRun) -> RunDetailResponse:
+        """Convert a run entity to a public detail DTO."""
+        return cls(
+            run_id=run.public_id,
+            status=run.status.value,
+            error_code=run.error_code,
+            error_message=run.error_message,
+            started_at=run.started_at,
+            finished_at=run.finished_at,
+            created_at=run.created_at,
+        )
+
+
 class RunDataEnvelope(BaseModel):
     """Success envelope for one run."""
 
     data: RunResponse
+    error: None = None
+
+
+class RunDetailEnvelope(BaseModel):
+    """Success envelope for run detail."""
+
+    data: RunDetailResponse
     error: None = None
 
 
