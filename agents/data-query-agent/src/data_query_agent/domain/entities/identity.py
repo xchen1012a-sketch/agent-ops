@@ -21,6 +21,14 @@ class ThreadStatus(StrEnum):
     ARCHIVED = "archived"
 
 
+class MessageRole(StrEnum):
+    """Role of a message in one query thread."""
+
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+
+
 @dataclass(frozen=True, slots=True)
 class UserMirror:
     """Local mirror of an authenticated user."""
@@ -46,3 +54,16 @@ class QueryThread:
     status: ThreadStatus
     created_at: datetime
     updated_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class ThreadMessage:
+    """Message stored inside a query thread."""
+
+    id: int | None
+    public_id: str
+    thread_id: int
+    user_id: int
+    role: MessageRole
+    content: str
+    created_at: datetime

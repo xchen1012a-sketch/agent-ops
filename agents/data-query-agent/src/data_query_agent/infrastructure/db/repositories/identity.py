@@ -9,13 +9,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data_query_agent.domain.entities.identity import (
+    MessageRole,
     QueryThread,
+    ThreadMessage,
     ThreadStatus,
     UserMirror,
     UserRole,
 )
 from data_query_agent.infrastructure.db.models.identity import (
     QueryThreadModel,
+    ThreadMessageModel,
     UserMirrorModel,
 )
 
@@ -116,6 +119,48 @@ class SqlAlchemyIdentityRepository:
         )
         return tuple(_to_thread_entity(model) for model in result.scalars().all())
 
+    async def create_message(
+        self,
+        *,
+        public_id: str,
+        thread_id: int,
+        user_id: int,
+        role: MessageRole,
+        content: str,
+    ) -> ThreadMessage:
+        now = _utcnow_naive()
+        model = ThreadMessageModel(
+            public_id=public_id,
+            thread_id=thread_id,
+            user_id=user_id,
+            role=role.value,
+            content=content,
+            created_at=now,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        return _to_message_entity(model)
+
+    async def list_messages_for_thread(
+        self,
+        *,
+        thread_id: int,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> Sequence[ThreadMessage]:
+        result = await self._session.execute(
+            select(ThreadMessageModel)
+            .where(
+                ThreadMessageModel.thread_id == thread_id,
+                ThreadMessageModel.user_id == user_id,
+            )
+            .order_by(ThreadMessageModel.created_at.asc(), ThreadMessageModel.id.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return tuple(_to_message_entity(model) for model in result.scalars().all())
+
 
 def _utcnow_naive() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
@@ -143,4 +188,16 @@ def _to_thread_entity(model: QueryThreadModel) -> QueryThread:
         status=ThreadStatus(model.status),
         created_at=model.created_at,
         updated_at=model.updated_at,
+    )
+
+
+def _to_message_entity(model: ThreadMessageModel) -> ThreadMessage:
+    return ThreadMessage(
+        id=model.id,
+        public_id=model.public_id,
+        thread_id=model.thread_id,
+        user_id=model.user_id,
+        role=MessageRole(model.role),
+        content=model.content,
+        created_at=model.created_at,
     )

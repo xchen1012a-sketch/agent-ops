@@ -5,7 +5,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol
 
-from data_query_agent.domain.entities.identity import QueryThread, UserMirror, UserRole
+from data_query_agent.domain.entities.identity import (
+    MessageRole,
+    QueryThread,
+    ThreadMessage,
+    UserMirror,
+    UserRole,
+)
 
 
 class IdentityRepository(Protocol):
@@ -45,3 +51,24 @@ class IdentityRepository(Protocol):
         self, *, user_id: int, limit: int, offset: int
     ) -> Sequence[QueryThread]:
         """List threads owned by one user."""
+
+    async def create_message(
+        self,
+        *,
+        public_id: str,
+        thread_id: int,
+        user_id: int,
+        role: MessageRole,
+        content: str,
+    ) -> ThreadMessage:
+        """Create a message under one owned thread."""
+
+    async def list_messages_for_thread(
+        self,
+        *,
+        thread_id: int,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> Sequence[ThreadMessage]:
+        """List messages for one thread only when it belongs to the user."""

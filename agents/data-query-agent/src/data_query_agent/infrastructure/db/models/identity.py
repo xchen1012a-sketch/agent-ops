@@ -37,6 +37,10 @@ class UserMirrorModel(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    messages: Mapped[list[ThreadMessageModel]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 
 class QueryThreadModel(Base):
@@ -66,3 +70,39 @@ class QueryThreadModel(Base):
         onupdate=func.now(),
     )
     user: Mapped[UserMirrorModel] = relationship(back_populates="threads")
+    messages: Mapped[list[ThreadMessageModel]] = relationship(
+        back_populates="thread",
+        cascade="all, delete-orphan",
+    )
+
+
+class ThreadMessageModel(Base):
+    """Message table for a query thread."""
+
+    __tablename__ = "thread_messages"
+    __table_args__ = (
+        Index("ix_thread_messages_thread_created", "thread_id", "created_at"),
+        Index("ix_thread_messages_user_created", "user_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    public_id: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
+    thread_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("query_threads.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("user_mirrors.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    role: Mapped[str] = mapped_column(String(32), nullable=False)
+    content: Mapped[str] = mapped_column(String(4000), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False),
+        nullable=False,
+        server_default=func.now(),
+    )
+    thread: Mapped[QueryThreadModel] = relationship(back_populates="messages")
+    user: Mapped[UserMirrorModel] = relationship(back_populates="messages")

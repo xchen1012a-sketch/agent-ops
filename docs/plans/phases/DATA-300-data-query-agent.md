@@ -345,3 +345,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed。
   - `uv run mypy src`：passed。
   - `uv run pytest -q`：39 passed，coverage 81%。
+- 2026-07-05：完成 `DATA-320` 循环 4。新增 thread_messages 数据层切片，包含消息角色枚举、消息实体、repository port/implementation、service 方法、ORM、Alembic migration 与单元测试；未做 query_runs、node_runs、sql_audits、API/SSE。验证：
+  - `uv run pytest tests/unit/test_identity_service.py tests/unit/test_identity_models.py tests/unit/test_migrations.py -q`：17 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed。
+  - `uv run mypy src`：passed。
+  - `uv run pytest -q`：44 passed，coverage 81%。
