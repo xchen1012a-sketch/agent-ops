@@ -5,6 +5,8 @@ from __future__ import annotations
 from legal_consulting_agent.infrastructure.db.base import Base
 from legal_consulting_agent.infrastructure.db.models import (
     AgentRunModel,
+    ConsultationRecordModel,
+    FeedbackModel,
     LegalCategoryModel,
     LegalMessageModel,
     LegalSessionModel,
@@ -23,6 +25,8 @@ def test_legal_130_tables_are_registered() -> None:
         "messages",
         "agent_runs",
         "node_runs",
+        "consultation_records",
+        "feedbacks",
     }.issubset(tables.keys())
 
 
@@ -58,3 +62,48 @@ def test_run_and_node_run_tables_have_audit_indexes() -> None:
     assert {"idx_runs_thread", "idx_runs_status"}.issubset(run_indexes)
     assert "idx_node_runs_run" in node_indexes
     assert {"code", "display_name", "sort_order"}.issubset(category_columns)
+
+
+def test_consultation_record_constraints_match_detailed_design() -> None:
+    foreign_keys = {
+        fk.constraint.name
+        for column in ConsultationRecordModel.__table__.columns
+        for fk in column.foreign_keys
+    }
+    indexes = {index.name for index in ConsultationRecordModel.__table__.indexes}
+    unique_constraints = {
+        constraint.name
+        for constraint in ConsultationRecordModel.__table__.constraints
+        if constraint.name is not None
+    }
+
+    assert {
+        "fk_consultation_user",
+        "fk_consultation_session",
+        "fk_consultation_category",
+        "fk_consultation_question",
+        "fk_consultation_answer",
+    } == foreign_keys
+    assert {
+        "idx_consultation_user_time",
+        "idx_consultation_category_time",
+    }.issubset(indexes)
+    assert "uk_consultation_answer" in unique_constraints
+
+
+def test_feedback_constraints_match_detailed_design() -> None:
+    foreign_keys = {
+        fk.constraint.name
+        for column in FeedbackModel.__table__.columns
+        for fk in column.foreign_keys
+    }
+    indexes = {index.name for index in FeedbackModel.__table__.indexes}
+    named_constraints = {
+        constraint.name
+        for constraint in FeedbackModel.__table__.constraints
+        if constraint.name is not None
+    }
+
+    assert {"fk_feedback_message", "fk_feedback_user"} == foreign_keys
+    assert "idx_feedback_message" in indexes
+    assert {"ck_feedback_rating", "uk_feedback_user_message"}.issubset(named_constraints)

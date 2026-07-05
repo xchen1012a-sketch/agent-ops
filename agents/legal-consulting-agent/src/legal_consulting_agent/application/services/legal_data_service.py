@@ -9,6 +9,8 @@ from uuid import uuid4
 from legal_consulting_agent.core.errors import AppError
 from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
+    ConsultationRecord,
+    Feedback,
     LegalMessage,
     LegalSession,
     NodeRun,
@@ -128,7 +130,14 @@ class LegalDataService:
         prompt_version: str,
         started_at: datetime,
     ) -> AgentRun:
-        """Create a pending Agent run audit record."""
+        """Create a pending audit record for a user-owned legal session."""
+        session = await self._repository.get_session_for_user(
+            session_public_id=thread_id,
+            user_id=user_id,
+        )
+        if session is None:
+            raise LegalDataNotFoundError("Legal session not found")
+
         return await self._repository.create_agent_run(
             AgentRun(
                 public_id=str(uuid4()),
@@ -143,6 +152,100 @@ class LegalDataService:
                 started_at=started_at,
                 finished_at=None,
                 duration_ms=None,
+            )
+        )
+
+    async def create_consultation_record(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        question_message_public_id: str,
+        answer_message_public_id: str,
+        summary: str,
+        disclaimer: str,
+    ) -> ConsultationRecord:
+        """Create a snapshot from a user-owned question and answer pair."""
+        user = await self._repository.get_user_by_public_id(user_public_id)
+        if user is None or user.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+
+        session = await self._repository.get_session_for_user(
+            session_public_id=session_public_id,
+            user_id=user.id,
+        )
+        if session is None or session.id is None:
+            raise LegalDataNotFoundError("Legal session not found")
+
+        question = await self._repository.get_message_for_session(
+            message_public_id=question_message_public_id,
+            session_id=session.id,
+            role=MessageRole.USER,
+        )
+        if question is None or question.id is None:
+            raise LegalDataNotFoundError("Question message not found")
+
+        answer = await self._repository.get_message_for_session(
+            message_public_id=answer_message_public_id,
+            session_id=session.id,
+            role=MessageRole.ASSISTANT,
+        )
+        if answer is None or answer.id is None:
+            raise LegalDataNotFoundError("Answer message not found")
+
+        return await self._repository.create_consultation_record(
+            ConsultationRecord(
+                public_id=str(uuid4()),
+                user_id=user.id,
+                session_id=session.id,
+                category_id=session.category_id,
+                question_message_id=question.id,
+                answer_message_id=answer.id,
+                summary=summary,
+                citations=answer.citations,
+                high_risk=answer.high_risk,
+                disclaimer=disclaimer,
+            )
+        )
+
+    async def create_feedback(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        message_public_id: str,
+        rating: int,
+        comment: str | None,
+    ) -> Feedback:
+        """Save feedback for an assistant message in a user-owned session."""
+        if rating < 1 or rating > 5:
+            raise ValueError("rating must be between 1 and 5")
+
+        user = await self._repository.get_user_by_public_id(user_public_id)
+        if user is None or user.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+
+        session = await self._repository.get_session_for_user(
+            session_public_id=session_public_id,
+            user_id=user.id,
+        )
+        if session is None or session.id is None:
+            raise LegalDataNotFoundError("Legal session not found")
+
+        message = await self._repository.get_message_for_session(
+            message_public_id=message_public_id,
+            session_id=session.id,
+            role=MessageRole.ASSISTANT,
+        )
+        if message is None or message.id is None:
+            raise LegalDataNotFoundError("Assistant message not found")
+
+        return await self._repository.create_feedback(
+            Feedback(
+                message_id=message.id,
+                user_id=user.id,
+                rating=rating,
+                comment=comment,
             )
         )
 

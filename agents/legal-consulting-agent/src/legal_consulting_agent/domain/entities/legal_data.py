@@ -70,6 +70,34 @@ class LegalMessage:
 
 
 @dataclass(frozen=True, slots=True)
+class ConsultationRecord:
+    """Structured snapshot of one completed legal consultation."""
+
+    public_id: str
+    user_id: int
+    session_id: int
+    category_id: int
+    question_message_id: int
+    answer_message_id: int
+    summary: str
+    citations: list[dict[str, Any]] | None
+    high_risk: bool
+    disclaimer: str
+    id: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Feedback:
+    """User rating and optional comment for one assistant message."""
+
+    message_id: int
+    user_id: int
+    rating: int
+    comment: str | None
+    id: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class AgentRun:
     """Auditable LangGraph run record."""
 

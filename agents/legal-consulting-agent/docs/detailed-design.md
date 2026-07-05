@@ -18,13 +18,14 @@ User (mirror) ─┐
                ├─< Session ─< Message
                │       └─>< Category
                ├─< ConsultationRecord >── Category
-               ├─< Report
                ├─< AgentRun ─< NodeRun
                └─< Feedback
 
 AdminUser ─< KnowledgeMaterial >── Category
          └─< PromptVersion
          └─< HighRiskReviewQueue
+
+ConsultationRecord ──> ReportProjection（API 投影，不单独持久化）
 ```
 
 ## 3. 数据库表设计
@@ -91,7 +92,36 @@ CREATE TABLE messages (
 );
 ```
 
-### 3.3 知识材料
+### 3.3 咨询记录
+
+`consultation_records` 保存一次已完成咨询的结构化快照，通过消息外键追溯原始问题和回答；不重复保存完整对话。历史搜索可组合查询记录摘要和所属消息，报告只读取本表的结构化字段。
+
+```sql
+CREATE TABLE consultation_records (
+  id                    BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  public_id             CHAR(36) NOT NULL UNIQUE,
+  user_id               BIGINT UNSIGNED NOT NULL,
+  session_id            BIGINT UNSIGNED NOT NULL,
+  category_id           BIGINT UNSIGNED NOT NULL,
+  question_message_id   BIGINT UNSIGNED NOT NULL,
+  answer_message_id     BIGINT UNSIGNED NOT NULL,
+  summary               TEXT NOT NULL,
+  citations             JSON,
+  high_risk             BOOLEAN NOT NULL DEFAULT FALSE,
+  disclaimer            VARCHAR(500) NOT NULL,
+  created_at            DATETIME(6) NOT NULL,
+  CONSTRAINT fk_consultation_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_consultation_session FOREIGN KEY (session_id) REFERENCES sessions(id),
+  CONSTRAINT fk_consultation_category FOREIGN KEY (category_id) REFERENCES legal_categories(id),
+  CONSTRAINT fk_consultation_question FOREIGN KEY (question_message_id) REFERENCES messages(id),
+  CONSTRAINT fk_consultation_answer FOREIGN KEY (answer_message_id) REFERENCES messages(id),
+  UNIQUE KEY uk_consultation_answer (answer_message_id),
+  INDEX idx_consultation_user_time (user_id, created_at),
+  INDEX idx_consultation_category_time (category_id, created_at)
+);
+```
+
+### 3.4 知识材料
 
 ```sql
 CREATE TABLE knowledge_materials (
@@ -102,7 +132,7 @@ CREATE TABLE knowledge_materials (
   source_name     VARCHAR(255) NOT NULL,               -- 来源名称
   source_section  VARCHAR(255),                        -- 章节
   file_hash       CHAR(64) NOT NULL,                   -- SHA-256
-  file_path       VARCHAR(500) NOT NULL,               -- 实际文件位置
+  file_key        VARCHAR(500) NOT NULL,               -- 相对 LEGAL_KB_PATH 的存储键
   chunk_count     INT NOT NULL DEFAULT 0,
   status          ENUM('indexing','ready','failed') NOT NULL DEFAULT 'indexing',
   version         INT NOT NULL DEFAULT 1,
@@ -110,6 +140,7 @@ CREATE TABLE knowledge_materials (
   created_at      DATETIME(6) NOT NULL,
   updated_at      DATETIME(6) NOT NULL,
   CONSTRAINT fk_material_category FOREIGN KEY (category_id) REFERENCES legal_categories(id),
+  CONSTRAINT fk_material_uploader FOREIGN KEY (uploaded_by) REFERENCES users(id),
   INDEX idx_material_status (status),
   INDEX idx_material_hash (file_hash)
 );
@@ -117,26 +148,29 @@ CREATE TABLE knowledge_materials (
 
 向量库（Qdrant）保存 chunk 的 dense + sparse 向量与 payload（含 `material_id`、`category_code`、`source_name`、`source_section`、`status`）；正文不入 MySQL。详见 ADR-0012。
 
-### 3.4 Prompt 版本
+`file_key` 只保存相对存储键；根目录由 `Settings.legal_kb_path` / `LEGAL_KB_PATH` 注入。禁止在数据库或业务代码保存机器绝对路径。
+
+### 3.5 Prompt 版本
 
 ```sql
 CREATE TABLE prompt_versions (
   id              BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   prompt_name     VARCHAR(64) NOT NULL,                -- e.g. legal_classification
   version         VARCHAR(32) NOT NULL,                -- e.g. v1, v2
-  template_path   VARCHAR(500) NOT NULL,
+  template_key    VARCHAR(500) NOT NULL,
   variables       JSON NOT NULL,                       -- 模板变量 schema
   output_schema   JSON NOT NULL,                       -- 输出 Pydantic schema 引用
   status          ENUM('draft','active','retired') NOT NULL DEFAULT 'draft',
   created_by      BIGINT UNSIGNED NOT NULL,
   created_at      DATETIME(6) NOT NULL,
+  CONSTRAINT fk_prompt_creator FOREIGN KEY (created_by) REFERENCES users(id),
   UNIQUE KEY uk_prompt_name_version (prompt_name, version)
 );
 ```
 
-Prompt 模板文件存放于 `/app/data/prompts/legal/<name>/<version>/template.txt`。
+`template_key` 保存相对于 Prompt 根目录的模板键，例如 `<name>/<version>/template.txt`。Prompt 根目录必须通过类型化 Settings 和环境变量注入，不在代码或数据库记录中写死 `/app/data/...`。
 
-### 3.5 Agent 运行审计
+### 3.6 Agent 运行审计
 
 ```sql
 CREATE TABLE agent_runs (
@@ -172,7 +206,9 @@ CREATE TABLE node_runs (
 );
 ```
 
-### 3.6 高风险审核队列
+`agent_runs` 是保留型审计快照，不对用户或会话建立删除级联外键；创建记录前，application service 必须确认 `thread_id` 对应的会话属于 `user_id`。这样既阻止伪造关联，也允许业务记录清理后保留脱敏审计链。
+
+### 3.7 高风险审核队列
 
 ```sql
 CREATE TABLE high_risk_reviews (
@@ -186,11 +222,13 @@ CREATE TABLE high_risk_reviews (
   created_at      DATETIME(6) NOT NULL,
   reviewed_at     DATETIME(6),
   CONSTRAINT fk_review_message FOREIGN KEY (message_id) REFERENCES messages(id),
+  CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_review_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id),
   INDEX idx_reviews_status (status, created_at)
 );
 ```
 
-### 3.7 反馈
+### 3.8 反馈
 
 ```sql
 CREATE TABLE feedbacks (
@@ -200,9 +238,20 @@ CREATE TABLE feedbacks (
   rating          TINYINT NOT NULL,                    -- 1-5
   comment         TEXT,
   created_at      DATETIME(6) NOT NULL,
+  CONSTRAINT fk_feedback_message FOREIGN KEY (message_id) REFERENCES messages(id),
+  CONSTRAINT fk_feedback_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT ck_feedback_rating CHECK (rating BETWEEN 1 AND 5),
+  UNIQUE KEY uk_feedback_user_message (user_id, message_id),
   INDEX idx_feedback_message (message_id)
 );
 ```
+
+### 3.9 报告与导出
+
+- `Report` 是由 `consultation_records` 生成的 API 投影，不在 `LEGAL-130` 新建 `reports` 表。
+- `GET /v1/reports/{id}` 中的 `id` 使用咨询记录 `public_id`；响应只包含结构化摘要、引用、免责声明和必要元数据，不复制完整原始对话。
+- Markdown / PDF 在请求期间临时生成，响应完成后删除临时文件。
+- 当前导出为同步操作，不创建 `export_tasks`。只有后续确认异步批量导出或队列需求时，才通过独立设计和迁移引入任务表。
 
 ## 4. API Schema
 

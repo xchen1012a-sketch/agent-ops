@@ -8,11 +8,13 @@ from typing import Any
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     ForeignKey,
     Index,
     Integer,
     String,
     Text,
+    UniqueConstraint,
     text,
 )
 from sqlalchemy import (
@@ -164,6 +166,86 @@ class LegalMessageModel(Base):
     )
 
     session: Mapped[LegalSessionModel] = relationship(back_populates="messages")
+
+
+class ConsultationRecordModel(Base):
+    """Structured snapshot used by history search and report projection."""
+
+    __tablename__ = "consultation_records"
+    __table_args__ = (
+        UniqueConstraint("answer_message_id", name="uk_consultation_answer"),
+        Index("idx_consultation_user_time", "user_id", "created_at"),
+        Index("idx_consultation_category_time", "category_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(UnsignedBigInteger, primary_key=True, autoincrement=True)
+    public_id: Mapped[str] = mapped_column(mysql.CHAR(36), nullable=False, unique=True)
+    user_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("users.id", name="fk_consultation_user"),
+        nullable=False,
+    )
+    session_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("sessions.id", name="fk_consultation_session"),
+        nullable=False,
+    )
+    category_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("legal_categories.id", name="fk_consultation_category"),
+        nullable=False,
+    )
+    question_message_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("messages.id", name="fk_consultation_question"),
+        nullable=False,
+    )
+    answer_message_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("messages.id", name="fk_consultation_answer"),
+        nullable=False,
+    )
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    citations: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON)
+    high_risk: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    disclaimer: Mapped[str] = mapped_column(String(500), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTimeFsp,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(6)"),
+    )
+
+
+class FeedbackModel(Base):
+    """User feedback for one assistant answer."""
+
+    __tablename__ = "feedbacks"
+    __table_args__ = (
+        CheckConstraint("rating BETWEEN 1 AND 5", name="ck_feedback_rating"),
+        UniqueConstraint("user_id", "message_id", name="uk_feedback_user_message"),
+        Index("idx_feedback_message", "message_id"),
+    )
+
+    id: Mapped[int] = mapped_column(UnsignedBigInteger, primary_key=True, autoincrement=True)
+    message_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("messages.id", name="fk_feedback_message"),
+        nullable=False,
+    )
+    user_id: Mapped[int] = mapped_column(
+        UnsignedBigInteger,
+        ForeignKey("users.id", name="fk_feedback_user"),
+        nullable=False,
+    )
+    rating: Mapped[int] = mapped_column(mysql.TINYINT, nullable=False)
+    comment: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTimeFsp,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP(6)"),
+    )
 
 
 class AgentRunModel(Base):

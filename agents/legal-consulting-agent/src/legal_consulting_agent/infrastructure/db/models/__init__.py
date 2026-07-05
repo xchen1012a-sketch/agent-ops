@@ -6,6 +6,8 @@ Alembic autogenerate.
 
 from legal_consulting_agent.infrastructure.db.models.legal_data import (
     AgentRunModel,
+    ConsultationRecordModel,
+    FeedbackModel,
     LegalCategoryModel,
     LegalMessageModel,
     LegalSessionModel,
@@ -15,6 +17,8 @@ from legal_consulting_agent.infrastructure.db.models.legal_data import (
 
 __all__ = [
     "AgentRunModel",
+    "ConsultationRecordModel",
+    "FeedbackModel",
     "LegalCategoryModel",
     "LegalMessageModel",
     "LegalSessionModel",

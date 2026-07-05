@@ -2,7 +2,7 @@
 
 ## 状态
 
-进行中。`LEGAL-130 身份与数据层` 第一批 6 张表已实现并通过本地验证。
+进行中。`LEGAL-130 身份与数据层` 前三批 8 张表已实现并通过本地验证。
 
 ## 上一阶段
 
@@ -63,10 +63,56 @@
 - `knowledge_materials`
 - `prompt_versions`
 - `feedbacks`
-- `reports` / `export_tasks`
 - `high_risk_reviews`
 
+报告在当前设计中由 `consultation_records` 生成 API 投影，Markdown / PDF 同步临时生成并在响应后删除；本阶段不创建 `reports` / `export_tasks` 表。若后续确认异步批量导出或队列需求，必须先补独立设计再新增迁移。
+
 后续表可在同一 `LEGAL-130` 内分批落地，但每批必须有迁移和测试证据。
+
+### 第二批执行范围：consultation_records
+
+- 目标：持久化一次已完成咨询的结构化快照，供后续历史搜索和报告投影读取。
+- 输入：已同步用户、用户所属会话、同一会话中的用户问题消息和助手回答消息。
+- 输出：`consultation_records` 领域实体、repository port/实现、ORM、新增 Alembic revision、application service 和相邻测试。
+- 约束：用户拥有会话；问题/回答消息属于该会话且角色分别为 `user` / `assistant`；每条回答最多生成一条咨询记录。
+- 不做：API/DTO、报告文件生成、RAG、其他后续表、前端和其他 Agent。
+- 验收：局部测试、Ruff、MyPy、全量 Pytest、单 Alembic head，以及 MySQL `upgrade -> downgrade -> upgrade`。
+
+### 第二批执行记录（2026-07-05）
+
+- 已新增 `ConsultationRecord` 领域实体、repository port/SQLAlchemy 实现、application service 和 ORM。
+- application service 复用现有用户会话隔离，并校验问题/回答属于同一会话且角色分别为 `user` / `assistant`；引用和高风险标记从回答消息生成快照。
+- 已通过 Alembic autogenerate 生成迁移：`a89e7df18324_add_consultation_records.py`；未修改历史迁移。
+- 首次 MySQL 回滚发现自动生成的逐索引删除与外键支撑索引冲突；新 revision 的 downgrade 已最小调整为直接删除新增表。
+- 本地 MySQL 8.0.36 已通过 `upgrade -> downgrade -> upgrade`，当前 revision 为 `a89e7df18324 (head)`。
+- `alembic check`：未检测到新的升级操作。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，56 files already formatted。
+- `uv run mypy src`：通过，42 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：34 passed，总覆盖率 80%。
+
+### 第三批执行范围：feedbacks
+
+- 目标：保存用户对助手回答的评分和可选文字反馈，为后续回答质量评估提供持久化数据。
+- 输入：已同步用户、用户所属会话、同一会话中的助手回答消息、1–5 分评分和可选评论。
+- 输出：`Feedback` 领域实体、repository port/实现、ORM、新增 Alembic revision、application service 和相邻测试。
+- 约束：用户拥有会话；目标消息属于该会话且角色为 `assistant`；评分范围为 1–5；同一用户对同一消息最多一条反馈。
+- 不做：API/DTO、重复反馈的 HTTP 409 映射、前端、工作流、其他后续表及其他 Agent。
+- 验收：局部测试、Ruff、MyPy、全量 Pytest、单 Alembic head、schema drift，以及 MySQL `upgrade -> downgrade -> upgrade`。
+
+### 第三批执行记录（2026-07-05）
+
+- 已新增 `Feedback` 领域实体、repository port/SQLAlchemy 实现、application service 和 ORM。
+- application service 校验评分范围、用户会话归属，并限制反馈目标为同一会话中的助手消息。
+- 数据库通过检查约束保证评分为 1–5，通过唯一约束保证同一用户对同一消息最多一条反馈。
+- 已通过 Alembic autogenerate 生成迁移：`d85ad25f66ec_add_feedbacks.py`；未修改历史迁移。
+- 新 revision 的 downgrade 直接删除新增表，避免 MySQL 先删除外键支撑索引导致 1553 错误。
+- 本地 MySQL 8.0.36 已通过 `upgrade -> downgrade -> upgrade`，当前 revision 为 `d85ad25f66ec (head)`。
+- `alembic check`：未检测到新的升级操作。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，56 files already formatted。
+- `uv run mypy src`：通过，42 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：39 passed，总覆盖率 80%。
 
 ## 不做事项
 
@@ -146,8 +192,8 @@ uv run alembic current
 - Ruff check：通过。
 - Ruff format check：通过，56 files already formatted。
 - MyPy：通过，42 source files 无错误。
-- Pytest：30 passed，覆盖率 80%。
-- Alembic heads/current：`fcecead92ecd (head)`。
+- Pytest：39 passed，覆盖率 80%。
+- Alembic heads/current：`d85ad25f66ec (head)`。
 - 本地 MySQL upgrade/downgrade：通过。
 
 ## 停止条件

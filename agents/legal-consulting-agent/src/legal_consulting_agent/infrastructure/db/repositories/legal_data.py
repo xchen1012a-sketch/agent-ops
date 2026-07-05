@@ -7,14 +7,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
+    ConsultationRecord,
+    Feedback,
     LegalCategory,
     LegalMessage,
     LegalSession,
     NodeRun,
     UserMirror,
 )
+from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole
 from legal_consulting_agent.infrastructure.db.models.legal_data import (
     AgentRunModel,
+    ConsultationRecordModel,
+    FeedbackModel,
     LegalCategoryModel,
     LegalMessageModel,
     LegalSessionModel,
@@ -108,6 +113,57 @@ class SqlAlchemyLegalDataRepository:
         await self._session.flush()
         return self._to_message(model)
 
+    async def get_message_for_session(
+        self,
+        *,
+        message_public_id: str,
+        session_id: int,
+        role: MessageRole,
+    ) -> LegalMessage | None:
+        """Return a message only when its session and role match."""
+        result = await self._session.execute(
+            select(LegalMessageModel).where(
+                LegalMessageModel.public_id == message_public_id,
+                LegalMessageModel.session_id == session_id,
+                LegalMessageModel.role == role,
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_message(model) if model is not None else None
+
+    async def create_consultation_record(
+        self,
+        record: ConsultationRecord,
+    ) -> ConsultationRecord:
+        """Persist a completed consultation snapshot without committing."""
+        model = ConsultationRecordModel(
+            public_id=record.public_id,
+            user_id=record.user_id,
+            session_id=record.session_id,
+            category_id=record.category_id,
+            question_message_id=record.question_message_id,
+            answer_message_id=record.answer_message_id,
+            summary=record.summary,
+            citations=record.citations,
+            high_risk=record.high_risk,
+            disclaimer=record.disclaimer,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        return self._to_consultation_record(model)
+
+    async def create_feedback(self, feedback: Feedback) -> Feedback:
+        """Persist user feedback without committing."""
+        model = FeedbackModel(
+            message_id=feedback.message_id,
+            user_id=feedback.user_id,
+            rating=feedback.rating,
+            comment=feedback.comment,
+        )
+        self._session.add(model)
+        await self._session.flush()
+        return self._to_feedback(model)
+
     async def create_agent_run(self, run: AgentRun) -> AgentRun:
         """Persist an Agent run audit record."""
         model = AgentRunModel(
@@ -195,6 +251,32 @@ class SqlAlchemyLegalDataRepository:
             citations=model.citations,
             high_risk=model.high_risk,
             prompt_version=model.prompt_version,
+        )
+
+    @staticmethod
+    def _to_consultation_record(model: ConsultationRecordModel) -> ConsultationRecord:
+        return ConsultationRecord(
+            id=model.id,
+            public_id=model.public_id,
+            user_id=model.user_id,
+            session_id=model.session_id,
+            category_id=model.category_id,
+            question_message_id=model.question_message_id,
+            answer_message_id=model.answer_message_id,
+            summary=model.summary,
+            citations=model.citations,
+            high_risk=model.high_risk,
+            disclaimer=model.disclaimer,
+        )
+
+    @staticmethod
+    def _to_feedback(model: FeedbackModel) -> Feedback:
+        return Feedback(
+            id=model.id,
+            message_id=model.message_id,
+            user_id=model.user_id,
+            rating=model.rating,
+            comment=model.comment,
         )
 
     @staticmethod

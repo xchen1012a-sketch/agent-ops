@@ -6,12 +6,15 @@ from typing import Protocol
 
 from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
+    ConsultationRecord,
+    Feedback,
     LegalCategory,
     LegalMessage,
     LegalSession,
     NodeRun,
     UserMirror,
 )
+from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole
 
 
 class LegalDataRepository(Protocol):
@@ -43,6 +46,24 @@ class LegalDataRepository(Protocol):
 
     async def append_message(self, message: LegalMessage) -> LegalMessage:
         """Persist one message inside an existing session."""
+
+    async def get_message_for_session(
+        self,
+        *,
+        message_public_id: str,
+        session_id: int,
+        role: MessageRole,
+    ) -> LegalMessage | None:
+        """Return a session message with the required role, or None."""
+
+    async def create_consultation_record(
+        self,
+        record: ConsultationRecord,
+    ) -> ConsultationRecord:
+        """Persist a completed consultation snapshot."""
+
+    async def create_feedback(self, feedback: Feedback) -> Feedback:
+        """Persist user feedback for an assistant message."""
 
     async def create_agent_run(self, run: AgentRun) -> AgentRun:
         """Persist an Agent run audit record."""

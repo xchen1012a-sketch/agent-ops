@@ -12,6 +12,8 @@ from legal_consulting_agent.application.services import (
 )
 from legal_consulting_agent.domain.entities.legal_data import (
     AgentRun,
+    ConsultationRecord,
+    Feedback,
     LegalCategory,
     LegalMessage,
     LegalSession,
@@ -35,6 +37,8 @@ class FakeLegalDataRepository:
         self.category: LegalCategory | None = None
         self.session: LegalSession | None = None
         self.messages: list[LegalMessage] = []
+        self.consultation_records: list[ConsultationRecord] = []
+        self.feedbacks: list[Feedback] = []
         self.agent_runs: list[AgentRun] = []
         self.node_runs: list[NodeRun] = []
 
@@ -97,6 +101,55 @@ class FakeLegalDataRepository:
             prompt_version=message.prompt_version,
         )
         self.messages.append(persisted)
+        return persisted
+
+    async def get_message_for_session(
+        self,
+        *,
+        message_public_id: str,
+        session_id: int,
+        role: MessageRole,
+    ) -> LegalMessage | None:
+        return next(
+            (
+                message
+                for message in self.messages
+                if message.public_id == message_public_id
+                and message.session_id == session_id
+                and message.role is role
+            ),
+            None,
+        )
+
+    async def create_consultation_record(
+        self,
+        record: ConsultationRecord,
+    ) -> ConsultationRecord:
+        persisted = ConsultationRecord(
+            id=40,
+            public_id=record.public_id,
+            user_id=record.user_id,
+            session_id=record.session_id,
+            category_id=record.category_id,
+            question_message_id=record.question_message_id,
+            answer_message_id=record.answer_message_id,
+            summary=record.summary,
+            citations=record.citations,
+            high_risk=record.high_risk,
+            disclaimer=record.disclaimer,
+        )
+        self.consultation_records.append(persisted)
+        return persisted
+
+    async def create_feedback(self, feedback: Feedback) -> Feedback:
+        persisted = Feedback(
+            id=50,
+            message_id=feedback.message_id,
+            user_id=feedback.user_id,
+            rating=feedback.rating,
+            comment=feedback.comment,
+        )
+        self.feedbacks.append(persisted)
         return persisted
 
     async def create_agent_run(self, run: AgentRun) -> AgentRun:
@@ -234,6 +287,15 @@ async def test_append_message_enforces_session_ownership() -> None:
 @pytest.mark.asyncio
 async def test_create_run_and_node_audit_records() -> None:
     repo = FakeLegalDataRepository()
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
     service = LegalDataService(repo)
     started_at = datetime(2026, 7, 5, 12, 0, 0)
 
@@ -255,3 +317,306 @@ async def test_create_run_and_node_audit_records() -> None:
     assert run.status is RunStatus.PENDING
     assert node.run_id == 20
     assert node.metadata == {"input_length": 18}
+
+
+@pytest.mark.asyncio
+async def test_create_agent_run_requires_user_owned_session() -> None:
+    repo = FakeLegalDataRepository()
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=2,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    service = LegalDataService(repo)
+
+    with pytest.raises(LegalDataNotFoundError):
+        await service.create_agent_run(
+            thread_id="thread-public-id",
+            user_id=1,
+            workflow_version="legal-v1",
+            prompt_version="legal_generation:v1",
+            started_at=datetime(2026, 7, 5, 12, 0, 0),
+        )
+
+    assert repo.agent_runs == []
+
+
+@pytest.mark.asyncio
+async def test_create_consultation_record_uses_owned_message_pair() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    repo.messages = [
+        LegalMessage(
+            id=11,
+            public_id="question-public-id",
+            session_id=10,
+            role=MessageRole.USER,
+            content="公司单方面调岗，我可以拒绝吗？",
+            citations=None,
+            high_risk=False,
+            prompt_version=None,
+        ),
+        LegalMessage(
+            id=12,
+            public_id="answer-public-id",
+            session_id=10,
+            role=MessageRole.ASSISTANT,
+            content="需要结合劳动合同约定判断。",
+            citations=[{"material_id": "material-1"}],
+            high_risk=True,
+            prompt_version="legal_generation:v1",
+        ),
+    ]
+    service = LegalDataService(repo)
+
+    record = await service.create_consultation_record(
+        user_public_id="user-public-id",
+        session_public_id="thread-public-id",
+        question_message_public_id="question-public-id",
+        answer_message_public_id="answer-public-id",
+        summary="劳动合同调岗争议",
+        disclaimer="本回答仅供参考，不构成正式法律意见。",
+    )
+
+    assert record.id == 40
+    assert record.user_id == 1
+    assert record.category_id == 2
+    assert record.question_message_id == 11
+    assert record.answer_message_id == 12
+    assert record.citations == [{"material_id": "material-1"}]
+    assert record.high_risk is True
+
+
+@pytest.mark.asyncio
+async def test_create_consultation_record_rejects_cross_session_or_wrong_role() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    repo.messages = [
+        LegalMessage(
+            id=11,
+            public_id="question-public-id",
+            session_id=99,
+            role=MessageRole.USER,
+            content="其他会话的问题",
+            citations=None,
+            high_risk=False,
+            prompt_version=None,
+        ),
+        LegalMessage(
+            id=12,
+            public_id="answer-public-id",
+            session_id=10,
+            role=MessageRole.USER,
+            content="角色错误的回答",
+            citations=None,
+            high_risk=False,
+            prompt_version=None,
+        ),
+    ]
+    service = LegalDataService(repo)
+
+    with pytest.raises(LegalDataNotFoundError):
+        await service.create_consultation_record(
+            user_public_id="user-public-id",
+            session_public_id="thread-public-id",
+            question_message_public_id="question-public-id",
+            answer_message_public_id="answer-public-id",
+            summary="无效记录",
+            disclaimer="本回答仅供参考。",
+        )
+
+    assert repo.consultation_records == []
+
+
+@pytest.mark.asyncio
+async def test_create_feedback_uses_owned_assistant_message() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    repo.messages = [
+        LegalMessage(
+            id=12,
+            public_id="answer-public-id",
+            session_id=10,
+            role=MessageRole.ASSISTANT,
+            content="需要结合劳动合同约定判断。",
+            citations=None,
+            high_risk=False,
+            prompt_version="legal_generation:v1",
+        )
+    ]
+    service = LegalDataService(repo)
+
+    feedback = await service.create_feedback(
+        user_public_id="user-public-id",
+        session_public_id="thread-public-id",
+        message_public_id="answer-public-id",
+        rating=5,
+        comment="回答清晰",
+    )
+
+    assert feedback.id == 50
+    assert feedback.user_id == 1
+    assert feedback.message_id == 12
+    assert feedback.rating == 5
+
+
+@pytest.mark.asyncio
+async def test_create_feedback_rejects_invalid_rating_before_repository_access() -> None:
+    repo = FakeLegalDataRepository()
+    service = LegalDataService(repo)
+
+    with pytest.raises(ValueError, match="rating must be between 1 and 5"):
+        await service.create_feedback(
+            user_public_id="user-public-id",
+            session_public_id="thread-public-id",
+            message_public_id="answer-public-id",
+            rating=6,
+            comment=None,
+        )
+
+    assert repo.feedbacks == []
+
+
+@pytest.mark.asyncio
+async def test_create_feedback_enforces_user_and_session_ownership() -> None:
+    missing_user_repo = FakeLegalDataRepository()
+    missing_user_service = LegalDataService(missing_user_repo)
+
+    with pytest.raises(LegalDataNotFoundError):
+        await missing_user_service.create_feedback(
+            user_public_id="missing-user",
+            session_public_id="thread-public-id",
+            message_public_id="answer-public-id",
+            rating=4,
+            comment=None,
+        )
+
+    wrong_owner_repo = FakeLegalDataRepository()
+    wrong_owner_repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    wrong_owner_repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=2,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    wrong_owner_service = LegalDataService(wrong_owner_repo)
+
+    with pytest.raises(LegalDataNotFoundError):
+        await wrong_owner_service.create_feedback(
+            user_public_id="user-public-id",
+            session_public_id="thread-public-id",
+            message_public_id="answer-public-id",
+            rating=4,
+            comment=None,
+        )
+
+    assert missing_user_repo.feedbacks == []
+    assert wrong_owner_repo.feedbacks == []
+
+
+@pytest.mark.asyncio
+async def test_create_feedback_rejects_user_message() -> None:
+    repo = FakeLegalDataRepository()
+    repo.user = UserMirror(
+        id=1,
+        public_id="user-public-id",
+        email="user@example.test",
+        display_name=None,
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    repo.session = LegalSession(
+        id=10,
+        public_id="thread-public-id",
+        user_id=1,
+        category_id=2,
+        title=None,
+        status=SessionStatus.ACTIVE,
+        last_message_at=None,
+    )
+    repo.messages = [
+        LegalMessage(
+            id=11,
+            public_id="question-public-id",
+            session_id=10,
+            role=MessageRole.USER,
+            content="用户问题",
+            citations=None,
+            high_risk=False,
+            prompt_version=None,
+        )
+    ]
+    service = LegalDataService(repo)
+
+    with pytest.raises(LegalDataNotFoundError):
+        await service.create_feedback(
+            user_public_id="user-public-id",
+            session_public_id="thread-public-id",
+            message_public_id="question-public-id",
+            rating=4,
+            comment=None,
+        )
+
+    assert repo.feedbacks == []
