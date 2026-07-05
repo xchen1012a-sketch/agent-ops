@@ -119,8 +119,8 @@ class PromptTemplateLoader:
 
         try:
             rendered_text = template_text.format(**values)
-        except Exception as exc:
-            raise PromptTemplateError("template rendering failed") from exc
+        except Exception:
+            raise PromptTemplateError("template rendering failed") from None
         return PromptRenderResult(
             template_key=safe_key,
             template_text=template_text,

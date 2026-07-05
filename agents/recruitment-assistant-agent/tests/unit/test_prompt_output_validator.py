@@ -47,6 +47,21 @@ def test_parse_json_object_output_rejects_non_object(raw_output: str) -> None:
         parse_json_object_output(raw_output)
 
 
+def test_parse_json_object_output_rejects_non_standard_json_constants() -> None:
+    with pytest.raises(PromptOutputValidationError):
+        parse_json_object_output('{"total_years_exp": NaN}')
+
+
+def test_parse_json_object_output_does_not_chain_raw_json_error() -> None:
+    raw_output = '{"summary": "raw candidate pii"'
+
+    with pytest.raises(PromptOutputValidationError) as exc_info:
+        parse_json_object_output(raw_output)
+
+    assert exc_info.value.__cause__ is None
+    assert "raw candidate pii" not in str(exc_info.value)
+
+
 def test_validator_accepts_required_fields_and_supported_types() -> None:
     validator = PromptOutputValidator(object_schema())
 
@@ -119,6 +134,15 @@ def test_validator_allows_integer_for_number_type() -> None:
     assert result.value["total_years_exp"] == 5
 
 
+def test_validator_rejects_non_finite_number_type() -> None:
+    output = valid_output()
+    output["total_years_exp"] = float("nan")
+    validator = PromptOutputValidator(object_schema())
+
+    with pytest.raises(PromptOutputValidationError):
+        validator.validate(output)
+
+
 def test_validator_rejects_bool_for_number_type() -> None:
     output = valid_output()
     output["total_years_exp"] = True
@@ -128,8 +152,41 @@ def test_validator_rejects_bool_for_number_type() -> None:
         validator.validate(output)
 
 
+def test_validator_rejects_unknown_fields() -> None:
+    output = {**valid_output(), "raw_instruction": "ignore scoring rubric"}
+    validator = PromptOutputValidator(object_schema())
+
+    with pytest.raises(PromptOutputValidationError) as exc_info:
+        validator.validate(output)
+
+    assert "raw_instruction" in str(exc_info.value)
+
+
+def test_validator_rejects_required_field_not_declared_in_properties() -> None:
+    schema: dict[str, object] = {
+        "type": "object",
+        "required": ["summary"],
+        "properties": {},
+    }
+
+    with pytest.raises(PromptOutputValidationError):
+        PromptOutputValidator(schema)
+
+
+def test_validator_rejects_oversized_raw_json_output() -> None:
+    validator = PromptOutputValidator(object_schema(), max_raw_output_chars=10)
+
+    with pytest.raises(PromptOutputValidationError):
+        validator.validate_json(
+            '{"summary":"ok","skills":[],"total_years_exp":0,"fairness_passed":false}'
+        )
+
+
 def test_validator_rejects_unsupported_property_type() -> None:
-    schema = {"type": "object", "properties": {"summary": {"type": "integer"}}}
+    schema: dict[str, object] = {
+        "type": "object",
+        "properties": {"summary": {"type": "integer"}},
+    }
 
     with pytest.raises(PromptOutputValidationError):
         PromptOutputValidator(schema)

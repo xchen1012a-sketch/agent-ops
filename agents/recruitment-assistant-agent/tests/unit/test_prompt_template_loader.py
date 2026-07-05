@@ -166,6 +166,7 @@ def test_loader_wraps_value_format_errors_as_prompt_error(tmp_path: Path) -> Non
             values={"resume_text": BrokenFormat()},
         )
 
+    assert exc_info.value.__cause__ is None
     assert "raw candidate" not in str(exc_info.value)
 
 

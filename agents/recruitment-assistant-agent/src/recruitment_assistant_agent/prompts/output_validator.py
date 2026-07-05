@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from json import JSONDecodeError
 
@@ -20,15 +21,30 @@ class PromptValidatedOutput:
 
 
 SUPPORTED_PROPERTY_TYPES = frozenset({"string", "array", "number", "boolean", "null", "object"})
+DEFAULT_MAX_RAW_OUTPUT_CHARS = 50_000
 
 
-def parse_json_object_output(raw_output: str) -> dict[str, object]:
+def _reject_json_constant(constant: str) -> object:
+    raise PromptOutputValidationError("prompt output must be standard JSON")
+
+
+def parse_json_object_output(
+    raw_output: str,
+    *,
+    max_raw_output_chars: int = DEFAULT_MAX_RAW_OUTPUT_CHARS,
+) -> dict[str, object]:
     """Parse raw model output as a JSON object."""
 
+    if len(raw_output) > max_raw_output_chars:
+        raise PromptOutputValidationError("prompt output exceeds maximum length")
+
     try:
-        parsed = json.loads(raw_output)
-    except JSONDecodeError as exc:
-        raise PromptOutputValidationError("prompt output must be valid JSON") from exc
+        parsed = json.loads(
+            raw_output,
+            parse_constant=_reject_json_constant,
+        )
+    except JSONDecodeError:
+        raise PromptOutputValidationError("prompt output must be valid JSON") from None
     if not isinstance(parsed, dict):
         raise PromptOutputValidationError("prompt output must be a JSON object")
     return parsed
@@ -69,7 +85,9 @@ def _matches_type(value: object, expected_type: str) -> bool:
     if expected_type == "array":
         return isinstance(value, list)
     if expected_type == "number":
-        return isinstance(value, int | float) and not isinstance(value, bool)
+        return (
+            isinstance(value, int | float) and not isinstance(value, bool) and math.isfinite(value)
+        )
     if expected_type == "boolean":
         return isinstance(value, bool)
     if expected_type == "null":
@@ -82,12 +100,23 @@ def _matches_type(value: object, expected_type: str) -> bool:
 class PromptOutputValidator:
     """Validate prompt JSON output against a constrained object schema."""
 
-    def __init__(self, schema: dict[str, object]) -> None:
+    def __init__(
+        self,
+        schema: dict[str, object],
+        *,
+        max_raw_output_chars: int = DEFAULT_MAX_RAW_OUTPUT_CHARS,
+    ) -> None:
         if schema.get("type") != "object":
             raise PromptOutputValidationError("schema.type must be object")
         self._schema = dict(schema)
         self._required = _extract_required(schema)
         self._properties = _extract_properties(schema)
+        self._max_raw_output_chars = max_raw_output_chars
+        for field_name in self._required:
+            if field_name not in self._properties:
+                raise PromptOutputValidationError(
+                    f"required field is not declared in properties: {field_name}"
+                )
 
     def validate(self, output: dict[str, object]) -> PromptValidatedOutput:
         """Validate a parsed JSON object."""
@@ -95,6 +124,10 @@ class PromptOutputValidator:
         for field_name in self._required:
             if field_name not in output:
                 raise PromptOutputValidationError(f"missing required field: {field_name}")
+
+        for field_name in output:
+            if field_name not in self._properties:
+                raise PromptOutputValidationError(f"unknown output field: {field_name}")
 
         for field_name, expected_type in self._properties.items():
             if field_name in output and not _matches_type(output[field_name], expected_type):
@@ -105,4 +138,9 @@ class PromptOutputValidator:
     def validate_json(self, raw_output: str) -> PromptValidatedOutput:
         """Parse and validate raw JSON object output."""
 
-        return self.validate(parse_json_object_output(raw_output))
+        return self.validate(
+            parse_json_object_output(
+                raw_output,
+                max_raw_output_chars=self._max_raw_output_chars,
+            )
+        )
