@@ -369,3 +369,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed。
   - `uv run mypy src`：passed。
   - `uv run pytest -q`：71 passed，coverage 77%。
+- 2026-07-05：完成 `DATA-320` 循环 8。新增 prompt_versions Prompt 版本管理数据层切片，包含 prompt name/version 唯一约束、template hash/body、variables/output schema、active 标记、admin 创建者关联、repository port/implementation、SQLAlchemy ORM、Alembic migration、application service 与单元测试；验证仅 admin 可创建，业务运行可按 name/version 引用版本。未接真实 LLM、未做 API/SSE/workflow。验证：
+  - `uv run pytest tests/unit/test_prompt_version_service.py tests/unit/test_prompt_version_models.py tests/unit/test_migrations.py -q`：18 passed。
+  - `uv run ruff check src tests`：passed（首次发现 1 个 import/format 问题，已 `ruff check --fix` 修复后通过）。
+  - `uv run ruff format --check src tests`：passed。
+  - `uv run mypy src`：passed。
+  - `uv run pytest -q`：80 passed，coverage 77%。
