@@ -44,10 +44,10 @@ class Settings(BaseSettings):
     database_slow_query_seconds: int = 5
 
     # Redis
-    redis_url: str = "redis://redis:6379/0"
+    redis_url: str = ""
 
     # DeepSeek
-    deepseek_api_base: str = "https://api.deepseek.com"
+    deepseek_api_base: str = ""
     deepseek_api_key: SecretStr = Field(default=SecretStr(""))
     deepseek_model: str = "deepseek-chat"
     deepseek_timeout_seconds: int = 60
@@ -68,6 +68,10 @@ class Settings(BaseSettings):
             errors.append("DATABASE_URL is required")
         if not self.deepseek_api_key.get_secret_value():
             errors.append("DEEPSEEK_API_KEY is required")
+        if not self.redis_url:
+            errors.append("REDIS_URL is required")
+        if not self.deepseek_api_base:
+            errors.append("DEEPSEEK_API_BASE is required")
         if errors:
             raise RuntimeError("Configuration validation failed: " + "; ".join(errors))
 

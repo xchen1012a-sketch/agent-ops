@@ -78,7 +78,7 @@
 | `pytest --cov` | 83% 覆盖率，全绿 | 83% 覆盖率，全绿 | 84% 覆盖率，全绿 |
 | Alembic `heads` | 单一 `0001_initial_baseline` | 单一 `0001_initial_baseline` | 单一 `0001_initial_baseline` |
 | Alembic 离线 upgrade/downgrade | 通过（ScriptDirectory 校验） | 同左 | 同左 |
-| Docker 构建 | 成功（python:3.12-slim, UID 1001, tini PID 1, HEALTHCHECK on `/health/live`） | 成功 | 成功（端口修正为 8103） |
+| Docker 构建 | 成功（python:3.12-slim, UID 1001, tini PID 1, HEALTHCHECK on `/v1/health/live`） | 成功 | 成功（端口修正为 8103） |
 
 ### 前端工程门禁（agent-suite-web）
 
@@ -118,7 +118,31 @@
 
 ### `.env.example` 检查
 
-3 个后端仓 + 1 个前端仓均通过：无真实密钥，关键配置（`JWT_SECRET >= 32 bytes`、`DATABASE_URL`、`DEEPSEEK_API_KEY` 等）启动时校验。
+3 个后端仓 + 1 个前端仓均通过：无真实密钥，关键配置（`JWT_SECRET >= 32 bytes`、`DATABASE_URL`、`DEEPSEEK_API_KEY`、`REDIS_URL`、`DEEPSEEK_API_BASE` 等）启动时校验。
+
+### Docker 容器运行验证（2026-07-05 补充，原仅 `docker build`，未跑 `docker run`）
+
+镜像独立运行（不依赖 docker-compose override）+ HEALTHCHECK 实际生效：
+
+| Agent | image tag | docker run + curl `/v1/health/live` | docker inspect `State.Health.Status` |
+|---|---|---|---|
+| legal-consulting | `legal-agent:p2-verify` | HTTP 200 | healthy |
+| recruitment-assistant | `recruitment-agent:p2-verify` | HTTP 200 | healthy |
+| data-query | `data-query-agent:p2-verify` | HTTP 200 | healthy |
+| agent-suite-web | `suite-web:p1-verify` | HTTP 200（`/health/live` nginx 本地路由） | healthy |
+
+启动用占位 env（不连真实 DB/DeepSeek，因为 `/v1/health/live` 不触发依赖检查）：
+`JWT_SECRET`（≥32 bytes）、`DATABASE_URL`、`DEEPSEEK_API_KEY`、（仅 data-query）`SHOP_DB_READ_URL`。
+
+### 服务地址硬编码移除（2026-07-05 补充）
+
+`agents/*/src/*/core/config.py` 内 `redis_url` / `deepseek_api_base` / `embedding_base_url` / `rag_vector_db_url` / `rag_reranker_base_url` 默认值清空，加入 `validate_required()` 强制校验。验证：
+
+| Agent | 缺 env 启动 | 带齐 env 启动 |
+|---|---|---|
+| legal | `RuntimeError: REDIS_URL is required; DEEPSEEK_API_BASE is required; EMBEDDING_BASE_URL is required; RAG_VECTOR_DB_URL is required; RAG_RERANKER_BASE_URL is required`，进程退出 | HTTP 200，healthy |
+| recruitment | `RuntimeError: REDIS_URL is required; DEEPSEEK_API_BASE is required`，进程退出 | HTTP 200，healthy |
+| data-query | `RuntimeError: REDIS_URL is required; DEEPSEEK_API_BASE is required`，进程退出 | HTTP 200，healthy |
 
 ### 未在本阶段验证的项
 
@@ -126,4 +150,5 @@
 - LangGraph 业务节点（业务实现阶段）
 - Playwright E2E、Lighthouse 性能预算（WEB-400）
 - Alembic 真实 DB upgrade/downgrade（仅离线 ScriptDirectory 校验；真实 DB 需 MySQL 实例）
+- 完整 `docker compose up` 多服务编排（compose 中 suite-web / suite-ops-nginx 仍注释，按计划在 WEB-410 / OPS-620 解除）
 - Git 提交（按规范「未获得用户授权不执行 Git 提交或推送」，所有改动停留在工作区）

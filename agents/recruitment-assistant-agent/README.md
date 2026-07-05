@@ -18,8 +18,8 @@
 - [x] MyPy strict 全绿
 - [x] Pytest 覆盖率 83%（>= 80% 阈值）
 - [x] Alembic 基线迁移 `0001_initial_baseline` 单一 head
-- [x] Docker 镜像构建成功（python:3.12-slim，非 root UID 1001，tini PID 1，HEALTHCHECK）
-- [x] `.env.example` 仅占位值
+- [x] Docker 镜像构建 + 独立运行成功（python:3.12-slim，非 root UID 1001，tini PID 1，HEALTHCHECK 路径 `/v1/health/live`，docker inspect `State.Health.Status = healthy`）
+- [x] `.env.example` 仅占位值；启动校验 `JWT_SECRET >= 32 bytes`、`REDIS_URL`、`DEEPSEEK_API_BASE` 等关键配置；缺失时 `lifespan` 抛 `RuntimeError` 进程退出
 - [x] pip-audit（OSV）：与 legal-consulting-agent 同 2 项（asyncmy、ecdsa），处理策略相同
 
 未验证 / 待后续阶段：

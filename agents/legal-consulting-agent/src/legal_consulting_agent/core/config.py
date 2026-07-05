@@ -44,10 +44,10 @@ class Settings(BaseSettings):
     database_slow_query_seconds: int = 5
 
     # Redis
-    redis_url: str = "redis://redis:6379/0"
+    redis_url: str = ""
 
     # DeepSeek
-    deepseek_api_base: str = "https://api.deepseek.com"
+    deepseek_api_base: str = ""
     deepseek_api_key: SecretStr = Field(default=SecretStr(""))
     deepseek_model: str = "deepseek-chat"
     deepseek_timeout_seconds: int = 60
@@ -59,11 +59,11 @@ class Settings(BaseSettings):
     high_risk_keywords_path: str = "/app/data/legal_kb/high-risk-keywords.yaml"
 
     # Embedding (BGE-M3 dense + sparse via HuggingFace TEI)
-    embedding_base_url: str = "http://bge-embedding:8080"
+    embedding_base_url: str = ""
     embedding_model: str = "BAAI/bge-m3"
 
     # Vector store (Qdrant)
-    rag_vector_db_url: str = "http://qdrant:6333"
+    rag_vector_db_url: str = ""
     rag_vector_collection: str = "legal_kb"
 
     # Hybrid retrieval weights and bounds
@@ -76,7 +76,7 @@ class Settings(BaseSettings):
 
     # Cross-encoder reranker
     rag_reranker_enabled: bool = True
-    rag_reranker_base_url: str = "http://bge-reranker:8081"
+    rag_reranker_base_url: str = ""
     rag_reranker_model: str = "BAAI/bge-reranker-v2-m3"
 
     # Backwards-compatible alias for legacy callers expecting top_k.
@@ -93,6 +93,16 @@ class Settings(BaseSettings):
             errors.append("DATABASE_URL is required")
         if not self.deepseek_api_key.get_secret_value():
             errors.append("DEEPSEEK_API_KEY is required")
+        if not self.redis_url:
+            errors.append("REDIS_URL is required")
+        if not self.deepseek_api_base:
+            errors.append("DEEPSEEK_API_BASE is required")
+        if not self.embedding_base_url:
+            errors.append("EMBEDDING_BASE_URL is required")
+        if not self.rag_vector_db_url:
+            errors.append("RAG_VECTOR_DB_URL is required")
+        if not self.rag_reranker_base_url:
+            errors.append("RAG_RERANKER_BASE_URL is required")
         if errors:
             raise RuntimeError("Configuration validation failed: " + "; ".join(errors))
 

@@ -48,8 +48,8 @@ uvicorn legal_consulting_agent.main:app --reload --port 8101
 
 ## Health checks
 
-- `GET /health/live` - process alive
-- `GET /health/ready` - dependencies reachable (DB, Redis, Embedding)
+- `GET /v1/health/live` - process alive (also mounted at `/api/legal/v1/health/live` for gateway routing)
+- `GET /v1/health/ready` - dependencies reachable (DB, Redis, Embedding)
 
 ## Quality gates
 
@@ -70,8 +70,8 @@ All commands must pass before merge.
 - [x] MyPy strict 全绿
 - [x] Pytest 覆盖率 83%（>= 80% 阈值）
 - [x] Alembic 基线迁移 `0001_initial_baseline` 单一 head，离线 upgrade/downgrade 通过
-- [x] Docker 镜像构建成功（python:3.12-slim，非 root UID 1001，tini PID 1，HEALTHCHECK）
-- [x] `.env.example` 仅占位值，启动校验 `JWT_SECRET >= 32 bytes` 等关键配置
+- [x] Docker 镜像构建 + 独立运行成功（python:3.12-slim，非 root UID 1001，tini PID 1，HEALTHCHECK 路径 `/v1/health/live`，docker inspect `State.Health.Status = healthy`）
+- [x] `.env.example` 仅占位值，启动校验 `JWT_SECRET >= 32 bytes`、`REDIS_URL`、`DEEPSEEK_API_BASE`、`EMBEDDING_BASE_URL`、`RAG_VECTOR_DB_URL`、`RAG_RERANKER_BASE_URL` 等关键配置；缺失时 `lifespan` 抛 `RuntimeError` 进程退出
 - [x] pip-audit（OSV 数据源）：asyncmy 0.2.11 PYSEC-2026-286、ecdsa 0.19.2 CVE-2024-23342 — 见下方风险登记
 
 未验证 / 待后续阶段：
