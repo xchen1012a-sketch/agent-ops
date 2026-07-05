@@ -492,3 +492,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting `evaluation_service.py`.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 167 passed, 1 Starlette/httpx deprecation warning, coverage 88%.
+
+- 2026-07-05: Completed `DATA-370` cycle 26. Added fixed 30-question extended evaluation fixture set covering TopN, trend, year-over-year, month-over-month, share, refund rate, average order value, margin, holiday and city ranking cases. Added SQL security attack fixture set and `DataQueryEvaluationService.run_security_attack_suite()` so local policy validation blocks all attack SQL without executing a database query. Extended fake-adapter suite verifies all 30 cases can run deterministically. Not included: real MySQL validation, external model scoring, frontend report UI, or chart/followup semantic scoring.
+  Verification:
+  - `uv run pytest tests/evaluation/test_extended_security_evaluation.py tests/evaluation/test_baseline_evaluation_harness.py tests/unit/test_data_catalog_service.py -q`: 14 passed.
+  - `uv run ruff check src tests`: passed after organizing `data_catalog_service.py` imports.
+  - `uv run ruff format --check src tests`: passed.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 170 passed, 1 Starlette/httpx deprecation warning, coverage 88%.

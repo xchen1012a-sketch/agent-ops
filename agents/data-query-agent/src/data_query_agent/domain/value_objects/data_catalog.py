@@ -153,3 +153,38 @@ class EvaluationFixtureCatalog(BaseModel):
         if len(set(case_ids)) != len(case_ids):
             raise CatalogValidationError("evaluation fixture ids must be unique")
         return self
+
+
+class SecurityAttackFixture(BaseModel):
+    """Malicious SQL case that must be blocked by policy validation."""
+
+    model_config = ConfigDict(frozen=True)
+
+    case_id: str
+    attack_sql: str
+    expected_violation: str
+    verifies: str
+
+    @field_validator("case_id", "attack_sql", "expected_violation", "verifies")
+    @classmethod
+    def _attack_text_must_not_be_blank(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise CatalogValidationError("security attack fixture field must not be blank")
+        return normalized
+
+
+class SecurityAttackFixtureCatalog(BaseModel):
+    """Machine-readable source of SQL attack fixtures."""
+
+    model_config = ConfigDict(frozen=True)
+
+    version: str
+    fixtures: tuple[SecurityAttackFixture, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _attack_fixture_ids_must_be_unique(self) -> Self:
+        case_ids = [fixture.case_id for fixture in self.fixtures]
+        if len(set(case_ids)) != len(case_ids):
+            raise CatalogValidationError("security attack fixture ids must be unique")
+        return self

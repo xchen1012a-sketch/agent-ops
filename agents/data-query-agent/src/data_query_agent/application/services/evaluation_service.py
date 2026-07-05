@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from data_query_agent.application.services.data_catalog_service import DataCatalogService
+from data_query_agent.domain.policies.sql_ast import SqlAstPolicyValidator
 from data_query_agent.domain.ports.query_adapter import (
     QueryExecutionError,
     QueryExecutionRequest,
@@ -14,6 +15,7 @@ from data_query_agent.domain.ports.query_adapter import (
 from data_query_agent.domain.value_objects.data_catalog import EvaluationFixture
 
 BASELINE_EVALUATION_CASE_COUNT = 8
+EXTENDED_EVALUATION_CASE_COUNT = 30
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +60,47 @@ class EvaluationSuiteResult:
         return self.failed_cases == 0
 
 
+@dataclass(frozen=True, slots=True)
+class SecurityAttackCaseResult:
+    """Outcome for one SQL security attack fixture."""
+
+    case_id: str
+    verifies: str
+    attack_sql: str
+    expected_violation: str
+    actual_violation: str | None
+    blocked: bool
+    passed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class SecurityAttackSuiteResult:
+    """Aggregated SQL security attack suite result."""
+
+    version: str
+    results: tuple[SecurityAttackCaseResult, ...]
+
+    @property
+    def total_cases(self) -> int:
+        """Return total evaluated attack cases."""
+        return len(self.results)
+
+    @property
+    def blocked_cases(self) -> int:
+        """Return count of blocked attack cases."""
+        return sum(1 for result in self.results if result.blocked)
+
+    @property
+    def passed_cases(self) -> int:
+        """Return count of correctly blocked attack cases."""
+        return sum(1 for result in self.results if result.passed)
+
+    @property
+    def passed(self) -> bool:
+        """Return whether every attack case was blocked as expected."""
+        return self.passed_cases == self.total_cases
+
+
 class DataQueryEvaluationService:
     """Run deterministic baseline fixtures against a read-only query adapter."""
 
@@ -71,12 +114,70 @@ class DataQueryEvaluationService:
     ) -> EvaluationSuiteResult:
         """Run the fixed eight-question baseline suite in fake-adapter mode."""
         catalog = self._catalog_service.load_evaluation_fixtures()
-        if len(catalog.fixtures) != BASELINE_EVALUATION_CASE_COUNT:
-            raise ValueError("baseline evaluation suite must contain exactly 8 fixtures")
+        return await self._run_query_suite(
+            query_adapter=query_adapter,
+            version=catalog.version,
+            fixtures=catalog.fixtures,
+            expected_count=BASELINE_EVALUATION_CASE_COUNT,
+            suite_name="baseline evaluation suite",
+        )
+
+    async def run_extended_suite(
+        self,
+        *,
+        query_adapter: ReadOnlyQueryAdapter,
+    ) -> EvaluationSuiteResult:
+        """Run the fixed thirty-question extended suite in fake-adapter mode."""
+        catalog = self._catalog_service.load_extended_evaluation_fixtures()
+        return await self._run_query_suite(
+            query_adapter=query_adapter,
+            version=catalog.version,
+            fixtures=catalog.fixtures,
+            expected_count=EXTENDED_EVALUATION_CASE_COUNT,
+            suite_name="extended evaluation suite",
+        )
+
+    def run_security_attack_suite(self) -> SecurityAttackSuiteResult:
+        """Validate that all SQL attack fixtures are blocked by policy."""
+        catalog = self._catalog_service.load_security_attack_fixtures()
+        validator = SqlAstPolicyValidator(whitelist=self._catalog_service.load_sql_whitelist())
         results = []
         for fixture in catalog.fixtures:
+            validation = validator.validate(fixture.attack_sql)
+            actual_violation = (
+                validation.first_violation.code.value
+                if validation.first_violation is not None
+                else None
+            )
+            blocked = not validation.is_allowed
+            results.append(
+                SecurityAttackCaseResult(
+                    case_id=fixture.case_id,
+                    verifies=fixture.verifies,
+                    attack_sql=fixture.attack_sql,
+                    expected_violation=fixture.expected_violation,
+                    actual_violation=actual_violation,
+                    blocked=blocked,
+                    passed=blocked and actual_violation == fixture.expected_violation,
+                )
+            )
+        return SecurityAttackSuiteResult(version=catalog.version, results=tuple(results))
+
+    async def _run_query_suite(
+        self,
+        *,
+        query_adapter: ReadOnlyQueryAdapter,
+        version: str,
+        fixtures: tuple[EvaluationFixture, ...],
+        expected_count: int,
+        suite_name: str,
+    ) -> EvaluationSuiteResult:
+        if len(fixtures) != expected_count:
+            raise ValueError(f"{suite_name} must contain exactly {expected_count} fixtures")
+        results = []
+        for fixture in fixtures:
             results.append(await self._run_fixture(query_adapter=query_adapter, fixture=fixture))
-        return EvaluationSuiteResult(version=catalog.version, results=tuple(results))
+        return EvaluationSuiteResult(version=version, results=tuple(results))
 
     async def _run_fixture(
         self,

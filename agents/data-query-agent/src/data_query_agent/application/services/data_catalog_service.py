@@ -11,6 +11,7 @@ from data_query_agent.domain.value_objects.data_catalog import (
     EvaluationFixtureCatalog,
     IndicatorCatalog,
     SchemaCatalog,
+    SecurityAttackFixtureCatalog,
 )
 
 RESOURCE_PACKAGE = "data_query_agent.prompts.data_query"
@@ -38,6 +39,18 @@ class DataCatalogService:
         """Load baseline evaluation fixtures."""
         return EvaluationFixtureCatalog.model_validate(
             self._load_json("evaluation_fixtures.v1.json")
+        )
+
+    def load_extended_evaluation_fixtures(self) -> EvaluationFixtureCatalog:
+        """Load extended evaluation fixtures."""
+        return EvaluationFixtureCatalog.model_validate(
+            self._load_json("extended_evaluation_fixtures.v1.json")
+        )
+
+    def load_security_attack_fixtures(self) -> SecurityAttackFixtureCatalog:
+        """Load SQL security attack fixtures."""
+        return SecurityAttackFixtureCatalog.model_validate(
+            self._load_json("security_attack_fixtures.v1.json")
         )
 
     def _load_json(self, file_name: str) -> dict[str, Any]:

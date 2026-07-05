@@ -1,0 +1,575 @@
+{
+  "version": "v1",
+  "fixtures": [
+    {
+      "case_id": "E01",
+      "question": "???????? Top 5",
+      "baseline_sql": "SELECT channel, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel ORDER BY metric_value DESC LIMIT 5",
+      "verifies": "topn_channel_sales",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "topn_channel_sales",
+            1000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E02",
+      "question": "??????? Top 10",
+      "baseline_sql": "SELECT province, SUM(total_amount) AS metric_value FROM wide_order_details WHERE region = '??' GROUP BY province ORDER BY metric_value DESC LIMIT 10",
+      "verifies": "topn_region_province_sales",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "topn_region_province_sales",
+            2000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E03",
+      "question": "???????? Top 5",
+      "baseline_sql": "SELECT brand, SUM(quantity) AS metric_value FROM wide_order_details WHERE category = '??' GROUP BY brand ORDER BY metric_value DESC LIMIT 5",
+      "verifies": "topn_brand_quantity",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "topn_brand_quantity",
+            3000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E04",
+      "question": "???????? Top 10",
+      "baseline_sql": "SELECT customer_id, SUM(total_amount) AS metric_value FROM wide_order_details WHERE is_repeat_purchase = 1 GROUP BY customer_id ORDER BY metric_value DESC LIMIT 10",
+      "verifies": "topn_repeat_customer_sales",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "topn_repeat_customer_sales",
+            4000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E05",
+      "question": "????????? Top 5",
+      "baseline_sql": "SELECT channel, SUM(refund_amount) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY channel ORDER BY metric_value DESC LIMIT 5",
+      "verifies": "topn_refund_channel",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "topn_refund_channel",
+            5000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E06",
+      "question": "?????????",
+      "baseline_sql": "SELECT MONTH(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders WHERE YEAR(date) = YEAR(CURRENT_DATE) GROUP BY MONTH(date) ORDER BY period LIMIT 12",
+      "verifies": "monthly_sales_trend",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "monthly_sales_trend",
+            6000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E07",
+      "question": "????????",
+      "baseline_sql": "SELECT MONTH(date) AS period, SUM(gross_profit) AS metric_value FROM wide_order_details WHERE YEAR(date) = YEAR(CURRENT_DATE) GROUP BY MONTH(date) ORDER BY period LIMIT 12",
+      "verifies": "monthly_margin_trend",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "monthly_margin_trend",
+            7000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E08",
+      "question": "???? 7 ?????",
+      "baseline_sql": "SELECT channel, DATE(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel, DATE(date) ORDER BY period LIMIT 100",
+      "verifies": "channel_daily_trend",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "channel_daily_trend",
+            8000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E09",
+      "question": "???????",
+      "baseline_sql": "SELECT DAYOFWEEK(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY DAYOFWEEK(date) ORDER BY period LIMIT 7",
+      "verifies": "weekday_sales_trend",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "weekday_sales_trend",
+            9000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E10",
+      "question": "????????",
+      "baseline_sql": "SELECT MONTH(date) AS period, SUM(refund_amount) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY MONTH(date) ORDER BY period LIMIT 12",
+      "verifies": "monthly_refund_trend",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "monthly_refund_trend",
+            10000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E11",
+      "question": "???????",
+      "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY YEAR(date) ORDER BY period LIMIT 2",
+      "verifies": "sales_yoy",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "sales_yoy",
+            11000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E12",
+      "question": "????????",
+      "baseline_sql": "SELECT YEAR(date) AS period, SUM(refund_amount) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY YEAR(date) ORDER BY period LIMIT 2",
+      "verifies": "refund_yoy",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "refund_yoy",
+            12000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E13",
+      "question": "?????????",
+      "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_order_details WHERE category = '??' GROUP BY YEAR(date) ORDER BY period LIMIT 2",
+      "verifies": "category_sales_yoy",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "category_sales_yoy",
+            13000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E14",
+      "question": "???????",
+      "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders WHERE region = '??' GROUP BY YEAR(date) ORDER BY period LIMIT 2",
+      "verifies": "region_sales_yoy",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "region_sales_yoy",
+            14000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E15",
+      "question": "????????",
+      "baseline_sql": "SELECT channel, YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel, YEAR(date) ORDER BY channel, period LIMIT 100",
+      "verifies": "channel_sales_yoy",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "channel_sales_yoy",
+            15000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E16",
+      "question": "???????",
+      "baseline_sql": "SELECT MONTH(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY MONTH(date) ORDER BY period LIMIT 2",
+      "verifies": "sales_mom",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "sales_mom",
+            16000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E17",
+      "question": "????????",
+      "baseline_sql": "SELECT MONTH(date) AS period, COUNT(customer_id) AS metric_value FROM wide_orders GROUP BY MONTH(date) ORDER BY period LIMIT 2",
+      "verifies": "customer_count_mom",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "customer_count_mom",
+            17000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E18",
+      "question": "?????",
+      "baseline_sql": "SELECT MONTH(date) AS period, SUM(gross_profit) AS metric_value FROM wide_order_details GROUP BY MONTH(date) ORDER BY period LIMIT 2",
+      "verifies": "gross_profit_mom",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "gross_profit_mom",
+            18000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E19",
+      "question": "???????",
+      "baseline_sql": "SELECT MONTH(date) AS period, COUNT(order_id) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY MONTH(date) ORDER BY period LIMIT 2",
+      "verifies": "refund_order_mom",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "refund_order_mom",
+            19000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E20",
+      "question": "???????",
+      "baseline_sql": "SELECT channel, MONTH(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel, MONTH(date) ORDER BY channel, period LIMIT 100",
+      "verifies": "channel_sales_mom",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "channel_sales_mom",
+            20000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E21",
+      "question": "????????",
+      "baseline_sql": "SELECT channel, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "channel_sales_share",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "channel_sales_share",
+            21000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E22",
+      "question": "????????",
+      "baseline_sql": "SELECT category, SUM(total_amount) AS metric_value FROM wide_order_details GROUP BY category ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "category_sales_share",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "category_sales_share",
+            22000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E23",
+      "question": "????????",
+      "baseline_sql": "SELECT region, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY region ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "region_sales_share",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "region_sales_share",
+            23000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E24",
+      "question": "????????",
+      "baseline_sql": "SELECT payment_method, COUNT(customer_id) AS metric_value FROM wide_orders GROUP BY payment_method ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "payment_customer_share",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "payment_customer_share",
+            24000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E25",
+      "question": "?????????",
+      "baseline_sql": "SELECT customer_tier, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY customer_tier ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "tier_sales_share",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "tier_sales_share",
+            25000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E26",
+      "question": "??????",
+      "baseline_sql": "SELECT category, SUM(is_refunded) AS refund_count, COUNT(order_id) AS order_count FROM wide_order_details GROUP BY category ORDER BY refund_count DESC LIMIT 20",
+      "verifies": "category_refund_rate",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "category_refund_rate",
+            26000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E27",
+      "question": "??????",
+      "baseline_sql": "SELECT channel, AVG(total_amount) AS metric_value FROM wide_orders GROUP BY channel ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "channel_avg_order_value",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "channel_avg_order_value",
+            27000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E28",
+      "question": "??????",
+      "baseline_sql": "SELECT region, SUM(gross_profit) AS gross_profit, SUM(total_amount) AS total_sales FROM wide_order_details GROUP BY region ORDER BY gross_profit DESC LIMIT 20",
+      "verifies": "region_margin_rate",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "region_margin_rate",
+            28000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E29",
+      "question": "????????",
+      "baseline_sql": "SELECT holiday_name, SUM(total_amount) AS metric_value FROM wide_order_details GROUP BY holiday_name ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "holiday_sales_comparison",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "holiday_sales_comparison",
+            29000
+          ]
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case_id": "E30",
+      "question": "????? Top 20",
+      "baseline_sql": "SELECT city, SUM(total_amount) AS metric_value FROM wide_order_details GROUP BY city ORDER BY metric_value DESC LIMIT 20",
+      "verifies": "city_sales_topn",
+      "expected_result": {
+        "columns": [
+          "metric_name",
+          "metric_value"
+        ],
+        "rows": [
+          [
+            "city_sales_topn",
+            30000
+          ]
+        ],
+        "truncated": false
+      }
+    }
+  ]
+}

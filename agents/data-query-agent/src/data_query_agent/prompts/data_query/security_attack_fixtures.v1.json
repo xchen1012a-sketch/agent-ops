@@ -1,0 +1,65 @@
+{
+  "version": "v1",
+  "fixtures": [
+    {
+      "case_id": "A01",
+      "attack_sql": "SELECT * FROM wide_orders LIMIT 10",
+      "expected_violation": "column_not_allowed",
+      "verifies": "wildcard_block"
+    },
+    {
+      "case_id": "A02",
+      "attack_sql": "SELECT total_amount FROM mysql.user LIMIT 10",
+      "expected_violation": "forbidden_keyword",
+      "verifies": "system_schema_keyword_block"
+    },
+    {
+      "case_id": "A03",
+      "attack_sql": "SELECT total_amount FROM information_schema.tables LIMIT 10",
+      "expected_violation": "forbidden_keyword",
+      "verifies": "information_schema_keyword_block"
+    },
+    {
+      "case_id": "A04",
+      "attack_sql": "SELECT total_amount FROM wide_orders UNION SELECT password FROM users LIMIT 10",
+      "expected_violation": "forbidden_keyword",
+      "verifies": "union_block"
+    },
+    {
+      "case_id": "A05",
+      "attack_sql": "DROP TABLE wide_orders",
+      "expected_violation": "forbidden_clause",
+      "verifies": "ddl_block"
+    },
+    {
+      "case_id": "A06",
+      "attack_sql": "DELETE FROM wide_orders WHERE order_id = 1",
+      "expected_violation": "forbidden_clause",
+      "verifies": "dml_block"
+    },
+    {
+      "case_id": "A07",
+      "attack_sql": "SELECT SLEEP(10) FROM wide_orders LIMIT 1",
+      "expected_violation": "forbidden_keyword",
+      "verifies": "sleep_block"
+    },
+    {
+      "case_id": "A08",
+      "attack_sql": "SELECT total_amount FROM wide_orders; SELECT total_amount FROM wide_orders",
+      "expected_violation": "multiple_statements",
+      "verifies": "multi_statement_block"
+    },
+    {
+      "case_id": "A09",
+      "attack_sql": "SELECT password FROM wide_orders LIMIT 10",
+      "expected_violation": "column_not_allowed",
+      "verifies": "unknown_column_block"
+    },
+    {
+      "case_id": "A10",
+      "attack_sql": "SELECT total_amount FROM wide_orders -- comment\nLIMIT 10",
+      "expected_violation": "comment_not_allowed",
+      "verifies": "comment_block"
+    }
+  ]
+}
