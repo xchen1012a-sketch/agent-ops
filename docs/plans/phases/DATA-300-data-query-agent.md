@@ -363,3 +363,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed（首次发现 `tests/unit/test_audit_models.py` 需格式化，已格式化后通过）。
   - `uv run mypy src`：passed。
   - `uv run pytest -q`：62 passed，coverage 78%。
+- 2026-07-05：完成 `DATA-320` 循环 7。新增 feedbacks 与 followup_suggestions 数据层切片，包含反馈评分枚举、反馈/追问建议实体、repository port/implementation、SQLAlchemy ORM、Alembic migration、application service 与单元测试；验证用户只能查自己的反馈，追问建议可按 run/thread 查询。未做 prompt_versions、API/SSE、workflow，未连接真实数据库。验证：
+  - `uv run pytest tests/unit/test_feedback_service.py tests/unit/test_feedback_models.py tests/unit/test_migrations.py -q`：17 passed。
+  - `uv run ruff check src tests`：passed（首次发现 2 个 import/format 问题，已 `ruff check --fix` 修复后通过）。
+  - `uv run ruff format --check src tests`：passed。
+  - `uv run mypy src`：passed。
+  - `uv run pytest -q`：71 passed，coverage 77%。
