@@ -90,6 +90,31 @@ class FakeRunRepository:
         self.runs_by_public_id[updated.public_id] = updated
         return updated
 
+    async def reset_query_run_for_retry(self, *, run_id: int) -> QueryRun:
+        existing = self.runs_by_id[run_id]
+        updated = QueryRun(
+            id=existing.id,
+            public_id=existing.public_id,
+            thread_id=existing.thread_id,
+            user_id=existing.user_id,
+            status=RunStatus.RETRYING,
+            question_message_id=existing.question_message_id,
+            error_code=None,
+            error_message=None,
+            started_at=None,
+            finished_at=None,
+            created_at=existing.created_at,
+            updated_at=datetime.now(UTC).replace(tzinfo=None),
+        )
+        self.runs_by_id[run_id] = updated
+        self.runs_by_public_id[updated.public_id] = updated
+        return updated
+
+    async def delete_node_runs_for_run(self, *, run_id: int) -> None:
+        self.node_runs_by_id = {
+            node_id: node for node_id, node in self.node_runs_by_id.items() if node.run_id != run_id
+        }
+
     async def create_node_run(
         self,
         *,
@@ -197,6 +222,38 @@ async def test_run_status_transitions_are_auditable() -> None:
     assert failed.finished_at is not None
     assert failed.error_code == "SQL_POLICY_VIOLATION"
     assert failed.error_message == "blocked by policy"
+
+
+@pytest.mark.asyncio
+async def test_retry_run_clears_error_state_and_node_traces() -> None:
+    service = QueryRunTraceService(FakeRunRepository())
+    run = await service.create_run_for_thread(thread=_thread())
+    assert run.id is not None
+    running = await service.start_run(run_id=run.id)
+    failed_node = await service.create_node_run(run=running, node_name="query_execute")
+    assert failed_node.id is not None
+    await service.finish_node(
+        node_run_id=failed_node.id,
+        status=NodeStatus.FAILED,
+        error_code="QUERY_TIMEOUT",
+        error_message="query timeout",
+    )
+    failed = await service.fail_run(
+        run_id=run.id,
+        error_code="QUERY_TIMEOUT",
+        error_message="query timeout",
+    )
+
+    retried = await service.retry_run(run_id=run.id)
+    node_runs = await service.list_node_runs(run=retried)
+
+    assert failed.status is RunStatus.FAILED
+    assert retried.status is RunStatus.RETRYING
+    assert retried.error_code is None
+    assert retried.error_message is None
+    assert retried.started_at is None
+    assert retried.finished_at is None
+    assert node_runs == ()
 
 
 @pytest.mark.asyncio

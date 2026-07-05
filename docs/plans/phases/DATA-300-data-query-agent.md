@@ -406,3 +406,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting workflow runner and its tests.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 122 passed, coverage 82%.
+
+- 2026-07-05: Completed `DATA-340` cycle 14. Added application-layer cancel/retry state boundaries: `cancel_run` continues to mark runs as `canceled`; `retry_run` clears previous error fields, resets start/finish timestamps, deletes prior node traces, and marks the run as `retrying`. SQLAlchemy repository now exposes explicit retry reset and node-trace cleanup methods. Not included: real background queue interruption, API endpoints, new DB migration, or workflow re-execution scheduling. Verification:
+  - `uv run pytest tests/unit/test_run_service.py tests/unit/test_workflow_runner_service.py -q`: 12 passed before formatting.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting run service/repository files and tests.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 123 passed, coverage 81%.

@@ -80,6 +80,16 @@ class QueryRunTraceService:
             status=RunStatus.RETRYING,
         )
 
+    async def retry_run(self, *, run_id: int) -> QueryRun:
+        """Prepare a failed or canceled query run for retry.
+
+        The current cycle only defines application-layer state semantics:
+        clearing previous error fields and node traces. It does not interrupt
+        or enqueue real background jobs.
+        """
+        await self._repository.delete_node_runs_for_run(run_id=run_id)
+        return await self._repository.reset_query_run_for_retry(run_id=run_id)
+
     async def create_node_run(
         self,
         *,

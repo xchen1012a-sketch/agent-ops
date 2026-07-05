@@ -42,6 +42,12 @@ class RunRepository(Protocol):
     ) -> QueryRun:
         """Persist a query run status transition and audit fields."""
 
+    async def reset_query_run_for_retry(self, *, run_id: int) -> QueryRun:
+        """Clear retry-sensitive fields and mark a query run as retrying."""
+
+    async def delete_node_runs_for_run(self, *, run_id: int) -> None:
+        """Delete node traces before a retry attempt starts."""
+
     async def create_node_run(
         self,
         *,

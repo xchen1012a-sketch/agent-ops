@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data_query_agent.domain.entities.run import NodeRun, NodeStatus, QueryRun, RunStatus
@@ -80,6 +80,23 @@ class SqlAlchemyRunRepository:
             model.error_message = error_message
         await self._session.flush()
         return _to_query_run_entity(model)
+
+    async def reset_query_run_for_retry(self, *, run_id: int) -> QueryRun:
+        model = await self._session.get(QueryRunModel, run_id)
+        if model is None:
+            raise LookupError(f"query run not found: {run_id}")
+        model.status = RunStatus.RETRYING.value
+        model.error_code = None
+        model.error_message = None
+        model.started_at = None
+        model.finished_at = None
+        model.updated_at = _utcnow_naive()
+        await self._session.flush()
+        return _to_query_run_entity(model)
+
+    async def delete_node_runs_for_run(self, *, run_id: int) -> None:
+        await self._session.execute(delete(NodeRunModel).where(NodeRunModel.run_id == run_id))
+        await self._session.flush()
 
     async def create_node_run(
         self,
