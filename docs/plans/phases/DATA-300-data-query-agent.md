@@ -427,3 +427,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting prompt-backed nodes and tests.
   - `uv run mypy src`: passed after narrowing node trace status to Literal.
   - `uv run pytest -q`: 135 passed, coverage 82%.
+
+- 2026-07-05: Completed `DATA-350` cycle 17. Added DeepSeek adapter configuration boundary and injectable HTTP client adapter. Configuration fails fast for missing base URL/API key/model or invalid timeout/retry values; unit tests use fake HTTP responses only and cover success, retry on server error, malformed response rejection, and HTTP error mapping. No real DeepSeek key, no real network integration test, no workflow/API switch to real model. Verification:
+  - `uv run pytest tests/unit/test_deepseek_adapter.py -q`: 8 passed before type-wrapper fix.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting DeepSeek adapter.
+  - `uv run mypy src`: passed after wrapping httpx responses behind the internal response protocol.
+  - `uv run pytest -q`: 143 passed, coverage 82%.
