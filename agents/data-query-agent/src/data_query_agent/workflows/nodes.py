@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from data_query_agent.application.services.data_catalog_service import DataCatalogService
+from data_query_agent.application.services.result_projection_service import ResultProjectionService
 from data_query_agent.domain.policies.sql_ast import SqlAstPolicyValidator
 from data_query_agent.workflows.state import DataQueryState, NodeTrace
 
@@ -93,12 +94,28 @@ def result_validate_node(state: DataQueryState) -> DataQueryState:
 
 
 def interpret_node(state: DataQueryState) -> DataQueryState:
-    """Produce deterministic natural-language interpretation."""
+    """Produce deterministic interpretation with chart and follow-up semantics."""
     result = state.get("query_result", {})
     rows = result.get("rows", []) if isinstance(result, dict) else []
     value = rows[0][0] if rows else None
     answer = f"Query result is {value}." if value is not None else "No result found."
+    projection = (
+        ResultProjectionService().project(
+            question=state.get("question", ""),
+            query_result=result,
+        )
+        if isinstance(result, dict)
+        else None
+    )
     next_state: DataQueryState = {**state, "answer": answer}
+    if projection is not None:
+        if projection.chart is not None:
+            next_state["chart"] = {
+                "type": projection.chart.type,
+                "dataset": projection.chart.dataset,
+                "encoding": projection.chart.encoding,
+            }
+        next_state["followups"] = list(projection.followups)
     return _with_trace(next_state, "interpret", "completed")
 
 

@@ -500,3 +500,11 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 170 passed, 1 Starlette/httpx deprecation warning, coverage 88%.
+
+- 2026-07-05: Completed `DATA-370` cycle 27. Added result projection service for frontend-safe chart semantics and follow-up recommendations. Single-value results return no chart but include follow-up questions; trend-shaped results return line chart semantics; ranking/grouped results return bar chart semantics. The deterministic `interpret_node` now writes `chart` and `followups` into workflow state without exposing SQL. Not included: frontend rendering, persisted follow-up rows, ECharts component integration, or LLM-generated recommendations.
+  Verification:
+  - `uv run pytest tests/unit/test_result_projection_service.py tests/unit/test_data_query_workflow.py -q`: 8 passed.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed after formatting `result_projection_service.py`.
+  - `uv run mypy src`: passed.
+  - `uv run pytest -q`: 174 passed, 1 Starlette/httpx deprecation warning, coverage 88%.
