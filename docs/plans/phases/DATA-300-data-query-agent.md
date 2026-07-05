@@ -387,3 +387,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed（首次发现 `tests/unit/test_sql_ast_policy.py` 需格式化，已格式化后通过）。
   - `uv run mypy src`：首次发现列表别名类型收窄问题，已修复后 passed。
   - `uv run pytest -q`：108 passed，coverage 79%。
+- 2026-07-05：完成 `DATA-330` 循环 11。新增只读查询 adapter port/DTO、结构化结果、安全错误码与 fake/in-memory query adapter；覆盖成功执行、timeout、connection failed、SQL fixture 未注册、result too large（rows/fields/bytes）映射。未实现真实 MySQL adapter，未连接外部数据库，未做 workflow/API。验证：
+  - `uv run pytest tests/unit/test_fake_query_adapter.py -q`：5 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed（首次发现 fake adapter 与测试需格式化，已格式化后通过）。
+  - `uv run mypy src`：passed。
+  - `uv run pytest -q`：113 passed，coverage 80%。
