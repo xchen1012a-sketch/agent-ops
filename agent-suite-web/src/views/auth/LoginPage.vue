@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -41,12 +41,12 @@ const redirectTarget = computed(() => {
 });
 
 async function handleSubmit(): Promise<void> {
-  if (!formRef.value) return;
-  const valid = await formRef.value.validate().catch(() => false);
-  if (!valid) return;
-
+  if (submitting.value || !formRef.value) return;
   submitting.value = true;
   try {
+    const valid = await formRef.value.validate().catch(() => false);
+    if (!valid) return;
+
     await auth.login({
       email: form.email.trim(),
       password: form.password,
@@ -93,11 +93,11 @@ async function handleSubmit(): Promise<void> {
             placeholder="至少 8 位"
             show-password
             size="large"
-            @keyup.enter="handleSubmit"
           />
         </el-form-item>
         <el-button
           type="primary"
+          native-type="submit"
           size="large"
           class="login-page__submit"
           :loading="submitting"
