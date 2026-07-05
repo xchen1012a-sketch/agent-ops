@@ -2,7 +2,7 @@
 
 ## 状态
 
-进行中。`RECRUIT-240 匹配与面试工作流` 第四切片 Prompt 模板加载边界已落地并通过本地质量门禁；下一步进入 RECRUIT-240 第五切片 Prompt 输出 schema 校验边界。
+进行中。`RECRUIT-240 匹配与面试工作流` 第五切片 Prompt 输出 schema 校验边界已落地并通过本地质量门禁；下一步进入 RECRUIT-240 第六切片 Prompt-backed resume_parse 节点。
 
 ## 上一阶段
 
@@ -417,6 +417,17 @@
 - 输出：`PromptOutputValidator`、`PromptValidatedOutput`、`PromptOutputValidationError`、`parse_json_object_output()`。
 - 行为：解析 raw JSON；要求顶层为 JSON object；校验 `output_schema.type == object`；校验 required 字段；按 properties 中的 `type` 校验。
 - 不执行模型输出中的命令、SQL 或路径。
+
+### 第五切片执行记录（2026-07-05）
+
+- 已新增 `prompts/output_validator.py`，提供 `PromptOutputValidator`、`PromptValidatedOutput`、`PromptOutputValidationError`、`parse_json_object_output()`。
+- 校验边界要求 raw output 为标准 JSON object，拒绝空值、数组、null、非法 JSON、`NaN` / `Infinity` 等非标准常量和超长输出。
+- schema 子集限制为 object 根节点，支持 `string`、`array`、`number`、`boolean`、`null`、`object`，并递归校验 object `properties` / `required` 与 array `items`。
+- 默认拒绝未知字段；required 字段必须在 properties 中声明；number 允许 int/finite float，拒绝 bool 和非有限 float。
+- JSON 解析错误和模板 value format 错误不保留原始输出/候选人内容异常链。
+- 已新增/更新 `tests/unit/test_prompt_output_validator.py`、`tests/unit/test_prompt_template_loader.py` 覆盖上述边界。
+- 本地门禁：`uv run ruff check src tests`、`uv run ruff format --check src tests`、`uv run mypy src`、`uv run pytest`（180 passed，83% coverage）、`uv run alembic heads`（`hhh5c9e3f660 (head)`）均通过。
+- 本切片不改数据库 schema、不调用真实 LLM、不接外部服务；为避免阻塞产品闭环，非阻塞 MEDIUM 级审查意见后续默认记录/顺手修，不再反复卡同一循环。
 
 ### 第六切片：Prompt-backed resume_parse 节点
 

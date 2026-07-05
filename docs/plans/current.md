@@ -16,4 +16,4 @@
 - 由 Claude 推进；Codex 仍在 `LEGAL-100`，互不阻塞。
 - 阶段文件：`docs/plans/phases/RECRUIT-200-recruitment-assistant-agent.md`。
 - 子阶段：`RECRUIT-230` 数据层（7 批）→ `RECRUIT-240` 工作流（10 切片）→ `RECRUIT-250` API/报告（5 切片）→ `RECRUIT-260` 质量验收（4 切片）。
-- 当前状态：`RECRUIT-240` 第四切片 Prompt 模板加载边界已落地并通过质量门禁（ruff/mypy/pytest 82%/149 passed/单 head `hhh5c9e3f660`）；下一步进入第五切片：Prompt 输出 schema 校验边界。
+- 当前状态：`RECRUIT-240` 第五切片 Prompt 输出 schema 校验边界已落地并通过质量门禁（ruff/mypy/pytest 83%/180 passed/单 head `hhh5c9e3f660`）；下一步进入第六切片：Prompt-backed `resume_parse` 节点。

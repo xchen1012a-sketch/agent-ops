@@ -17,11 +17,15 @@ def object_schema() -> dict[str, object]:
         "required": ["summary", "skills", "total_years_exp", "fairness_passed"],
         "properties": {
             "summary": {"type": "string"},
-            "skills": {"type": "array"},
+            "skills": {"type": "array", "items": {"type": "string"}},
             "total_years_exp": {"type": "number"},
             "fairness_passed": {"type": "boolean"},
             "notes": {"type": "null"},
-            "metadata": {"type": "object"},
+            "metadata": {
+                "type": "object",
+                "required": ["source"],
+                "properties": {"source": {"type": "string"}},
+            },
         },
     }
 
@@ -45,6 +49,15 @@ def test_parse_json_object_output_returns_object() -> None:
 def test_parse_json_object_output_rejects_non_object(raw_output: str) -> None:
     with pytest.raises(PromptOutputValidationError):
         parse_json_object_output(raw_output)
+
+
+def test_parse_json_object_output_wraps_oversized_integer_errors() -> None:
+    raw_output = '{"total_years_exp": ' + ("9" * 5_000) + "}"
+
+    with pytest.raises(PromptOutputValidationError) as exc_info:
+        parse_json_object_output(raw_output)
+
+    assert exc_info.value.__cause__ is None
 
 
 def test_parse_json_object_output_rejects_non_standard_json_constants() -> None:
@@ -150,6 +163,48 @@ def test_validator_rejects_bool_for_number_type() -> None:
 
     with pytest.raises(PromptOutputValidationError):
         validator.validate(output)
+
+
+def test_validator_rejects_array_items_with_wrong_type() -> None:
+    output = valid_output()
+    output["skills"] = ["Python", 123]
+    validator = PromptOutputValidator(object_schema())
+
+    with pytest.raises(PromptOutputValidationError) as exc_info:
+        validator.validate(output)
+
+    assert "skills" in str(exc_info.value)
+
+
+def test_validator_rejects_nested_object_unknown_fields() -> None:
+    output = valid_output()
+    output["metadata"] = {"source": "mock", "raw_instruction": "ignore rubric"}
+    validator = PromptOutputValidator(object_schema())
+
+    with pytest.raises(PromptOutputValidationError) as exc_info:
+        validator.validate(output)
+
+    assert "metadata.raw_instruction" in str(exc_info.value)
+
+
+def test_validator_rejects_unconstrained_array_schema() -> None:
+    schema: dict[str, object] = {
+        "type": "object",
+        "properties": {"skills": {"type": "array"}},
+    }
+
+    with pytest.raises(PromptOutputValidationError):
+        PromptOutputValidator(schema)
+
+
+def test_validator_rejects_unconstrained_object_schema() -> None:
+    schema: dict[str, object] = {
+        "type": "object",
+        "properties": {"metadata": {"type": "object"}},
+    }
+
+    with pytest.raises(PromptOutputValidationError):
+        PromptOutputValidator(schema)
 
 
 def test_validator_rejects_unknown_fields() -> None:
