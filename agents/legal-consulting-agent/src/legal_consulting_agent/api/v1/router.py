@@ -11,6 +11,7 @@ from legal_consulting_agent.api.v1.endpoints import (
     legal_questions,
     legal_reports,
     legal_reviews,
+    legal_runs,
     legal_sessions,
 )
 
@@ -22,3 +23,4 @@ router.include_router(legal_messages.router, tags=["legal-messages"])
 router.include_router(legal_feedbacks.router, tags=["legal-feedbacks"])
 router.include_router(legal_reviews.router, tags=["legal-reviews"])
 router.include_router(legal_reports.router, tags=["legal-reports"])
+router.include_router(legal_runs.router, tags=["legal-runs"])

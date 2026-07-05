@@ -12,6 +12,7 @@ from legal_consulting_agent.application.services import (
     LegalDataService,
     LegalQuestionAnswerService,
     LegalReportService,
+    LegalRunControlService,
 )
 from legal_consulting_agent.core.config import Settings, get_settings
 from legal_consulting_agent.core.errors import AuthError
@@ -72,6 +73,12 @@ def get_legal_report_service(legal_data_service: LegalDataServiceDep) -> LegalRe
     return LegalReportService(legal_data_service)
 
 
+def get_legal_run_control_service() -> LegalRunControlService:
+    """Build the pure workflow run control projection service."""
+
+    return LegalRunControlService()
+
+
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 RequestIdDep = Annotated[str, Depends(get_request_id)]
@@ -82,3 +89,7 @@ LegalQuestionAnswerServiceDep = Annotated[
     Depends(get_legal_question_answer_service),
 ]
 LegalReportServiceDep = Annotated[LegalReportService, Depends(get_legal_report_service)]
+LegalRunControlServiceDep = Annotated[
+    LegalRunControlService,
+    Depends(get_legal_run_control_service),
+]

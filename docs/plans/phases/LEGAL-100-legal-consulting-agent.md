@@ -614,6 +614,33 @@
 - 取消/重试 API 契约：复用已有 `mark_canceled()` / `prepare_retry_state()`，先做纯应用层状态投影，不接真实后台任务队列。
 - 真实 DeepSeek/RAG 和前端页面继续独立成片。
 
+### Slice 8 scope: workflow run cancel/retry preview APIs
+
+- Goal: expose workflow run cancel/retry state projection APIs so callers can consume the control contract before real task queues are introduced.
+- Input: trusted upstream identity boundary `x-user-public-id` plus the serializable workflow state subset.
+- Output: `POST /v1/workflow-runs/cancel-preview`, `POST /v1/workflow-runs/retry-preview`, and equivalent `/api/legal/v1` paths, all using the standard envelope.
+- Behavior: cancel preview reuses `mark_canceled()` and returns `error_code=CANCELED`; retry preview reuses `prepare_retry_state()` and clears `error_code`, `message_id`, and `node_trace`.
+- Constraints: no real background queue, no `agent_runs` / `node_runs` updates, no DB schema change, no live task interruption, and no changes to other Agents.
+- Not included: real `{run_id}/cancel`, real `{run_id}/retry`, queue workers, long-running task interruption, or frontend pages.
+
+### Slice 8 execution record (2026-07-05)
+
+- Added `LegalRunControlService` for pure cancel/retry state projection.
+- Added `api/v1/schemas/legal_runs.py` for run control preview request/response DTOs.
+- Added `api/v1/endpoints/legal_runs.py` and registered it in the v1 router.
+- Covered cancel preview `error_code=CANCELED`, retry preview field cleanup, and missing identity header `AUTH_REQUIRED`.
+- `uv run pytest tests/unit/test_legal_runs_api.py tests/unit/test_workflow_runner_service.py -q`: 8 passed.
+- `uv run ruff check src tests`: passed.
+- `uv run ruff format --check src tests`: passed, 102 files already formatted.
+- `uv run mypy src`: passed, 70 source files.
+- `uv run pytest --cov=legal_consulting_agent -q`: 122 passed, total coverage 91%.
+
+### LEGAL-150 next slice recommendation
+
+- Consultation record list/search API: use `consultation_records` for read-only paginated history lookup; do not add full-text search or RAG in this slice.
+- Admin review list/resolve API, real DeepSeek/RAG, and frontend pages remain independent later slices.
+
+
 ## 验收标准
 
 ### LEGAL-130

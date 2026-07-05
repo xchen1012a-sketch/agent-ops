@@ -33,6 +33,7 @@ from legal_consulting_agent.application.services.risk_prompt_service import (
     LegalRiskCheckResult,
     make_prompt_risk_check_node,
 )
+from legal_consulting_agent.application.services.run_control_service import LegalRunControlService
 from legal_consulting_agent.application.services.workflow_audit_service import (
     LegalWorkflowAuditService,
     WorkflowErrorMapping,
@@ -59,6 +60,7 @@ __all__ = [
     "LegalQuestionAnswerService",
     "LegalConsultationReport",
     "LegalReportService",
+    "LegalRunControlService",
     "LegalRiskCheckPromptService",
     "LegalRiskCheckResult",
     "LegalWorkflowExecutionError",

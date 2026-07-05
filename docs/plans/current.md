@@ -2,7 +2,7 @@
 
 - 阶段：`LEGAL-100`
 - 名称：法律咨询 Agent 业务实现
-- 状态：`LEGAL-150 领域 API 与课件功能` 第七切片已落地：SSE 问答事件契约
+- 状态：`LEGAL-150 领域 API 与课件功能` 第八切片已落地：取消/重试 Preview API 契约
 - 阶段文件：`docs/plans/phases/LEGAL-100-legal-consulting-agent.md`
 - 最近修复：
   - `REV-legal-data-integrity` 已完成第一阶段。
@@ -31,11 +31,12 @@
   - 已实现 LEGAL-150 高风险审核入队 API：`POST /v1/sessions/{session_public_id}/messages/{message_public_id}/high-risk-review`
   - 已实现 LEGAL-150 报告导出 API：`GET /v1/consultation-records/{record_public_id}/report`，同步返回 Markdown 投影
   - 已实现 LEGAL-150 SSE 问答事件 API：`POST /v1/sessions/{session_public_id}/questions/events`，返回 started/completed 事件
+  - Implemented LEGAL-150 cancel/retry Preview APIs: `POST /v1/workflow-runs/cancel-preview`, `POST /v1/workflow-runs/retry-preview`; returns pure workflow state projections.
 - 暂不具备 / 后置依赖：
   - 课件法律知识库样本未提供；第一切片仅实现 mock/adapter 边界。
   - 知识材料导入、Qdrant 索引、BGE embedding/reranker、真实 RAG 检索和 DeepSeek 真实问答仍未开始。
 - 下一步：
-  - 继续 `LEGAL-150` 第八切片：取消/重试 API 契约，复用已有 runner 状态工具并保持纯应用边界。
+  - Continue LEGAL-150 later thin slices: consultation record list/search API or admin review list/resolve API, without mixing DeepSeek/RAG or frontend scope.
   - 知识材料导入、切分、向量索引、检索和真实 DeepSeek 调用等待知识库样本与本地服务边界确认。
 
 ## 并行阶段：RECRUIT-200 智能招聘 Agent
