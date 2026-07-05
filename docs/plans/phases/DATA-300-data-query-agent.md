@@ -327,3 +327,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
 ## 执行证据
 
 - 2026-07-05：按计划审查结果修订本计划，收紧数据层/API 粒度、飞书 mock 边界、DeepSeek adapter 边界与每循环 Git 暂存/提交门禁。验证：`git diff --check -- docs/plans/phases/DATA-300-data-query-agent.md docs/plans/current.md` 通过。
+- 2026-07-05：完成 `DATA-310` 循环 1。新增 Schema/指标/SQL 白名单/8 题基准 SQL fixture 的机器可读真源、加载服务与单元测试；未连接真实 `shop_db`，未做 NL2SQL，未做 sqlglot AST 校验。验证：
+  - `uv run pytest tests/unit/test_data_catalog_service.py -q`：6 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed。
+  - `uv run mypy src`：passed。
+  - `uv run pytest -q`：28 passed，coverage 86%。

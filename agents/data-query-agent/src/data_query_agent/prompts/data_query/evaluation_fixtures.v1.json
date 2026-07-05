@@ -1,0 +1,53 @@
+{
+  "version": "v1",
+  "fixtures": [
+    {
+      "case_id": "T1",
+      "question": "上个月总销售额多少",
+      "baseline_sql": "SELECT SUM(total_amount) AS total_sales FROM wide_orders WHERE YEAR(date) = YEAR(CURRENT_DATE - INTERVAL 1 MONTH) AND MONTH(date) = MONTH(CURRENT_DATE - INTERVAL 1 MONTH)",
+      "verifies": "relative_time_total_sales"
+    },
+    {
+      "case_id": "T2",
+      "question": "各渠道销售额排行",
+      "baseline_sql": "SELECT channel, SUM(total_amount) AS total_sales FROM wide_orders GROUP BY channel ORDER BY total_sales DESC",
+      "verifies": "group_by_channel_ranking"
+    },
+    {
+      "case_id": "T3",
+      "question": "手机品类卖得最好的 5 个品牌",
+      "baseline_sql": "SELECT brand, SUM(total_amount) AS total_sales FROM wide_order_details WHERE category = '手机' GROUP BY brand ORDER BY total_sales DESC LIMIT 5",
+      "verifies": "category_filter_topn_brand"
+    },
+    {
+      "case_id": "T4",
+      "question": "华东区金卡用户买了多少钱",
+      "baseline_sql": "SELECT SUM(total_amount) AS total_sales FROM wide_orders WHERE region = '华东' AND customer_tier = '金卡'",
+      "verifies": "multi_condition_filter"
+    },
+    {
+      "case_id": "T5",
+      "question": "今年每个月销售额趋势",
+      "baseline_sql": "SELECT MONTH(date) AS month, SUM(total_amount) AS total_sales FROM wide_orders WHERE YEAR(date) = YEAR(CURRENT_DATE) GROUP BY month ORDER BY month",
+      "verifies": "monthly_trend"
+    },
+    {
+      "case_id": "T6",
+      "question": "哪个支付方式用的人最多",
+      "baseline_sql": "SELECT payment_method, COUNT(DISTINCT customer_id) AS customer_count FROM wide_orders GROUP BY payment_method ORDER BY customer_count DESC LIMIT 1",
+      "verifies": "distinct_customer_count"
+    },
+    {
+      "case_id": "T7",
+      "question": "退款率最高的品类是哪些",
+      "baseline_sql": "SELECT category, SUM(CASE WHEN is_refunded = 1 THEN 1 ELSE 0 END) / COUNT(*) AS refund_rate FROM wide_order_details GROUP BY category ORDER BY refund_rate DESC LIMIT 5",
+      "verifies": "refund_rate_by_category"
+    },
+    {
+      "case_id": "T8",
+      "question": "周末和工作日哪个卖得多",
+      "baseline_sql": "SELECT CASE WHEN DAYOFWEEK(date) IN (1, 7) THEN 'weekend' ELSE 'weekday' END AS day_type, SUM(total_amount) AS total_sales FROM wide_orders GROUP BY day_type",
+      "verifies": "weekend_weekday_comparison"
+    }
+  ]
+}

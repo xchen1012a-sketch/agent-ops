@@ -1,0 +1,35 @@
+{
+  "version": "v1",
+  "indicators": [
+    {
+      "name": "total_sales",
+      "description": "Total sales amount.",
+      "expression": "SUM(total_amount)",
+      "applicable_tables": ["wide_orders", "wide_order_details"]
+    },
+    {
+      "name": "avg_order_value",
+      "description": "Average order value.",
+      "expression": "SUM(total_amount) / COUNT(DISTINCT order_id)",
+      "applicable_tables": ["wide_orders"]
+    },
+    {
+      "name": "refund_rate",
+      "description": "Refunded record ratio.",
+      "expression": "SUM(CASE WHEN is_refunded = 1 THEN 1 ELSE 0 END) / COUNT(*)",
+      "applicable_tables": ["wide_orders", "wide_order_details"]
+    },
+    {
+      "name": "gross_margin",
+      "description": "Gross profit divided by sales amount.",
+      "expression": "SUM(gross_profit) / SUM(total_amount)",
+      "applicable_tables": ["wide_order_details"]
+    },
+    {
+      "name": "repeat_purchase_rate",
+      "description": "Distinct repeat-purchase customer ratio.",
+      "expression": "COUNT(DISTINCT CASE WHEN is_repeat_purchase = 1 THEN customer_id END) / COUNT(DISTINCT customer_id)",
+      "applicable_tables": ["wide_order_details"]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "version": "v1",
+  "tables": [
+    {
+      "name": "wide_orders",
+      "description": "Denormalized order-level sales table for B2C analytics.",
+      "columns": [
+        "order_id",
+        "customer_id",
+        "customer_tier",
+        "region",
+        "channel",
+        "payment_method",
+        "date",
+        "total_amount",
+        "is_refunded",
+        "refund_amount"
+      ]
+    },
+    {
+      "name": "wide_order_details",
+      "description": "Denormalized order-detail table for product, brand, category and refund analytics.",
+      "columns": [
+        "detail_id",
+        "order_id",
+        "customer_id",
+        "product_id",
+        "product_name",
+        "brand",
+        "category",
+        "subcategory",
+        "channel",
+        "payment_method",
+        "region",
+        "province",
+        "city",
+        "date",
+        "quantity",
+        "unit_price",
+        "total_amount",
+        "gross_profit",
+        "is_refunded",
+        "is_repeat_purchase",
+        "holiday_name"
+      ]
+    }
+  ]
+}

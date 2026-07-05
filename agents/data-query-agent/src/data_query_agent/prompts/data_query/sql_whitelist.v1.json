@@ -1,0 +1,48 @@
+{
+  "version": "v1",
+  "allowed_tables": ["wide_orders", "wide_order_details"],
+  "allowed_columns": {
+    "wide_orders": [
+      "order_id",
+      "customer_id",
+      "customer_tier",
+      "region",
+      "channel",
+      "payment_method",
+      "date",
+      "total_amount",
+      "is_refunded",
+      "refund_amount"
+    ],
+    "wide_order_details": [
+      "detail_id",
+      "order_id",
+      "customer_id",
+      "product_id",
+      "product_name",
+      "brand",
+      "category",
+      "subcategory",
+      "channel",
+      "payment_method",
+      "region",
+      "province",
+      "city",
+      "date",
+      "quantity",
+      "unit_price",
+      "total_amount",
+      "gross_profit",
+      "is_refunded",
+      "is_repeat_purchase",
+      "holiday_name"
+    ]
+  },
+  "allowed_functions": {
+    "aggregate": ["SUM", "COUNT", "AVG", "MIN", "MAX"],
+    "date": ["DATE", "DATE_FORMAT", "YEAR", "MONTH", "DAY", "YEARWEEK", "DAYOFWEEK", "CURRENT_DATE"],
+    "string": ["SUBSTRING", "CONCAT", "LENGTH", "UPPER", "LOWER", "TRIM"],
+    "numeric": ["ROUND", "ABS", "COALESCE", "IFNULL"],
+    "control": ["CASE", "IF"]
+  }
+}
