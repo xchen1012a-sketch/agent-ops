@@ -67,6 +67,7 @@ const groups = computed<SidebarItem[]>(() => {
         { name: 'legal-admin-categories', label: '法律分类', icon: 'Collection', role: 'admin' },
         { name: 'legal-admin-users', label: '用户管理', icon: 'UserFilled', role: 'admin' },
         { name: 'legal-admin-prompts', label: 'Prompt 版本', icon: 'Document', role: 'admin' },
+        { name: 'legal-admin-reviews', label: '高风险审核', icon: 'Warning', role: 'admin' },
         { name: 'recruit-admin-scoring', label: '评分规则', icon: 'TrendCharts', role: 'admin' },
         { name: 'recruit-admin-audit', label: '招聘审计', icon: 'View', role: 'admin' },
         { name: 'data-admin-sql-audit', label: 'SQL 审计', icon: 'Monitor', role: 'admin' },

@@ -86,6 +86,12 @@ const routes: RouteRecordRaw[] = [
     meta: { module: 'legal', role: 'admin', title: 'Prompt 版本管理' },
   },
   {
+    path: '/legal/admin/reviews',
+    name: 'legal-admin-reviews',
+    component: () => import('@views/legal/admin/HighRiskReviewAdminPage.vue'),
+    meta: { module: 'legal', role: 'admin', title: '高风险审核' },
+  },
+  {
     path: '/recruitment',
     redirect: '/recruitment/tasks',
     meta: { module: 'recruitment' },

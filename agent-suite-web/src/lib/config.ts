@@ -33,6 +33,7 @@ export const suiteEnv = readEnv();
 export const legalApi = createHttpClient({
   baseURL: `${suiteEnv.apiBaseUrl}${suiteEnv.legalPrefix}`,
   getAccessToken: () => useAuthStore().accessToken,
+  getUserPublicId: () => useAuthStore().profile?.public_id ?? null,
   onUnauthorized: () => handleUnauthorized(),
   onForbidden: () => handleForbidden(),
   onRateLimited: (error) => handleRateLimited(error),

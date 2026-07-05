@@ -13,6 +13,7 @@ export interface HttpClientOptions {
   baseURL: string;
   timeoutMs?: number;
   getAccessToken: () => string | null;
+  getUserPublicId?: () => string | null;
   onUnauthorized?: (error: ApiError) => void;
   onForbidden?: (error: ApiError) => void;
   onRateLimited?: (error: ApiError) => void;
@@ -35,6 +36,11 @@ export function createHttpClient(options: HttpClientOptions): AxiosInstance {
     if (token) {
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    const userPublicId = options.getUserPublicId?.();
+    if (userPublicId) {
+      config.headers = config.headers ?? {};
+      config.headers['x-user-public-id'] = userPublicId;
     }
     config.headers = config.headers ?? {};
     config.headers['X-Request-ID'] = generateRequestId();
