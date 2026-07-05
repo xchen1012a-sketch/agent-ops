@@ -14,6 +14,7 @@ POST   /v1/runs/{run_id}/cancel
 POST   /v1/runs/{run_id}/retry
 GET    /v1/query-history
 GET    /v1/query-history/{query_id}
+GET    /v1/admin/sql-audit
 POST   /v1/evaluations
 GET    /v1/evaluations/{evaluation_id}
 POST   /v1/integrations/feishu/events
@@ -145,3 +146,29 @@ Security boundary:
 - Ordinary users can only see their own query summaries.
 - Query history responses never expose generated SQL, SQL policy details, row data, or admin audit fields.
 - Admin SQL audit is intentionally not mixed into these ordinary-user endpoints.
+
+## DATA-360 Admin SQL Audit API slice
+
+`GET /v1/admin/sql-audit` returns paginated full SQL audit records for admin user mirrors only.
+
+Response DTO fields:
+
+- `audit_id`
+- `run_id`
+- `user_id`
+- `decision`
+- `sql_fingerprint`
+- `generated_sql`
+- `redacted_summary`
+- `policy_summary`
+- `row_count`
+- `result_summary`
+- `created_at`
+- `expires_at`
+
+Security boundary:
+
+- A valid gateway subject is still required through `X-User-Subject`.
+- The subject must resolve to a persisted `UserRole.ADMIN` mirror.
+- Non-admin and missing user mirrors receive `AUTH_FORBIDDEN`.
+- This endpoint is intentionally separate from ordinary query history because it exposes generated SQL and policy details for audit/debug use.

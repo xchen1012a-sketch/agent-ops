@@ -477,3 +477,10 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`: passed after formatting query history endpoint and tests.
   - `uv run mypy src`: passed.
   - `uv run pytest -q`: 162 passed, 1 Starlette/httpx deprecation warning, coverage 88%.
+
+- 2026-07-05: Completed `DATA-360` cycle 24. Added admin-only `GET /v1/admin/sql-audit` API slice with `SqlAuditService` dependency wiring and DTO projection for full SQL audit records. Access requires the gateway subject to resolve to a persisted `UserRole.ADMIN` mirror; non-admin and missing user mirrors receive `AUTH_FORBIDDEN`. The endpoint is separated from ordinary query history because it exposes generated SQL, SQL policy decision/details, row count, and result summary for audit/debug use. Synchronized `agents/data-query-agent/docs/api-contract.md` for the admin SQL audit slice. Not included: audit filtering by user/decision/date, CSV export, frontend admin page, or real auth gateway integration.
+  Verification:
+  - `uv run pytest tests/unit/test_admin_sql_audit_api.py tests/unit/test_audit_service.py -q`: 8 passed, 1 Starlette/httpx deprecation warning.
+  - `uv run ruff check src tests`: passed.
+  - `uv run ruff format --check src tests`: passed.
+  - `uv run mypy src`: passed.

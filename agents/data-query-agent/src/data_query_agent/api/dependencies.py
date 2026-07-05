@@ -8,11 +8,13 @@ from typing import Annotated
 from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from data_query_agent.application.services.audit_service import SqlAuditService
 from data_query_agent.application.services.identity_service import IdentityThreadService
 from data_query_agent.application.services.run_service import QueryRunTraceService
 from data_query_agent.core.config import Settings, get_settings
 from data_query_agent.core.errors import AuthError
 from data_query_agent.core.request_context import REQUEST_ID_KEY, request_context
+from data_query_agent.infrastructure.db.repositories.audit import SqlAlchemySqlAuditRepository
 from data_query_agent.infrastructure.db.repositories.identity import SqlAlchemyIdentityRepository
 from data_query_agent.infrastructure.db.repositories.run import SqlAlchemyRunRepository
 from data_query_agent.infrastructure.db.session import get_session_factory
@@ -47,6 +49,11 @@ def get_query_run_trace_service(session: SessionDep) -> QueryRunTraceService:
     return QueryRunTraceService(SqlAlchemyRunRepository(session))
 
 
+def get_sql_audit_service(session: SessionDep) -> SqlAuditService:
+    """Build SQL audit service for request-scoped persistence."""
+    return SqlAuditService(SqlAlchemySqlAuditRepository(session))
+
+
 def get_request_id(request: Request) -> str:
     """Return the request id assigned by middleware; fall back to header or unknown."""
     value = request_context.get(REQUEST_ID_KEY)
@@ -61,3 +68,4 @@ RequestIdDep = Annotated[str, Depends(get_request_id)]
 CurrentSubjectDep = Annotated[str, Depends(get_current_subject)]
 IdentityThreadServiceDep = Annotated[IdentityThreadService, Depends(get_identity_thread_service)]
 QueryRunTraceServiceDep = Annotated[QueryRunTraceService, Depends(get_query_run_trace_service)]
+SqlAuditServiceDep = Annotated[SqlAuditService, Depends(get_sql_audit_service)]
