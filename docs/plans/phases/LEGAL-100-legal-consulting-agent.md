@@ -511,6 +511,31 @@
 - 反馈 API 契约：复用 `LegalDataService.create_feedback()`，覆盖评分范围、用户会话隔离和助手消息约束。
 - 报告导出、SSE、真实 DeepSeek/RAG、高风险审核入队继续独立成片。
 
+### 第四切片执行范围：反馈 API 契约
+
+- 目标：提供用户对助手回答消息的评分反馈 API。
+- 输入：受信任上游身份边界 `x-user-public-id`、`session_public_id`、`message_public_id`、`rating`、可选 `comment`。
+- 输出：`POST /v1/sessions/{session_public_id}/messages/{message_public_id}/feedback` 与 `/api/legal/v1` 等价路径、`LegalFeedbackCreateRequest`、`LegalFeedbackResponse`、`LegalFeedbackCreateEnvelope`。
+- 行为：API 层校验评分范围和评论长度；业务约束复用 `LegalDataService.create_feedback()`，确保用户会话隔离和目标为助手消息。
+- 约束：不改 DB schema；不做重复反馈的 HTTP 409 映射；不修改其他 Agent。
+- 不做：反馈列表、反馈修改/删除、管理员统计、前端页面。
+
+### 第四切片执行记录（2026-07-05）
+
+- 已新增反馈 DTO：`api/v1/schemas/legal_feedbacks.py`。
+- 已新增 endpoint：`api/v1/endpoints/legal_feedbacks.py`，并接入 v1 router。
+- 已覆盖 API 成功 envelope、非法 rating 422。
+- `uv run pytest tests/unit/test_legal_feedbacks_api.py -q`：2 passed。
+- `uv run ruff check src tests`：通过。
+- `uv run ruff format --check src tests`：通过，90 files already formatted。
+- `uv run mypy src`：通过，62 source files 无错误。
+- `uv run pytest --cov=legal_consulting_agent -q`：114 passed，总覆盖率 90%。
+
+### LEGAL-150 下一切片建议
+
+- 高风险审核入队 API 契约：复用 `LegalDataService.create_high_risk_review()`。
+- 报告导出、SSE、真实 DeepSeek/RAG、管理员复核流程继续独立成片。
+
 ## 验收标准
 
 ### LEGAL-130
