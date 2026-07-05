@@ -17,9 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
     role="status"
     aria-live="polite"
   >
-    <el-icon class="loading-state__spinner" :size="props.fullscreen ? 32 : 24">
-      <Loading />
-    </el-icon>
+    <span class="loading-state__spinner" aria-hidden="true" />
     <span class="loading-state__message">{{ props.message }}</span>
   </div>
 </template>
@@ -50,6 +48,11 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .loading-state__spinner {
+  width: 1.5em;
+  height: 1.5em;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
   animation: loading-state__spin 1s linear infinite;
 }
 
