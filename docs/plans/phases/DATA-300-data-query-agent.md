@@ -333,3 +333,9 @@ uv run python -c "from data_query_agent.main import create_app; app=create_app()
   - `uv run ruff format --check src tests`：passed。
   - `uv run mypy src`：passed。
   - `uv run pytest -q`：28 passed，coverage 86%。
+- 2026-07-05：完成 `DATA-310` 循环 2。新增 `SqlPolicyConfig`、`QueryResourceLimits`、禁止关键字/子句与资源限制配置；未做 sqlglot AST 校验，未连接真实数据库。验证：
+  - `uv run pytest tests/unit/test_data_catalog_service.py -q`：9 passed。
+  - `uv run ruff check src tests`：passed。
+  - `uv run ruff format --check src tests`：passed。
+  - `uv run mypy src`：passed。
+  - `uv run pytest -q`：31 passed，coverage 87%。

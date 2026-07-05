@@ -44,5 +44,53 @@
     "string": ["SUBSTRING", "CONCAT", "LENGTH", "UPPER", "LOWER", "TRIM"],
     "numeric": ["ROUND", "ABS", "COALESCE", "IFNULL"],
     "control": ["CASE", "IF"]
+  },
+  "policy": {
+    "forbidden_keywords": [
+      "UNION",
+      "INTO OUTFILE",
+      "INTO DUMPFILE",
+      "LOAD_FILE",
+      "SLEEP",
+      "BENCHMARK",
+      "INFORMATION_SCHEMA",
+      "MYSQL",
+      "PERFORMANCE_SCHEMA",
+      "SYS"
+    ],
+    "allowed_clauses": [
+      "SELECT",
+      "FROM",
+      "WHERE",
+      "GROUP BY",
+      "HAVING",
+      "ORDER BY",
+      "LIMIT",
+      "JOIN",
+      "LEFT JOIN",
+      "INNER JOIN",
+      "WITH",
+      "AS"
+    ],
+    "forbidden_clauses": [
+      "INSERT",
+      "UPDATE",
+      "DELETE",
+      "DROP",
+      "ALTER",
+      "CREATE",
+      "TRUNCATE",
+      "GRANT",
+      "REVOKE",
+      "CALL",
+      "SET"
+    ],
+    "limits": {
+      "max_rows": 1000,
+      "max_fields": 50,
+      "max_bytes": 1048576,
+      "timeout_seconds": 10,
+      "statement_count": 1
+    }
   }
 }

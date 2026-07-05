@@ -6,7 +6,12 @@ import pytest
 from pydantic import ValidationError
 
 from data_query_agent.application.services.data_catalog_service import DataCatalogService
-from data_query_agent.domain.policies.sql_whitelist import FunctionWhitelist, SqlWhitelistSource
+from data_query_agent.domain.policies.sql_whitelist import (
+    FunctionWhitelist,
+    QueryResourceLimits,
+    SqlPolicyConfig,
+    SqlWhitelistSource,
+)
 from data_query_agent.domain.value_objects.data_catalog import SchemaCatalog, TableCatalog
 
 
@@ -52,6 +57,39 @@ def test_sql_whitelist_checks_table_column_and_function_membership() -> None:
     assert not whitelist.is_table_allowed("mysql.user")
     assert not whitelist.is_column_allowed("wide_orders", "password")
     assert not whitelist.is_function_allowed("sleep")
+
+
+def test_load_sql_policy_config_contains_default_resource_limits() -> None:
+    policy = DataCatalogService().load_sql_whitelist().policy
+
+    assert policy.limits == QueryResourceLimits(
+        max_rows=1000,
+        max_fields=50,
+        max_bytes=1_048_576,
+        timeout_seconds=10,
+        statement_count=1,
+    )
+    assert policy.is_keyword_forbidden("union")
+    assert policy.is_keyword_forbidden("information_schema")
+    assert policy.is_clause_allowed("select")
+    assert policy.is_clause_forbidden("delete")
+
+
+def test_sql_policy_rejects_overlapping_allowed_and_forbidden_clauses() -> None:
+    with pytest.raises(ValidationError) as exc_info:
+        SqlPolicyConfig(
+            allowed_clauses=("SELECT", "DELETE"),
+            forbidden_clauses=("DELETE",),
+        )
+
+    assert "overlap" in str(exc_info.value)
+
+
+def test_query_resource_limits_reject_multiple_statements() -> None:
+    with pytest.raises(ValidationError) as exc_info:
+        QueryResourceLimits(statement_count=2)
+
+    assert "less than or equal to 1" in str(exc_info.value)
 
 
 def test_schema_catalog_rejects_duplicate_table_names() -> None:

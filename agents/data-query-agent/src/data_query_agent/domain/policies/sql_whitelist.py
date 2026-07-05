@@ -35,6 +35,96 @@ class FunctionWhitelist(BaseModel):
         return frozenset(self.aggregate + self.date + self.string + self.numeric + self.control)
 
 
+class QueryResourceLimits(BaseModel):
+    """Resource limits enforced after SQL policy validation."""
+
+    model_config = ConfigDict(frozen=True)
+
+    max_rows: int = Field(default=1000, ge=1, le=10000)
+    max_fields: int = Field(default=50, ge=1, le=200)
+    max_bytes: int = Field(default=1_048_576, ge=1024, le=10_485_760)
+    timeout_seconds: int = Field(default=10, ge=1, le=60)
+    statement_count: int = Field(default=1, ge=1, le=1)
+
+
+class SqlPolicyConfig(BaseModel):
+    """Non-AST SQL policy configuration loaded from versioned truth sources."""
+
+    model_config = ConfigDict(frozen=True)
+
+    forbidden_keywords: tuple[str, ...] = (
+        "UNION",
+        "INTO OUTFILE",
+        "INTO DUMPFILE",
+        "LOAD_FILE",
+        "SLEEP",
+        "BENCHMARK",
+        "INFORMATION_SCHEMA",
+        "MYSQL",
+        "PERFORMANCE_SCHEMA",
+        "SYS",
+    )
+    allowed_clauses: tuple[str, ...] = (
+        "SELECT",
+        "FROM",
+        "WHERE",
+        "GROUP BY",
+        "HAVING",
+        "ORDER BY",
+        "LIMIT",
+        "JOIN",
+        "LEFT JOIN",
+        "INNER JOIN",
+        "WITH",
+        "AS",
+    )
+    forbidden_clauses: tuple[str, ...] = (
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "DROP",
+        "ALTER",
+        "CREATE",
+        "TRUNCATE",
+        "GRANT",
+        "REVOKE",
+        "CALL",
+        "SET",
+    )
+    limits: QueryResourceLimits = Field(default_factory=QueryResourceLimits)
+
+    @field_validator("forbidden_keywords", "allowed_clauses", "forbidden_clauses")
+    @classmethod
+    def _tokens_must_be_uppercase_unique(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        normalized = tuple(token.strip().upper() for token in value)
+        if any(not token for token in normalized):
+            raise CatalogValidationError("SQL policy token must not be blank")
+        if len(set(normalized)) != len(normalized):
+            raise CatalogValidationError("SQL policy tokens must be unique")
+        return normalized
+
+    @model_validator(mode="after")
+    def _allowed_and_forbidden_clauses_must_not_overlap(self) -> Self:
+        overlap = set(self.allowed_clauses) & set(self.forbidden_clauses)
+        if overlap:
+            raise CatalogValidationError(
+                "allowed and forbidden clauses overlap: " + ", ".join(sorted(overlap))
+            )
+        return self
+
+    def is_keyword_forbidden(self, keyword: str) -> bool:
+        """Return whether a keyword is explicitly forbidden."""
+        return keyword.strip().upper() in self.forbidden_keywords
+
+    def is_clause_allowed(self, clause: str) -> bool:
+        """Return whether a SQL clause is explicitly allowed."""
+        return clause.strip().upper() in self.allowed_clauses
+
+    def is_clause_forbidden(self, clause: str) -> bool:
+        """Return whether a SQL clause is explicitly forbidden."""
+        return clause.strip().upper() in self.forbidden_clauses
+
+
 class SqlWhitelistSource(BaseModel):
     """Versioned source of allowed SQL tables, columns and functions."""
 
@@ -44,6 +134,7 @@ class SqlWhitelistSource(BaseModel):
     allowed_tables: tuple[str, ...] = Field(min_length=1)
     allowed_columns: dict[str, tuple[str, ...]]
     allowed_functions: FunctionWhitelist
+    policy: SqlPolicyConfig = Field(default_factory=SqlPolicyConfig)
 
     @field_validator("allowed_tables")
     @classmethod
