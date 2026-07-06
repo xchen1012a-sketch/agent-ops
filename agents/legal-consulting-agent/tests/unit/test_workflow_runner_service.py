@@ -107,7 +107,7 @@ async def test_runner_records_retryable_persist_failure() -> None:
         "node_name": "persist",
         "retryable": True,
         "category": "civil_labor",
-        "chunks_count": 0,
+        "chunks_count": 1,
         "high_risk": False,
     }
 

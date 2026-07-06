@@ -11,6 +11,7 @@ async def _approved_task_id(app_client: AsyncClient) -> str:
         json={"title": "Report task", "resume_text": "Python", "jd_text": "FastAPI"},
     )
     task_id = create_response.json()["task"]["task_id"]
+    assert isinstance(task_id, str)
     run_response = await app_client.post(f"/v1/recruitment-tasks/{task_id}/runs", json={})
     assert run_response.status_code == 202
     review_response = await app_client.post(
@@ -57,6 +58,9 @@ async def test_create_and_get_recruitment_report(app_client: AsyncClient) -> Non
     detail = detail_response.json()["report"]
     assert detail["report_id"] == report["report_id"]
     assert "# Recruitment Analysis Report" in detail["content_markdown"]
+    assert "Rule version: recruitment_mvp:v1" in detail["content_markdown"]
+    assert "## Dify-equivalent Workflow Evidence" in detail["content_markdown"]
+    assert "## Fairness Boundary" in detail["content_markdown"]
 
 
 async def test_export_recruitment_report_as_markdown_and_pdf(app_client: AsyncClient) -> None:
@@ -74,6 +78,7 @@ async def test_export_recruitment_report_as_markdown_and_pdf(app_client: AsyncCl
     assert md_response.status_code == 200
     assert md_response.headers["content-type"].startswith("text/markdown")
     assert "Recruitment Analysis Report" in md_response.text
+    assert "Match score:" in md_response.text
     assert pdf_response.status_code == 200
     assert pdf_response.headers["content-type"] == "application/pdf"
     assert pdf_response.content.startswith(b"%PDF-1.4")

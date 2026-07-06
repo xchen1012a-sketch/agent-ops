@@ -291,6 +291,7 @@ class SqlAstPolicyValidator:
 _SYSTEM_SCHEMAS = frozenset({"INFORMATION_SCHEMA", "MYSQL", "PERFORMANCE_SCHEMA", "SYS"})
 _FUNCTION_NAME_ALIASES = {
     "TIME_TO_STR": "DATE_FORMAT",
+    "TS_OR_DS_TO_DATE": "DATE",
     "TS_OR_DS_TO_TIMESTAMP": "DATE",
 }
 
@@ -310,6 +311,8 @@ def _resolve_column_table(
 def _iter_function_names(expression: exp.Expression) -> tuple[str, ...]:
     names: list[str] = []
     for function in expression.find_all(exp.Func):
+        if isinstance(function, exp.And | exp.Or):
+            continue
         function_name = function.name or type(function).__name__
         normalized = _FUNCTION_NAME_ALIASES.get(_to_sql_function_name(function_name), function_name)
         names.append(normalized.upper())

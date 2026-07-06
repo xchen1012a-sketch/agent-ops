@@ -16,12 +16,20 @@ async def test_recruitment_mvp_api_closes_main_flow_under_mock_boundary(
         "/v1/recruitment-tasks",
         json={
             "title": "Acceptance backend role",
-            "resume_text": "Built Python APIs and supported stakeholders.",
-            "jd_text": "Need Python service development and stakeholder communication.",
+            "resume_text": "Built Python APIs with stakeholder communication.",
+            "jd_text": "Need Python API service development and stakeholder communication.",
         },
     )
     assert create_response.status_code == 201
-    task_id = create_response.json()["task"]["task_id"]
+    created_task = create_response.json()["task"]
+    task_id = created_task["task_id"]
+
+    detail_response = await app_client.get(f"/v1/recruitment-tasks/{task_id}")
+    assert detail_response.status_code == 200
+    analysis = detail_response.json()["task"]["analysis"]
+    assert analysis["matched_keywords"] == ["python", "api", "communication", "stakeholder"]
+    assert analysis["match_score"] == 95
+    assert analysis["interview_questions"]
 
     run_response = await app_client.post(f"/v1/recruitment-tasks/{task_id}/runs", json={})
     assert run_response.status_code == 202
@@ -65,9 +73,12 @@ async def test_recruitment_mvp_api_closes_main_flow_under_mock_boundary(
     assert report_response.status_code == 201
     report_id = report_response.json()["report"]["report_id"]
 
-    detail_response = await app_client.get(f"/v1/recruitment-reports/{report_id}")
-    assert detail_response.status_code == 200
-    assert "Recruitment Analysis Report" in detail_response.json()["report"]["content_markdown"]
+    report_detail_response = await app_client.get(f"/v1/recruitment-reports/{report_id}")
+    assert report_detail_response.status_code == 200
+    report_markdown = report_detail_response.json()["report"]["content_markdown"]
+    assert "Recruitment Analysis Report" in report_markdown
+    assert "Match score: 95/100" in report_markdown
+    assert "fairness_check" in report_markdown
 
     md_response = await app_client.get(
         f"/v1/recruitment-reports/{report_id}/export", params={"format": "md"}

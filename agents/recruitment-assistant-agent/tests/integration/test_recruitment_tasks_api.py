@@ -34,6 +34,11 @@ async def test_create_and_get_recruitment_task(app_client: AsyncClient) -> None:
     assert detail["title"] == "Backend Engineer review"
     assert len(detail["materials"]) == 2
     assert {material["kind"] for material in detail["materials"]} == {"resume", "jd"}
+    assert detail["analysis"]["rule_version"] == "recruitment_mvp:v1"
+    assert detail["analysis"]["match_score"] > 0
+    assert detail["analysis"]["matched_keywords"] == ["python"]
+    assert "kubernetes" in detail["analysis"]["missing_keywords"]
+    assert detail["analysis"]["interview_questions"]
 
 
 async def test_list_recruitment_tasks_supports_status_filter(app_client: AsyncClient) -> None:

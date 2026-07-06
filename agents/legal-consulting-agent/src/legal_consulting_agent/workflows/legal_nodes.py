@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import re
 
+from legal_consulting_agent.workflows.legal_knowledge_seed import (
+    course_template_chunk_for_category,
+)
 from legal_consulting_agent.workflows.legal_state import (
     Citation,
     LegalEntityHints,
@@ -18,6 +21,7 @@ NON_LEGAL_MESSAGE = (
     "如果确有法律方面的困扰，请描述你遇到的具体情况，我会尽力帮你分析。"
 )
 NO_SOURCE_DISCLAIMER = "本回答未在知识库中找到对应依据，仅供参考。"
+LEGAL_REPLY_DISCLAIMER = "本回答仅供参考，不构成正式法律意见。"
 
 # Professional-assistant boundary messages. Every tier restates the identity.
 #   * anchor_light (first off-topic turn): brief, no substantive answer.
@@ -198,7 +202,7 @@ def context_build_node(state: LegalWorkflowState) -> LegalWorkflowUpdate:
 
 
 def retrieval_node(state: LegalWorkflowState) -> LegalWorkflowUpdate:
-    """Return adapter-provided chunks or an explicit no-source path.
+    """Return adapter-provided chunks or a transparent course-template fallback.
 
     Real BGE/Qdrant retrieval is intentionally not called in this slice. Later
     slices can replace ``mock_chunks`` with an adapter result while preserving
@@ -207,7 +211,11 @@ def retrieval_node(state: LegalWorkflowState) -> LegalWorkflowUpdate:
 
     if state.get("error_code"):
         return {"node_trace": _trace(state, "retrieval")}
-    chunks = state.get("mock_chunks", [])
+    if "mock_chunks" in state:
+        chunks = state.get("mock_chunks", [])
+    else:
+        seed_chunk = course_template_chunk_for_category(state.get("category"))
+        chunks = [seed_chunk] if seed_chunk is not None else []
     return {
         "chunks": chunks,
         "node_trace": _trace(state, "retrieval"),
@@ -241,7 +249,10 @@ def generation_node(state: LegalWorkflowState) -> LegalWorkflowUpdate:
         }
     if not chunks:
         return {
-            "answer_draft": f"针对“{question}”，需要结合事实和适用法律进一步判断。{NO_SOURCE_DISCLAIMER}",
+            "answer_draft": (
+                "结论：现在信息还不够，先别急着判断胜负。\n\n"
+                f"关键点：请补充时间、主体、证据和你想达到的结果。{NO_SOURCE_DISCLAIMER}"
+            ),
             "citations": [],
             "node_trace": _trace(state, "generation"),
         }
@@ -250,8 +261,10 @@ def generation_node(state: LegalWorkflowState) -> LegalWorkflowUpdate:
     citation = _citation_from_chunk(first_chunk)
     return {
         "answer_draft": (
-            f"针对“{question}”，可先参考{citation['source']} {citation['section']}："
-            f"{citation['snippet']} 本回答仅供参考，不构成正式法律意见。"
+            "结论：可以先按这个方向处理，但要看具体证据。\n\n"
+            f"依据：{citation['snippet']}\n\n"
+            f"下一步：围绕“{question}”先整理合同、聊天记录、付款或工资流水等证据；"
+            f"协商不成再考虑投诉、仲裁或诉讼。{LEGAL_REPLY_DISCLAIMER}"
         ),
         "citations": [citation],
         "node_trace": _trace(state, "generation"),

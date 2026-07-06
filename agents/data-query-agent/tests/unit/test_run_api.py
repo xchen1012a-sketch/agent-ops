@@ -15,6 +15,8 @@ from data_query_agent.domain.entities.identity import (
     QueryThread,
     ThreadMessage,
     ThreadStatus,
+    UserMirror,
+    UserRole,
 )
 from data_query_agent.domain.entities.run import QueryRun, RunStatus
 from data_query_agent.main import create_app
@@ -36,10 +38,9 @@ class FakeIdentityThreadService:
         )
         self.messages: list[ThreadMessage] = []
 
-    async def get_user_for_subject(self, *, external_subject: str):
+    async def get_user_for_subject(self, *, external_subject: str) -> UserMirror | None:
         if external_subject != "owner":
             return None
-        from data_query_agent.domain.entities.identity import UserMirror, UserRole
 
         return UserMirror(
             id=self.thread.user_id,
@@ -192,6 +193,59 @@ def test_create_run_validates_question_body() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_create_local_demo_run_returns_fixture_sql_result_and_chart() -> None:
+    client = _client(FakeIdentityThreadService(), FakeRunTraceService())
+
+    response = client.post(
+        "/v1/threads/thread-1/runs/local-demo",
+        headers={"X-User-Subject": "owner"},
+        json={"question": "各渠道销售额排行", "channel": "web"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["error"] is None
+    data = body["data"]
+    assert data["source_status"] == "local_deterministic_fixture"
+    assert "not live MySQL" in data["source_note"]
+    assert data["fixture_case_id"] == "T2"
+    assert data["policy_allowed"] is True
+    assert data["generated_sql"].startswith("SELECT channel, SUM(total_amount)")
+    assert data["query_result"] == {
+        "columns": ["channel", "total_sales"],
+        "rows": [["app", 70000.0], ["web", 53456.78]],
+    }
+    assert data["chart"] == {
+        "type": "bar",
+        "dataset": {"channel": ["app", "web"], "total_sales": [70000.0, 53456.78]},
+        "encoding": {"x": "channel", "y": "total_sales"},
+    }
+    assert [item["node_name"] for item in data["node_trace"]] == [
+        "input_validation",
+        "intent_classify",
+        "schema_retrieval",
+        "sql_generate",
+        "sql_policy_check",
+        "query_execute",
+        "result_validate",
+        "interpret",
+        "persist_audit",
+    ]
+
+
+def test_create_local_demo_run_blocks_cross_subject_thread() -> None:
+    client = _client(FakeIdentityThreadService(), FakeRunTraceService())
+
+    response = client.post(
+        "/v1/threads/thread-1/runs/local-demo",
+        headers={"X-User-Subject": "other"},
+        json={"question": "各渠道销售额排行", "channel": "web"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "NOT_FOUND"
 
 
 def _now() -> datetime:

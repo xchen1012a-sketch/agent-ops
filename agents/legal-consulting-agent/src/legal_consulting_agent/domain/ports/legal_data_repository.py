@@ -62,6 +62,15 @@ class LegalDataRepository(Protocol):
     async def append_message(self, message: LegalMessage) -> LegalMessage:
         """Persist one message inside an existing session."""
 
+    async def update_message_content(
+        self,
+        *,
+        message_id: int,
+        content: str,
+        prompt_version: str | None = None,
+    ) -> LegalMessage:
+        """Update an existing message body and return the refreshed message."""
+
     async def get_message_for_session(
         self,
         *,

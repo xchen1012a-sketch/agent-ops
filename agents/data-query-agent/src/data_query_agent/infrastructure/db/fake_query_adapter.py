@@ -10,6 +10,7 @@ from data_query_agent.domain.ports.query_adapter import (
     QueryExecutionRequest,
     QueryExecutionResult,
 )
+from data_query_agent.domain.value_objects.data_catalog import EvaluationFixtureCatalog
 
 
 class FakeReadOnlyQueryAdapter:
@@ -54,6 +55,19 @@ def make_query_result(
         byte_count=_estimate_result_bytes(columns, rows),
         truncated=truncated,
     )
+
+
+def make_fixture_query_adapter(catalog: EvaluationFixtureCatalog) -> FakeReadOnlyQueryAdapter:
+    """Create a fake adapter registered with all baseline fixture SQL results."""
+    fixtures = {
+        fixture.baseline_sql: make_query_result(
+            columns=fixture.expected_result.columns,
+            rows=fixture.expected_result.rows,
+            truncated=fixture.expected_result.truncated,
+        )
+        for fixture in catalog.fixtures
+    }
+    return FakeReadOnlyQueryAdapter(fixtures=fixtures)
 
 
 def _validate_result_limits(

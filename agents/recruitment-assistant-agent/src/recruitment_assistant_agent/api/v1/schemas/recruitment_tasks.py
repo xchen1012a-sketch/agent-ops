@@ -36,6 +36,20 @@ class RecruitmentMaterialResponse(BaseModel):
     size_chars: int
 
 
+class RecruitmentAnalysisResponse(BaseModel):
+    rule_version: str
+    candidate_summary: str
+    job_title: str | None
+    match_score: int
+    match_tier: str
+    matched_keywords: list[str]
+    missing_keywords: list[str]
+    risk_points: list[str]
+    interview_questions: list[str]
+    fairness_note: str
+    workflow_nodes: list[str]
+
+
 class RecruitmentTaskResponse(BaseModel):
     task_id: str
     title: str | None
@@ -51,6 +65,7 @@ class RecruitmentTaskResponse(BaseModel):
 
 class RecruitmentTaskDetailResponse(RecruitmentTaskResponse):
     materials: list[RecruitmentMaterialResponse]
+    analysis: RecruitmentAnalysisResponse | None = None
 
 
 class RecruitmentTaskCreateResponse(BaseModel):

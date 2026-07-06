@@ -30,6 +30,20 @@ export interface RecruitMaterial {
   size_chars: number;
 }
 
+export interface RecruitAnalysis {
+  rule_version: string;
+  candidate_summary: string;
+  job_title: string | null;
+  match_score: number;
+  match_tier: string;
+  matched_keywords: string[];
+  missing_keywords: string[];
+  risk_points: string[];
+  interview_questions: string[];
+  fairness_note: string;
+  workflow_nodes: string[];
+}
+
 export interface RecruitTask {
   task_id: string;
   title: string | null;
@@ -43,6 +57,7 @@ export interface RecruitTask {
 
 export interface RecruitTaskDetail extends RecruitTask {
   materials: RecruitMaterial[];
+  analysis: RecruitAnalysis | null;
 }
 
 export interface RecruitTaskCreateInput {

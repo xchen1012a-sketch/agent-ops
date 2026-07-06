@@ -19,7 +19,7 @@ import {
 } from '@lib/request-state';
 import { useAgentStream } from '@/composables/useAgentStream';
 import { useTypewriter } from '@/composables/useTypewriter';
-import type { DataRunDetail, DataThread } from '@/types/data-query';
+import type { DataLocalDemoResult, DataRunDetail, DataThread } from '@/types/data-query';
 import type { RequestState } from '@/types/request-state';
 
 const route = useRoute();
@@ -37,6 +37,12 @@ const question = ref(typeof route.query.q === 'string' ? route.query.q : '');
 const currentQuestion = ref('');
 const submitting = ref(false);
 const runDetail = ref<DataRunDetail | null>(null);
+const localDemoResult = ref<DataLocalDemoResult | null>(null);
+const localDemoLoading = ref(false);
+const localDemoError = ref<string | null>(null);
+const conversationRef = ref<HTMLElement | null>(null);
+const conversationScrolling = ref(false);
+let conversationScrollTimer: number | undefined;
 
 // STREAM-100: live thinking/answer stream driven by the shared, agent-agnostic
 // state machine. The old status-replay stream is superseded here.
@@ -84,6 +90,27 @@ const runStatusType = computed(() => {
       return 'info';
   }
 });
+const localDemoColumns = computed(() => localDemoResult.value?.query_result?.columns ?? []);
+const localDemoRows = computed(() => localDemoResult.value?.query_result?.rows ?? []);
+const localDemoChartRows = computed(() => {
+  const chart = localDemoResult.value?.chart;
+  if (!chart) return [];
+  const xField = chart.encoding.x;
+  const yField = chart.encoding.y;
+  const xValues = chart.dataset[xField];
+  const yValues = chart.dataset[yField];
+  if (!Array.isArray(xValues) || !Array.isArray(yValues)) return [];
+  const numericValues = yValues.map((value) => Number(value));
+  const maxValue = Math.max(...numericValues.filter((value) => Number.isFinite(value)), 0);
+  return xValues.map((label, index) => {
+    const value = numericValues[index] ?? 0;
+    return {
+      label: String(label),
+      value,
+      width: maxValue > 0 && Number.isFinite(value) ? `${Math.max((value / maxValue) * 100, 4)}%` : '4%',
+    };
+  });
+});
 
 watch(streamPhase, (phase) => {
   if (phase === 'done') {
@@ -91,6 +118,36 @@ watch(streamPhase, (phase) => {
     void refreshRun(runDetail.value?.run_id);
   }
 });
+
+watch(
+  () => [
+    currentQuestion.value,
+    displayedAnswer.value,
+    streamPhase.value,
+    Boolean(localDemoResult.value),
+    Boolean(runDetail.value),
+  ],
+  () => scrollConversationToBottom(),
+  { flush: 'post' },
+);
+
+function scrollConversationToBottom(): void {
+  const target = conversationRef.value;
+  if (!target) return;
+  requestAnimationFrame(() => {
+    target.scrollTop = target.scrollHeight;
+  });
+}
+
+function handleConversationScroll(): void {
+  conversationScrolling.value = true;
+  if (conversationScrollTimer) {
+    window.clearTimeout(conversationScrollTimer);
+  }
+  conversationScrollTimer = window.setTimeout(() => {
+    conversationScrolling.value = false;
+  }, 900);
+}
 
 async function loadThread(): Promise<void> {
   threadState.value = createLoadingState();
@@ -109,6 +166,8 @@ async function submitQuestion(): Promise<void> {
   submitting.value = true;
   resetStream();
   runDetail.value = null;
+  localDemoResult.value = null;
+  localDemoError.value = null;
   try {
     const response = await dataQueryClient.createRun(threadId.value, {
       question: trimmed,
@@ -119,12 +178,31 @@ async function submitQuestion(): Promise<void> {
     currentQuestion.value = response.data.question;
     question.value = '';
     await refreshRun(response.data.run_id);
+    await loadLocalDemoEvidence(trimmed);
     startStream();
     toast.success('问题已提交到智能问数 Agent');
   } catch (error) {
     toast.error(error instanceof Error ? error.message : '提交问数问题失败');
   } finally {
     submitting.value = false;
+  }
+}
+
+async function loadLocalDemoEvidence(prompt: string): Promise<void> {
+  localDemoLoading.value = true;
+  localDemoError.value = null;
+  try {
+    const response = await dataQueryClient.createLocalDemoRun(threadId.value, {
+      question: prompt,
+      channel: 'web',
+      locale: navigator.language || 'zh-CN',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
+    localDemoResult.value = response.data;
+  } catch (error) {
+    localDemoError.value = error instanceof Error ? error.message : 'local demo evidence failed';
+  } finally {
+    localDemoLoading.value = false;
   }
 }
 
@@ -195,6 +273,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopStream();
+  if (conversationScrollTimer) {
+    window.clearTimeout(conversationScrollTimer);
+  }
 });
 </script>
 
@@ -215,7 +296,13 @@ onBeforeUnmount(() => {
           <SSEStatusIndicator :state="streamState" />
         </header>
 
-        <main class="data-chat-page__conversation" aria-label="问数对话">
+        <main
+          ref="conversationRef"
+          class="data-chat-page__conversation"
+          :class="{ 'data-chat-page__conversation--scrolling': conversationScrolling }"
+          aria-label="问数对话"
+          @scroll="handleConversationScroll"
+        >
           <EmptyState
             v-if="!currentQuestion && !runDetail && !isStreaming && !answerText"
             title="直接问数据"
@@ -235,6 +322,7 @@ onBeforeUnmount(() => {
             <article
               v-if="currentQuestion || isStreaming || answerText || runDetail"
               class="data-message data-message--assistant"
+              :class="{ 'data-message--pending': isStreaming || streamPhase === 'thinking' }"
             >
               <div class="data-message__avatar" aria-hidden="true">AI</div>
               <div class="data-message__body">
@@ -260,6 +348,64 @@ onBeforeUnmount(() => {
                   </p>
                   <p v-else>正在分析…</p>
                 </div>
+
+                <section
+                  v-if="localDemoLoading || localDemoResult || localDemoError"
+                  class="data-evidence"
+                  aria-label="Local deterministic query evidence"
+                >
+                  <p v-if="localDemoLoading" class="data-evidence__state">
+                    Loading local query evidence...
+                  </p>
+                  <p v-else-if="localDemoError" class="data-evidence__error">
+                    {{ localDemoError }}
+                  </p>
+                  <template v-else-if="localDemoResult">
+                    <div class="data-evidence__header">
+                      <span>{{ localDemoResult.source_status }}</span>
+                      <el-tag v-if="localDemoResult.fixture_case_id" size="small" effect="plain">
+                        {{ localDemoResult.fixture_case_id }}
+                      </el-tag>
+                    </div>
+                    <p class="data-evidence__note">{{ localDemoResult.source_note }}</p>
+
+                    <pre v-if="localDemoResult.generated_sql" class="data-evidence__sql"><code>{{ localDemoResult.generated_sql }}</code></pre>
+
+                    <div
+                      v-if="localDemoColumns.length && localDemoRows.length"
+                      class="data-evidence__table-wrap"
+                    >
+                      <table class="data-evidence__table">
+                        <thead>
+                          <tr>
+                            <th v-for="column in localDemoColumns" :key="column">{{ column }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(row, rowIndex) in localDemoRows" :key="rowIndex">
+                            <td v-for="(cell, cellIndex) in row" :key="cellIndex">
+                              {{ cell }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div v-if="localDemoChartRows.length" class="data-evidence__chart">
+                      <div
+                        v-for="item in localDemoChartRows"
+                        :key="item.label"
+                        class="data-evidence__bar-row"
+                      >
+                        <span>{{ item.label }}</span>
+                        <div class="data-evidence__bar-track">
+                          <div class="data-evidence__bar" :style="{ width: item.width }" />
+                        </div>
+                        <strong>{{ item.value }}</strong>
+                      </div>
+                    </div>
+                  </template>
+                </section>
 
                 <div v-if="runDetail" class="data-message__actions">
                   <el-button text circle aria-label="复制问题" @click="copyText(currentQuestion)">
@@ -345,9 +491,12 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: var(--space-4);
+  width: min(100%, 980px);
   max-width: 980px;
-  min-height: calc(100vh - 180px);
+  height: calc(100dvh - var(--layout-header-height) - var(--space-5) - var(--space-8));
+  min-height: 0;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .data-chat-page__topbar {
@@ -355,7 +504,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: 0 var(--space-1) var(--space-5);
+  padding: 0 var(--space-1);
 }
 
 .data-chat-page__eyebrow {
@@ -374,13 +523,51 @@ onBeforeUnmount(() => {
 }
 
 .data-chat-page__conversation {
-  min-height: 54vh;
-  padding-bottom: var(--space-4);
+  min-height: 0;
+  padding: var(--space-2) var(--space-1) var(--space-5);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  transition: scrollbar-color var(--duration-fast) var(--ease-in-out);
+}
+
+.data-chat-page__conversation:hover,
+.data-chat-page__conversation--scrolling {
+  scrollbar-color: color-mix(in oklch, var(--color-text-subtle) 48%, transparent) transparent;
+}
+
+.data-chat-page__conversation::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.data-chat-page__conversation::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.data-chat-page__conversation::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  background-clip: content-box;
+}
+
+.data-chat-page__conversation:hover::-webkit-scrollbar-thumb,
+.data-chat-page__conversation--scrolling::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklch, var(--color-text-subtle) 48%, transparent);
+}
+
+.data-chat-page__conversation::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklch, var(--color-text-muted) 62%, transparent);
 }
 
 .data-chat-page__messages {
   display: grid;
   gap: var(--space-8);
+  align-content: start;
+  padding-right: var(--space-2);
 }
 
 .data-message {
@@ -431,6 +618,19 @@ onBeforeUnmount(() => {
 }
 
 .data-message--assistant .data-message__avatar::before {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-data);
+  background: var(--color-data-soft);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 750;
+  content: 'AI';
+}
+
+.data-message--pending .data-message__avatar::before {
   width: 24px;
   height: 24px;
   background: repeating-conic-gradient(
@@ -438,8 +638,15 @@ onBeforeUnmount(() => {
     currentColor 0deg 10deg,
     transparent 10deg 22.5deg
   );
-  border-radius: var(--radius-pill);
+  color: var(--color-data);
   content: '';
+  animation: data-pending-spin 1.2s linear infinite;
+}
+
+@keyframes data-pending-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .data-message__body {
@@ -482,6 +689,110 @@ onBeforeUnmount(() => {
 
 .data-message__error {
   color: var(--color-danger);
+}
+
+.data-evidence {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.data-evidence__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.data-evidence__note,
+.data-evidence__state,
+.data-evidence__error {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.data-evidence__error {
+  color: var(--color-danger);
+}
+
+.data-evidence__sql {
+  max-width: 100%;
+  margin: 0;
+  padding: var(--space-3);
+  overflow-x: auto;
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
+
+.data-evidence__table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.data-evidence__table {
+  width: 100%;
+  min-width: 360px;
+  border-collapse: collapse;
+  font-size: var(--text-xs);
+}
+
+.data-evidence__table th,
+.data-evidence__table td {
+  padding: var(--space-2);
+  color: var(--color-text);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-evidence__table th {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.data-evidence__chart {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.data-evidence__bar-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: var(--text-xs);
+}
+
+.data-evidence__bar-row span,
+.data-evidence__bar-row strong {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-evidence__bar-track {
+  height: 10px;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-pill);
+}
+
+.data-evidence__bar {
+  height: 100%;
+  background: var(--color-data);
+  border-radius: inherit;
 }
 
 .data-message__actions {
@@ -545,14 +856,18 @@ onBeforeUnmount(() => {
 }
 
 .data-chat-page__composer-shell {
-  position: sticky;
-  bottom: var(--space-4);
+  position: relative;
   z-index: var(--z-sticky);
   padding-top: var(--space-4);
-  background: linear-gradient(180deg, transparent, var(--color-bg) 34%);
+  background: var(--color-bg);
 }
 
 @media (max-width: 767px) {
+  .data-chat-page {
+    gap: var(--space-4);
+    height: calc(100dvh - 64px - var(--space-4) - var(--space-6));
+  }
+
   .data-chat-page__topbar {
     align-items: flex-start;
     flex-direction: column;

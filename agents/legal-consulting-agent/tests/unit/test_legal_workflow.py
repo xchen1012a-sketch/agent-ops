@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import cast
 
 from legal_consulting_agent.workflows import build_legal_workflow_graph
+from legal_consulting_agent.workflows.legal_knowledge_seed import COURSE_TEMPLATE_SOURCE
 from legal_consulting_agent.workflows.legal_nodes import (
     ADVERSARIAL_REFUSAL_MESSAGE,
     ANCHOR_LIGHT_MESSAGE,
@@ -78,7 +79,8 @@ def test_unmatched_but_plausibly_legal_question_is_answered_not_refused() -> Non
     # Fail-open: no category keyword, but treated as a general legal question.
     assert result["error_code"] is None
     assert result["category"] == "general"
-    assert NO_SOURCE_DISCLAIMER in (result["validated_answer"] or "")
+    assert result["citations"][0]["source"] == COURSE_TEMPLATE_SOURCE
+    assert "来源状态：课程模板/待补充法规原文" in result["citations"][0]["section"]
 
 
 def test_citation_check_rejects_unbacked_citation() -> None:
@@ -112,10 +114,12 @@ def test_risk_check_marks_personal_safety_question() -> None:
 
 def test_graph_runs_no_source_mock_boundary_without_external_services() -> None:
     graph = build_legal_workflow_graph()
+    state = base_state("公司单方面调岗，我可以拒绝吗？")
+    state["mock_chunks"] = []
 
     result = cast(
         LegalWorkflowState,
-        graph.invoke(base_state("公司单方面调岗，我可以拒绝吗？")),
+        graph.invoke(state),
     )
 
     assert result["error_code"] is None
@@ -133,6 +137,26 @@ def test_graph_runs_no_source_mock_boundary_without_external_services() -> None:
         "risk_check",
         "persist",
     ]
+
+
+def test_graph_uses_course_template_seed_when_retriever_is_not_configured() -> None:
+    graph = build_legal_workflow_graph()
+
+    result = cast(
+        LegalWorkflowState,
+        graph.invoke(base_state("公司拖欠工资，我该怎么处理？")),
+    )
+
+    assert result["error_code"] is None
+    assert result["category"] == "civil_labor"
+    assert result["citations"] == [
+        {
+            "source": COURSE_TEMPLATE_SOURCE,
+            "section": "劳动用工模板 · 来源状态：课程模板/待补充法规原文",
+            "snippet": "先确认劳动合同、工资记录、考勤、社保和沟通证据；区分拖欠工资、调岗、辞退、工伤等情形，再给出协商、投诉、仲裁或诉讼路径。",
+        }
+    ]
+    assert "本回答仅供参考，不构成正式法律意见。" in (result["validated_answer"] or "")
 
 
 def test_graph_uses_adapter_supplied_chunks_for_citations() -> None:

@@ -39,6 +39,10 @@ async function handleCommand(command: string): Promise<void> {
     theme.toggle();
     return;
   }
+  if (command === 'api-config') {
+    await router.push({ name: 'admin-api-config' });
+    return;
+  }
   if (command === 'logout') {
     try {
       await auth.logout();
@@ -56,11 +60,13 @@ async function handleCommand(command: string): Promise<void> {
     <button
       type="button"
       class="app-header__toggle"
+      :class="{ 'is-visible': sidebarCollapsed }"
       :aria-label="sidebarToggleLabel"
       :aria-expanded="!sidebarCollapsed"
+      :title="sidebarToggleLabel"
       @click="emit('toggle-sidebar')"
     >
-      <el-icon><AppIcon name="Menu" /></el-icon>
+      <el-icon><AppIcon :name="sidebarCollapsed ? 'Expand' : 'Menu'" /></el-icon>
     </button>
 
     <div class="app-header__actions">
@@ -90,6 +96,7 @@ async function handleCommand(command: string): Promise<void> {
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="profile">{{ '\u4e2a\u4eba\u4fe1\u606f' }}</el-dropdown-item>
+            <el-dropdown-item v-if="auth.isAdmin" command="api-config"> API 配置 </el-dropdown-item>
             <el-dropdown-item command="theme">{{ themeLabel }}</el-dropdown-item>
             <el-dropdown-item command="logout" divided>{{
               '\u9000\u51fa\u767b\u5f55'
@@ -116,7 +123,6 @@ async function handleCommand(command: string): Promise<void> {
   border-bottom: 0;
 }
 
-/* Sidebar toggle lives in the sidebar on desktop; this is the mobile menu button only. */
 .app-header__toggle {
   display: none;
   align-items: center;
@@ -133,6 +139,10 @@ async function handleCommand(command: string): Promise<void> {
     background-color var(--duration-fast) var(--ease-in-out),
     border-color var(--duration-fast) var(--ease-in-out),
     color var(--duration-fast) var(--ease-in-out);
+}
+
+.app-header__toggle.is-visible {
+  display: inline-flex;
 }
 
 .app-header__toggle:hover {
@@ -207,6 +217,18 @@ async function handleCommand(command: string): Promise<void> {
   .app-header__user-copy,
   .app-header__user-arrow {
     display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-header__toggle.is-visible {
+    position: fixed;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: calc(var(--z-sticky) + 2);
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-card);
   }
 }
 </style>

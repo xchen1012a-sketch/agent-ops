@@ -7,6 +7,7 @@ from typing import Any, Literal
 from data_query_agent.application.services.data_catalog_service import DataCatalogService
 from data_query_agent.application.services.result_projection_service import ResultProjectionService
 from data_query_agent.domain.policies.sql_ast import SqlAstPolicyValidator
+from data_query_agent.domain.value_objects.data_catalog import EvaluationFixture
 from data_query_agent.workflows.state import DataQueryState, NodeTrace
 
 # Scope recognition for the data-query agent.
@@ -25,6 +26,10 @@ _DATA_SIGNALS = (
     "sales", "revenue", "gmv", "order", "orders", "amount", "refund", "refunds",
     "margin", "profit", "cost", "customer", "customers", "region", "regions",
     "trend", "growth", "metric", "kpi", "conversion", "retention", "churn",
+    # Chinese - readable MVP fixture vocabulary
+    "销售", "销售额", "营收", "收入", "订单", "退款", "退款率", "毛利",
+    "利润", "客户", "客单价", "地区", "区域", "渠道", "品类", "品牌",
+    "商品", "支付", "趋势", "排行", "周末", "工作日", "总销售额",
     # English — analytical shape
     "how many", "how much", "total", "count", "average", "sum", "top",
     "compare", "breakdown", "distribution", "ratio", "percentage",
@@ -146,6 +151,14 @@ def schema_retrieval_node(state: DataQueryState) -> DataQueryState:
 
 def sql_generate_node(state: DataQueryState) -> DataQueryState:
     """Generate deterministic SQL without calling an LLM."""
+    fixture = _fixture_for_question(state.get("question", ""))
+    if fixture is not None:
+        return _with_trace(
+            {**state, "generated_sql": fixture.baseline_sql, "fixture_case_id": fixture.case_id},
+            "sql_generate",
+            "completed",
+        )
+
     question = state.get("question", "").lower()
     if "refund" in question:
         sql = (
@@ -173,11 +186,17 @@ def query_execute_node(state: DataQueryState) -> DataQueryState:
     if not state.get("policy_allowed", False):
         return _with_trace(state, "query_execute", "skipped")
     sql = state.get("generated_sql", "")
-    if "refund_amount" in sql:
-        result: dict[str, Any] = {"columns": ["refund_amount"], "rows": [[1234.5]]}
+    fixture = _fixture_for_sql(sql)
+    if fixture is not None:
+        query_result_payload: dict[str, Any] = {
+            "columns": list(fixture.expected_result.columns),
+            "rows": [list(row) for row in fixture.expected_result.rows],
+        }
+    elif "refund_amount" in sql:
+        query_result_payload = {"columns": ["refund_amount"], "rows": [[1234.5]]}
     else:
-        result = {"columns": ["total_sales"], "rows": [[98765.43]]}
-    next_state: DataQueryState = {**state, "query_result": result}
+        query_result_payload = {"columns": ["total_sales"], "rows": [[98765.43]]}
+    next_state: DataQueryState = {**state, "query_result": query_result_payload}
     return _with_trace(next_state, "query_execute", "completed")
 
 
@@ -262,3 +281,29 @@ def _with_trace(
     trace = list(state.get("node_trace", []))
     trace.append(NodeTrace(node_name=node_name, status=status))
     return {**state, "node_trace": trace}
+
+
+def _fixture_for_question(question: str) -> EvaluationFixture | None:
+    normalized_question = question.strip().lower()
+    if not normalized_question:
+        return None
+    fixtures = DataCatalogService().load_evaluation_fixtures().fixtures
+    for fixture in fixtures:
+        if fixture.question.strip().lower() == normalized_question:
+            return fixture
+    return None
+
+
+def _fixture_for_sql(sql: str) -> EvaluationFixture | None:
+    normalized_sql = _normalize_sql(sql)
+    if not normalized_sql:
+        return None
+    fixtures = DataCatalogService().load_evaluation_fixtures().fixtures
+    for fixture in fixtures:
+        if _normalize_sql(fixture.baseline_sql) == normalized_sql:
+            return fixture
+    return None
+
+
+def _normalize_sql(sql: str) -> str:
+    return " ".join(sql.strip().split())

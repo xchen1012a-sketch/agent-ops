@@ -59,6 +59,32 @@ export interface DataRunDetail {
   finished_at: string | null;
 }
 
+export interface DataLocalDemoChart {
+  type: 'line' | 'bar' | string;
+  dataset: Record<string, unknown[]>;
+  encoding: Record<string, string>;
+}
+
+export interface DataLocalDemoQueryResult {
+  columns: string[];
+  rows: unknown[][];
+}
+
+export interface DataLocalDemoResult {
+  question: string;
+  source_status: string;
+  source_note: string;
+  fixture_case_id: string | null;
+  generated_sql: string | null;
+  policy_allowed: boolean;
+  policy_error_code: string | null;
+  query_result: DataLocalDemoQueryResult | null;
+  answer: string;
+  chart: DataLocalDemoChart | null;
+  followups: string[];
+  node_trace: Array<{ node_name: string; status: string }>;
+}
+
 export interface DataQueryHistoryItem {
   query_id: string;
   status: DataRunStatus | string;
@@ -97,6 +123,7 @@ export type DataThreadEnvelope = DataEnvelope<DataThread>;
 export type DataThreadListEnvelope = DataEnvelope<DataThreadListData>;
 export type DataRunEnvelope = DataEnvelope<DataRun>;
 export type DataRunDetailEnvelope = DataEnvelope<DataRunDetail>;
+export type DataLocalDemoEnvelope = DataEnvelope<DataLocalDemoResult>;
 export type DataQueryHistoryListEnvelope = DataEnvelope<DataQueryHistoryListData>;
 export type DataQueryHistoryDetailEnvelope = DataEnvelope<DataQueryHistoryItem>;
 export type DataFeishuEventEnvelope = DataEnvelope<DataFeishuEventResponse>;

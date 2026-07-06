@@ -120,5 +120,15 @@ def test_load_evaluation_fixtures_contains_eight_standard_questions() -> None:
         "T7",
         "T8",
     }
+    assert [fixture.question for fixture in fixtures.fixtures] == [
+        "上个月总销售额多少",
+        "各渠道销售额排行",
+        "手机品类卖得最好的 5 个品牌",
+        "华东区金卡用户买了多少钱",
+        "今年每个月销售额趋势",
+        "哪个支付方式用的人最多",
+        "退款率最高的品类是哪些",
+        "周末和工作日哪个卖得多",
+    ]
     assert all(fixture.baseline_sql.upper().startswith("SELECT") for fixture in fixtures.fixtures)
     assert all(fixture.expected_result.columns for fixture in fixtures.fixtures)

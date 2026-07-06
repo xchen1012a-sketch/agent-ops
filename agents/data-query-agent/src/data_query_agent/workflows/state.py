@@ -23,6 +23,7 @@ class DataQueryState(TypedDict, total=False):
     refusal_reason: str
     schema_context: str
     generated_sql: str
+    fixture_case_id: str
     policy_allowed: bool
     policy_error_code: str
     query_result: dict[str, Any]

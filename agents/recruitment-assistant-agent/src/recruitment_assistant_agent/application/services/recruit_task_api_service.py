@@ -17,6 +17,12 @@ from recruitment_assistant_agent.domain.value_objects.recruit_enums import (
     TaskPriority,
     TaskStatus,
 )
+from recruitment_assistant_agent.rules.recruitment_mvp_rules import (
+    protected_attribute_fields,
+    rule_version,
+    skill_keywords,
+    workflow_node_names,
+)
 
 
 class RecruitmentTaskNotFoundError(AppError):
@@ -65,6 +71,21 @@ class RecruitmentMaterialRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class RecruitmentAnalysisRecord:
+    rule_version: str
+    candidate_summary: str
+    job_title: str | None
+    match_score: int
+    match_tier: str
+    matched_keywords: tuple[str, ...]
+    missing_keywords: tuple[str, ...]
+    risk_points: tuple[str, ...]
+    interview_questions: tuple[str, ...]
+    fairness_note: str
+    workflow_nodes: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class RecruitmentTaskRecord:
     task_id: str
     title: str | None
@@ -72,6 +93,7 @@ class RecruitmentTaskRecord:
     status: TaskStatus
     review_status: ReviewStatus
     materials: tuple[RecruitmentMaterialRecord, ...]
+    analysis: RecruitmentAnalysisRecord | None
     latest_run_id: str | None
     created_at: datetime
     deleted: bool = False
@@ -172,6 +194,7 @@ class RecruitmentTaskApiService:
             status=TaskStatus.UPLOADED,
             review_status=ReviewStatus.PENDING,
             materials=materials,
+            analysis=_analysis_record(resume_text=resume_text, jd_text=jd_text),
             latest_run_id=None,
             created_at=datetime.now(UTC),
         )
@@ -375,20 +398,62 @@ MATCH_ITEM_OVERRIDE_FIELD_PATTERN = re.compile(
 
 def _report_markdown(task: RecruitmentTaskRecord) -> str:
     title = task.title or task.task_id
-    return "\n".join(
-        (
-            "# Recruitment Analysis Report",
-            "",
-            f"- Task: {title}",
-            f"- Task ID: {task.task_id}",
-            f"- Status: {task.status.value}",
-            f"- Review: {task.review_status.value}",
-            "",
-            "## MVP Summary",
-            "This report is generated from the mock recruitment workflow for coursework demonstration.",
-            "",
+    lines = [
+        "# Recruitment Analysis Report",
+        "",
+        f"- Task: {title}",
+        f"- Task ID: {task.task_id}",
+        f"- Status: {task.status.value}",
+        f"- Review: {task.review_status.value}",
+        f"- Rule version: {task.analysis.rule_version if task.analysis else rule_version()}",
+        "",
+        "## Dify-equivalent Workflow Evidence",
+        "",
+        *[f"- {node}" for node in workflow_node_names()],
+        "",
+        "## MVP Analysis",
+        "",
+    ]
+    if task.analysis is None:
+        lines.extend(
+            [
+                "No structured match analysis is available because the task does not contain both resume and JD materials.",
+                "",
+                "This report does not claim a candidate match result.",
+                "",
+            ]
         )
+        return "\n".join(lines)
+
+    analysis = task.analysis
+    lines.extend(
+        [
+            f"- Job title: {analysis.job_title or '未识别'}",
+            f"- Candidate summary: {analysis.candidate_summary}",
+            f"- Match score: {analysis.match_score}/100 ({analysis.match_tier})",
+            f"- Matched keywords: {_join_or_none(analysis.matched_keywords)}",
+            f"- Missing keywords: {_join_or_none(analysis.missing_keywords)}",
+            "",
+            "## Risk Points",
+            "",
+            *[f"- {item}" for item in analysis.risk_points],
+            "",
+            "## Interview Questions",
+            "",
+            *[f"- {question}" for question in analysis.interview_questions],
+            "",
+            "## Fairness Boundary",
+            "",
+            analysis.fairness_note,
+            "",
+            "## Source Boundary",
+            "",
+            "当前 docs/homework 只展开实训报告大纲和报告模板；原始 Dify 招聘案例课件未在当前目录找到。"
+            "本报告基于项目内版本化规则和当前脱敏材料派生摘要，不声明已接入真实 Dify、真实 DeepSeek 或外部候选人库。",
+            "",
+        ]
     )
+    return "\n".join(lines)
 
 
 def _mock_pdf_bytes(report: RecruitmentReportRecord) -> bytes:
@@ -410,6 +475,114 @@ def _material_record(
         content_hash=sha256(encoded).hexdigest(),
         size_chars=len(text),
     )
+
+
+def _analysis_record(
+    *,
+    resume_text: str | None,
+    jd_text: str | None,
+) -> RecruitmentAnalysisRecord | None:
+    resume = (resume_text or "").strip()
+    jd = (jd_text or "").strip()
+    if not resume or not jd:
+        return None
+
+    jd_lower = jd.lower()
+    resume_lower = resume.lower()
+    required_keywords = tuple(keyword for keyword in skill_keywords() if keyword in jd_lower)
+    matched = tuple(keyword for keyword in required_keywords if keyword in resume_lower)
+    missing = tuple(keyword for keyword in required_keywords if keyword not in resume_lower)
+    score = _match_score(required_keywords=required_keywords, matched=matched)
+    risk_points = _risk_points(
+        resume=resume_lower,
+        jd=jd_lower,
+        required_keywords=required_keywords,
+        missing=missing,
+    )
+    return RecruitmentAnalysisRecord(
+        rule_version=rule_version(),
+        candidate_summary=_candidate_summary(resume=resume, matched=matched),
+        job_title=_job_title(jd),
+        match_score=score,
+        match_tier=_match_tier(score),
+        matched_keywords=matched,
+        missing_keywords=missing,
+        risk_points=risk_points,
+        interview_questions=_interview_questions(missing=missing, matched=matched),
+        fairness_note=(
+            "已按规则忽略年龄、性别、婚育、民族、健康、政治面貌、照片、身份证号、"
+            "籍贯、宗教、户口等受保护属性；匹配摘要只使用岗位相关关键词和材料长度等派生信息。"
+        ),
+        workflow_nodes=workflow_node_names(),
+    )
+
+
+def _match_score(*, required_keywords: tuple[str, ...], matched: tuple[str, ...]) -> int:
+    if not required_keywords:
+        return 50
+    return min(95, 40 + round(55 * len(matched) / len(required_keywords)))
+
+
+def _match_tier(score: int) -> str:
+    if score >= 80:
+        return "strong"
+    if score >= 55:
+        return "medium"
+    return "weak"
+
+
+def _candidate_summary(*, resume: str, matched: tuple[str, ...]) -> str:
+    if matched:
+        return f"已解析脱敏简历，发现 {len(matched)} 项岗位相关关键词证据。"
+    return f"已解析脱敏简历，共 {len(resume)} 字；当前未命中规则内岗位关键词。"
+
+
+def _job_title(jd: str) -> str | None:
+    for line in jd.splitlines():
+        cleaned = re.sub(r"^(岗位说明|岗位要求|职位要求|JD|Job Description)\s*[:：]?", "", line.strip(), flags=re.I)
+        if cleaned:
+            return cleaned[:80]
+    return None
+
+
+def _risk_points(
+    *,
+    resume: str,
+    jd: str,
+    required_keywords: tuple[str, ...],
+    missing: tuple[str, ...],
+) -> tuple[str, ...]:
+    risks: list[str] = []
+    if not required_keywords:
+        risks.append("JD 未命中当前规则包的技能关键词，需要人工确认岗位要求。")
+    if missing:
+        risks.append("以下岗位关键词缺少简历证据：" + "、".join(missing))
+    protected_hits = tuple(field for field in protected_attribute_fields() if field in resume or field in jd)
+    if protected_hits:
+        risks.append("材料疑似包含受保护字段标签，已按公平性规则忽略：" + "、".join(protected_hits))
+    if not risks:
+        risks.append("未发现明显规则缺口，仍需面试确认项目真实性和贡献边界。")
+    return tuple(risks)
+
+
+def _interview_questions(
+    *,
+    missing: tuple[str, ...],
+    matched: tuple[str, ...],
+) -> tuple[str, ...]:
+    questions = [
+        f"请举例说明你在 {keyword} 方面的实际项目经验。"
+        for keyword in missing[:3]
+    ]
+    if matched:
+        questions.append("请选择一个最能体现岗位匹配度的项目，说明你的具体职责、难点和结果。")
+    if not questions:
+        questions.append("请补充说明你与该岗位最相关的三项经历和可验证成果。")
+    return tuple(questions)
+
+
+def _join_or_none(values: tuple[str, ...]) -> str:
+    return "、".join(values) if values else "无"
 
 
 def _run_events(

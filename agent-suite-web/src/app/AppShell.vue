@@ -69,7 +69,7 @@ function toggleSidebar(): void {
 }
 
 .app-shell--collapsed {
-  grid-template-columns: var(--layout-sidebar-collapsed-width) minmax(0, 1fr);
+  grid-template-columns: 0 minmax(0, 1fr);
 }
 
 .app-shell__main {

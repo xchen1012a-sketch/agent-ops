@@ -31,6 +31,7 @@ class LegalQuestionAnswerResult:
     question_message: LegalMessage
     answer_message: LegalMessage
     answer: str
+    context_messages: list[dict[str, str]]
     citations: list[Citation]
     high_risk: bool
     risk_reason: str | None
@@ -113,11 +114,30 @@ class LegalQuestionAnswerService:
             question_message=question_message,
             answer_message=answer_message,
             answer=answer,
+            context_messages=context_messages,
             citations=list(citations),
             high_risk=high_risk,
             risk_reason=workflow_state.get("risk_reason"),
             category=workflow_state.get("category"),
             node_trace=workflow_state.get("node_trace", []),
+        )
+
+    async def replace_answer_message_content(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        answer_message_public_id: str,
+        content: str,
+        prompt_version: str | None = None,
+    ) -> LegalMessage:
+        """Replace a persisted fallback answer with a verified streamed answer."""
+        return await self._legal_data_service.update_assistant_message_content(
+            user_public_id=user_public_id,
+            session_public_id=session_public_id,
+            message_public_id=answer_message_public_id,
+            content=content,
+            prompt_version=prompt_version,
         )
 
     def _invoke_workflow(

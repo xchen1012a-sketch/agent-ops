@@ -145,6 +145,23 @@ class SqlAlchemyLegalDataRepository:
         await self._session.flush()
         return self._to_message(model)
 
+    async def update_message_content(
+        self,
+        *,
+        message_id: int,
+        content: str,
+        prompt_version: str | None = None,
+    ) -> LegalMessage:
+        """Update an existing message body without committing."""
+        model = await self._session.get(LegalMessageModel, message_id)
+        if model is None:
+            raise LookupError("Legal message not found")
+        model.content = content
+        if prompt_version is not None:
+            model.prompt_version = prompt_version
+        await self._session.flush()
+        return self._to_message(model)
+
     async def get_message_for_session(
         self,
         *,

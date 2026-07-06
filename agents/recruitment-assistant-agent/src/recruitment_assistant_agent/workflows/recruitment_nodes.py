@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import cast
 
+from recruitment_assistant_agent.rules.recruitment_mvp_rules import protected_attribute_fields
 from recruitment_assistant_agent.workflows.recruitment_state import (
     GapHint,
     InterviewQuestionHint,
@@ -16,21 +17,7 @@ from recruitment_assistant_agent.workflows.recruitment_state import (
 )
 
 SUPPORTED_MATERIAL_KINDS = frozenset({"resume", "jd", "resume_jd"})
-SENSITIVE_ATTRIBUTE_FIELDS = frozenset(
-    {
-        "age",
-        "gender",
-        "marital_status",
-        "ethnicity",
-        "health",
-        "political_status",
-        "photo",
-        "id_card",
-        "hometown",
-        "religion",
-        "hukou",
-    }
-)
+SENSITIVE_ATTRIBUTE_FIELDS = protected_attribute_fields()
 
 
 def _trace(state: RecruitmentWorkflowState, node_name: str) -> list[str]:

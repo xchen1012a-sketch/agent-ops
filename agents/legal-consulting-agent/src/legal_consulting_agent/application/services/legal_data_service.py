@@ -200,6 +200,41 @@ class LegalDataService:
             )
         )
 
+    async def update_assistant_message_content(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        message_public_id: str,
+        content: str,
+        prompt_version: str | None = None,
+    ) -> LegalMessage:
+        """Update an assistant message after a successful live stream."""
+        user = await self._repository.get_user_by_public_id(user_public_id)
+        if user is None or user.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+
+        session = await self._repository.get_session_for_user(
+            session_public_id=session_public_id,
+            user_id=user.id,
+        )
+        if session is None or session.id is None:
+            raise LegalDataNotFoundError("Legal session not found")
+
+        message = await self._repository.get_message_for_session(
+            message_public_id=message_public_id,
+            session_id=session.id,
+            role=MessageRole.ASSISTANT,
+        )
+        if message is None or message.id is None:
+            raise LegalDataNotFoundError("Assistant message not found")
+
+        return await self._repository.update_message_content(
+            message_id=message.id,
+            content=content,
+            prompt_version=prompt_version,
+        )
+
     async def list_session_messages(
         self,
         *,

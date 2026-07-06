@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from data_query_agent.application.services.data_catalog_service import DataCatalogService
 from data_query_agent.domain.ports.query_adapter import (
     QueryExecutionError,
     QueryExecutionErrorCode,
@@ -11,6 +12,7 @@ from data_query_agent.domain.ports.query_adapter import (
 )
 from data_query_agent.infrastructure.db.fake_query_adapter import (
     FakeReadOnlyQueryAdapter,
+    make_fixture_query_adapter,
     make_query_result,
 )
 
@@ -108,3 +110,16 @@ def test_make_query_result_can_mark_truncated_results() -> None:
     assert result.truncated is True
     assert result.row_count == 1
     assert result.field_count == 1
+
+
+@pytest.mark.asyncio
+async def test_fixture_query_adapter_registers_all_standard_questions() -> None:
+    catalog = DataCatalogService().load_evaluation_fixtures()
+    adapter = make_fixture_query_adapter(catalog)
+
+    for fixture in catalog.fixtures:
+        actual = await adapter.execute(_request(fixture.baseline_sql))
+
+        assert actual.columns == fixture.expected_result.columns
+        assert actual.rows == fixture.expected_result.rows
+        assert actual.truncated is fixture.expected_result.truncated

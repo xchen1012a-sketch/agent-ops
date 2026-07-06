@@ -44,6 +44,33 @@ async def test_feishu_mock_flow_reuses_data_query_workflow_and_card_projection()
 
 
 @pytest.mark.asyncio
+async def test_feishu_mock_flow_reuses_fixture_chart_semantics() -> None:
+    service = FeishuMockFlowService()
+
+    result = await service.handle_event(
+        payload={
+            "type": "message",
+            "header": {"event_id": "evt-channel-ranking"},
+            "event": {"message": {"content": "各渠道销售额排行"}},
+        },
+        signature=MOCK_FEISHU_SIGNATURE,
+    )
+
+    assert result.event.event_type == "message"
+    assert result.event.duplicate is False
+    assert result.card is not None
+    assert result.card.card_type == "chart"
+    assert result.card.elements[1] == {
+        "type": "chart",
+        "chart": {
+            "type": "bar",
+            "dataset": {"channel": ["app", "web"], "total_sales": [70000.0, 53456.78]},
+            "encoding": {"x": "channel", "y": "total_sales"},
+        },
+    }
+
+
+@pytest.mark.asyncio
 async def test_feishu_mock_flow_deduplicates_before_workflow_execution() -> None:
     service = FeishuMockFlowService()
     payload = {

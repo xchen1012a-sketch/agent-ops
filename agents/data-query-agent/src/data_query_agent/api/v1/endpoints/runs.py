@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import uuid
 from collections.abc import AsyncIterator
+from typing import Any, cast
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
@@ -20,6 +21,8 @@ from data_query_agent.api.v1.schemas.runs import (
     RunDataEnvelope,
     RunDetailEnvelope,
     RunDetailResponse,
+    RunLocalDemoEnvelope,
+    RunLocalDemoResponse,
     RunResponse,
 )
 from data_query_agent.core.errors import NotFoundError
@@ -27,6 +30,7 @@ from data_query_agent.domain.entities.identity import MessageRole
 from data_query_agent.domain.entities.run import NodeRun, NodeStatus, QueryRun, RunStatus
 from data_query_agent.domain.ports.llm_adapter import LlmCompletionRequest
 from data_query_agent.infrastructure.sse import iter_llm_sse
+from data_query_agent.workflows.graph import create_data_query_graph
 
 _STREAM_PROMPT_NAME = "stream_answer"
 _STREAM_PROMPT_VERSION = "v1"
@@ -65,6 +69,32 @@ async def create_run(
             thread_public_id=thread.public_id,
             question=payload.question,
         )
+    )
+
+
+@router.post("/threads/{thread_id}/runs/local-demo", response_model=RunLocalDemoEnvelope)
+async def create_local_demo_run(
+    thread_id: str,
+    payload: RunCreateRequest,
+    subject: CurrentSubjectDep,
+    identity_service: IdentityThreadServiceDep,
+) -> RunLocalDemoEnvelope:
+    """Execute the local deterministic workflow projection for MVP evidence.
+
+    This endpoint is deliberately named local-demo: it does not call a live
+    database, Dify app, or Feishu tenant, and it does not replace the persisted
+    async run contract.
+    """
+    thread = await identity_service.get_owned_thread(
+        thread_public_id=thread_id,
+        external_subject=subject,
+    )
+    if thread is None:
+        raise NotFoundError("thread not found")
+    graph = cast(Any, create_data_query_graph())
+    state = cast(dict[str, Any], graph.invoke({"question": payload.question}))
+    return RunLocalDemoEnvelope(
+        data=RunLocalDemoResponse.from_state(question=payload.question, state=state)
     )
 
 

@@ -34,6 +34,9 @@ const feedbackRating = ref(5);
 const feedbackComment = ref('');
 const reviewReason = ref('');
 const secondarySubmitting = ref(false);
+const conversationRef = ref<HTMLElement | null>(null);
+const conversationScrolling = ref(false);
+let conversationScrollTimer: number | undefined;
 
 // STREAM-100: shared thinking/answer stream state machine + component.
 const {
@@ -95,6 +98,30 @@ watch(streamPhase, (phase) => {
     toast.error(streamError.value || '流式连接中断，请重试');
   }
 });
+
+watch(
+  () => [messages.value.length, pendingQuestion.value, displayedAnswer.value, streamPhase.value],
+  () => scrollConversationToBottom(),
+  { flush: 'post' },
+);
+
+function scrollConversationToBottom(): void {
+  const target = conversationRef.value;
+  if (!target) return;
+  requestAnimationFrame(() => {
+    target.scrollTop = target.scrollHeight;
+  });
+}
+
+function handleConversationScroll(): void {
+  conversationScrolling.value = true;
+  if (conversationScrollTimer) {
+    window.clearTimeout(conversationScrollTimer);
+  }
+  conversationScrollTimer = window.setTimeout(() => {
+    conversationScrolling.value = false;
+  }, 900);
+}
 
 async function loadMessages(): Promise<void> {
   loadingMessages.value = true;
@@ -201,6 +228,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopStream();
+  if (conversationScrollTimer) {
+    window.clearTimeout(conversationScrollTimer);
+  }
 });
 </script>
 
@@ -217,7 +247,13 @@ onBeforeUnmount(() => {
       </div>
     </header>
 
-    <main class="legal-chat-page__conversation" aria-label="法律对话">
+    <main
+      ref="conversationRef"
+      class="legal-chat-page__conversation"
+      :class="{ 'legal-chat-page__conversation--scrolling': conversationScrolling }"
+      aria-label="法律对话"
+      @scroll="handleConversationScroll"
+    >
       <LoadingState v-if="loadingMessages" message="加载中…" />
       <EmptyState
         v-else-if="messages.length === 0 && !pendingQuestion"
@@ -286,7 +322,7 @@ onBeforeUnmount(() => {
 
         <article
           v-if="pendingQuestion || isStreaming || answerText"
-          class="legal-message legal-message--assistant"
+          class="legal-message legal-message--assistant legal-message--pending"
         >
           <div class="legal-message__avatar" aria-hidden="true">AI</div>
           <div class="legal-message__body">
@@ -387,9 +423,12 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: var(--space-4);
+  width: min(100%, 980px);
   max-width: 980px;
-  min-height: calc(100vh - 180px);
+  height: calc(100dvh - var(--layout-header-height) - var(--space-5) - var(--space-8));
+  min-height: 0;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .legal-chat-page__topbar {
@@ -420,13 +459,51 @@ onBeforeUnmount(() => {
 }
 
 .legal-chat-page__conversation {
-  min-height: 54vh;
-  padding-bottom: var(--space-4);
+  min-height: 0;
+  padding: var(--space-2) var(--space-1) var(--space-5);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  transition: scrollbar-color var(--duration-fast) var(--ease-in-out);
+}
+
+.legal-chat-page__conversation:hover,
+.legal-chat-page__conversation--scrolling {
+  scrollbar-color: color-mix(in oklch, var(--color-text-subtle) 48%, transparent) transparent;
+}
+
+.legal-chat-page__conversation::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.legal-chat-page__conversation::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.legal-chat-page__conversation::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  background-clip: content-box;
+}
+
+.legal-chat-page__conversation:hover::-webkit-scrollbar-thumb,
+.legal-chat-page__conversation--scrolling::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklch, var(--color-text-subtle) 48%, transparent);
+}
+
+.legal-chat-page__conversation::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklch, var(--color-text-muted) 62%, transparent);
 }
 
 .legal-chat-page__messages {
   display: grid;
   gap: var(--space-8);
+  align-content: start;
+  padding-right: var(--space-2);
 }
 
 .legal-message {
@@ -495,6 +572,19 @@ onBeforeUnmount(() => {
 }
 
 .legal-message--assistant .legal-message__avatar::before {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: currentColor;
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 750;
+  content: 'AI';
+}
+
+.legal-message--pending .legal-message__avatar::before {
   width: 24px;
   height: 24px;
   background: repeating-conic-gradient(
@@ -502,8 +592,15 @@ onBeforeUnmount(() => {
     currentColor 0deg 10deg,
     transparent 10deg 22.5deg
   );
-  border-radius: var(--radius-pill);
+  color: var(--color-primary);
   content: '';
+  animation: legal-pending-spin 1.2s linear infinite;
+}
+
+@keyframes legal-pending-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .legal-message__body {
@@ -590,13 +687,12 @@ onBeforeUnmount(() => {
 }
 
 .legal-chat-page__composer-shell {
-  position: sticky;
-  bottom: var(--space-4);
+  position: relative;
   z-index: var(--z-sticky);
   display: grid;
   gap: var(--space-3);
   padding-top: var(--space-4);
-  background: linear-gradient(180deg, transparent, var(--color-bg) 34%);
+  background: var(--color-bg);
 }
 
 .legal-chat-page__risk {
@@ -606,6 +702,7 @@ onBeforeUnmount(() => {
 @media (max-width: 767px) {
   .legal-chat-page {
     gap: var(--space-4);
+    height: calc(100dvh - 64px - var(--space-4) - var(--space-6));
   }
 
   .legal-chat-page__topbar {

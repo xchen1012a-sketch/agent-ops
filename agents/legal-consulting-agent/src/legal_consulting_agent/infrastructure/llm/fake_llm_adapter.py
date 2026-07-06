@@ -22,6 +22,8 @@ _STREAM_CHUNK_SIZE = 8
 class FakeLlmAdapter(LlmAdapter):
     """Deterministic in-memory LLM adapter that never calls external models."""
 
+    prefer_stream_answer = False
+
     def __init__(self, fixtures: dict[tuple[str, str], str] | None = None) -> None:
         self._fixtures = fixtures or {}
         self.requests: list[LlmCompletionRequest] = []

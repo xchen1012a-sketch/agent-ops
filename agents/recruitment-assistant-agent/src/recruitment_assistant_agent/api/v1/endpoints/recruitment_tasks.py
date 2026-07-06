@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 
 from recruitment_assistant_agent.api.dependencies import RequestIdDep
 from recruitment_assistant_agent.api.v1.schemas.recruitment_tasks import (
+    RecruitmentAnalysisResponse,
     RecruitmentMaterialResponse,
     RecruitmentMaterialSummary,
     RecruitmentTaskCreateRequest,
@@ -18,6 +19,7 @@ from recruitment_assistant_agent.api.v1.schemas.recruitment_tasks import (
     RecruitmentTaskResponse,
 )
 from recruitment_assistant_agent.application.services.recruit_task_api_service import (
+    RecruitmentAnalysisRecord,
     RecruitmentTaskApiService,
     RecruitmentTaskRecord,
     get_recruitment_task_api_service,
@@ -140,6 +142,7 @@ def _task_detail_response(task: RecruitmentTaskRecord) -> RecruitmentTaskDetailR
             )
             for material in task.materials
         ],
+        analysis=_analysis_response(task.analysis),
     )
 
 
@@ -157,4 +160,24 @@ def _material_summary(task: RecruitmentTaskRecord) -> RecruitmentMaterialSummary
         has_jd=jd is not None,
         resume_material_id=resume.material_id if resume else None,
         jd_material_id=jd.material_id if jd else None,
+    )
+
+
+def _analysis_response(
+    analysis: RecruitmentAnalysisRecord | None,
+) -> RecruitmentAnalysisResponse | None:
+    if analysis is None:
+        return None
+    return RecruitmentAnalysisResponse(
+        rule_version=analysis.rule_version,
+        candidate_summary=analysis.candidate_summary,
+        job_title=analysis.job_title,
+        match_score=analysis.match_score,
+        match_tier=analysis.match_tier,
+        matched_keywords=list(analysis.matched_keywords),
+        missing_keywords=list(analysis.missing_keywords),
+        risk_points=list(analysis.risk_points),
+        interview_questions=list(analysis.interview_questions),
+        fairness_note=analysis.fairness_note,
+        workflow_nodes=list(analysis.workflow_nodes),
     )
