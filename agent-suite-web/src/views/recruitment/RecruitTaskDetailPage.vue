@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { recruitmentClient } from '@api/recruitment';
+import ThinkingPanel from '@components/chat/ThinkingPanel.vue';
 import AsyncState from '@components/ui/AsyncState.vue';
+import SafeMarkdown from '@components/ui/SafeMarkdown.vue';
 import SSEStatusIndicator from '@components/ui/SSEStatusIndicator.vue';
+import { useAuthStore } from '@stores/auth';
 import { useToastStore } from '@stores/toast';
+import { useAgentStream } from '@/composables/useAgentStream';
+import { useTypewriter } from '@/composables/useTypewriter';
 import type { AgentStreamClient } from '@lib/sse-client';
-import { createErrorState, createLoadingState, createSuccessState } from '@lib/request-state';
+import {
+  createErrorState,
+  createLoadingState,
+  createSuccessState,
+  toRequestError,
+} from '@lib/request-state';
 import type { RequestState } from '@/types/request-state';
 import type { AgentStreamEvent, StreamState } from '@/types/sse';
 import type {
@@ -21,8 +31,11 @@ import type {
 const route = useRoute();
 const router = useRouter();
 const toast = useToastStore();
+const auth = useAuthStore();
 
 const taskId = computed(() => String(route.params.id));
+const isAdmin = computed(() => auth.profile?.role === 'admin');
+const reviewing = ref(false);
 
 const state = ref<RequestState<RecruitTaskDetail>>({
   status: 'idle',
@@ -38,6 +51,34 @@ const running = ref(false);
 const reportBusy = ref(false);
 
 let stream: AgentStreamClient | null = null;
+
+// STREAM-100: live thinking/analysis stream via the shared state machine + panel.
+const {
+  phase: analysisPhase,
+  thinkingText,
+  answerText,
+  thinkingElapsedSeconds,
+  thinkingDurationMs,
+  panelExpanded,
+  errorMessage: analysisError,
+  isStreaming: analysisStreaming,
+  start: startAnalysisStream,
+  stop: stopAnalysisStream,
+  reset: resetAnalysisStream,
+  togglePanel: toggleAnalysisPanel,
+} = useAgentStream({
+  createClient: ({ onEvent, onStateChange }) =>
+    recruitmentClient.createRunCompletionStream({
+      taskId: taskId.value,
+      onEvent,
+      onStateChange,
+    }),
+});
+const { displayed: displayedAnalysis, flush: flushAnalysis } = useTypewriter(answerText);
+
+watch(analysisPhase, (phase) => {
+  if (phase === 'done') flushAnalysis();
+});
 
 const STATUS_LABEL: Record<RecruitTaskStatus, string> = {
   uploaded: '已上传',
@@ -76,7 +117,7 @@ async function loadTask(): Promise<void> {
       await refreshRun(response.task.latest_run_id);
     }
   } catch (error) {
-    state.value = createErrorState(error instanceof Error ? error : String(error ?? '加载失败'));
+    state.value = createErrorState(toRequestError(error));
   }
 }
 
@@ -93,10 +134,12 @@ async function refreshRun(runId: string): Promise<void> {
 async function startRun(): Promise<void> {
   running.value = true;
   nodeTrace.value = [];
+  resetAnalysisStream();
   try {
     const response = await recruitmentClient.startRun(taskId.value);
     run.value = response.run;
     openStream(response.run.run_id);
+    startAnalysisStream();
     toast.success('分析已开始');
   } catch (error) {
     toast.error(error instanceof Error ? error.message : '启动失败，请重试');
@@ -147,6 +190,7 @@ async function cancelRun(): Promise<void> {
     const response = await recruitmentClient.cancelRun(run.value.run_id);
     run.value = response.run;
     closeStream();
+    stopAnalysisStream();
     toast.info('已取消运行');
   } catch (error) {
     toast.error(error instanceof Error ? error.message : '取消失败');
@@ -169,6 +213,19 @@ async function generateReport(): Promise<void> {
   }
 }
 
+async function submitReview(reviewStatus: RecruitReviewStatus): Promise<void> {
+  reviewing.value = true;
+  try {
+    await recruitmentClient.reviewTask(taskId.value, { review_status: reviewStatus });
+    toast.success(reviewStatus === 'approved' ? '已通过复核' : '已驳回');
+    await loadTask();
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : '复核失败，请重试');
+  } finally {
+    reviewing.value = false;
+  }
+}
+
 function back(): void {
   void router.push({ name: 'recruit-tasks' });
 }
@@ -179,6 +236,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   closeStream();
+  stopAnalysisStream();
 });
 </script>
 
@@ -244,10 +302,37 @@ onBeforeUnmount(() => {
             <ol v-if="nodeTrace.length > 0" class="recruit-detail__trace" aria-label="节点轨迹">
               <li v-for="node in nodeTrace" :key="node">{{ node }}</li>
             </ol>
+
+            <div v-if="analysisStreaming || answerText" class="recruit-detail__analysis">
+              <ThinkingPanel
+                :thinking="thinkingText"
+                :phase="analysisPhase"
+                :elapsed-seconds="thinkingElapsedSeconds"
+                :duration-ms="thinkingDurationMs"
+                :expanded="panelExpanded"
+                tone="recruit"
+                @toggle="toggleAnalysisPanel"
+              />
+              <SafeMarkdown v-if="answerText" :source="displayedAnalysis" />
+              <p v-else-if="analysisPhase === 'thinking'" class="recruit-detail__hint">正在思考…</p>
+              <p v-else-if="analysisPhase === 'error'" class="recruit-detail__error">
+                {{ analysisError || '分析失败，请重试' }}
+              </p>
+            </div>
           </section>
 
           <section class="recruit-detail__report">
             <h2>分析报告</h2>
+            <div
+              v-if="isAdmin && data.review_status === 'pending'"
+              class="recruit-detail__review"
+            >
+              <span>管理员复核：</span>
+              <el-button type="success" :loading="reviewing" @click="submitReview('approved')">
+                通过
+              </el-button>
+              <el-button :loading="reviewing" @click="submitReview('rejected')">驳回</el-button>
+            </div>
             <p class="recruit-detail__hint">
               {{ canReport ? '任务已通过复核，可生成报告。' : '报告需管理员复核通过后才能生成。' }}
             </p>
@@ -386,6 +471,14 @@ onBeforeUnmount(() => {
 .recruit-detail__hint {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+}
+
+.recruit-detail__review {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 767px) {

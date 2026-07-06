@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 from recruitment_assistant_agent.workflows.recruitment_state import (
     GapHint,
     InterviewQuestionHint,
@@ -45,6 +47,10 @@ def file_safety_node(state: RecruitmentWorkflowState) -> RecruitmentWorkflowUpda
             "task_status": "failed",
             "persisted": False,
             "error_code": "UNSUPPORTED_MATERIAL_KIND",
+            "boundary_message": (
+                "暂不支持该材料类型，目前仅支持候选人简历、职位 JD，或简历+JD 组合。"
+                "请上传对应材料后重试。"
+            ),
             "node_trace": _trace(state, "file_safety"),
         }
     return {
@@ -110,23 +116,37 @@ def evidence_match_node(state: RecruitmentWorkflowState) -> RecruitmentWorkflowU
 
 
 def fairness_check_node(state: RecruitmentWorkflowState) -> RecruitmentWorkflowUpdate:
-    """Fail closed if sensitive attribute fields appear anywhere in parsed structures."""
+    """Enforce fairness by redacting protected attributes, then continuing.
+
+    Discrimination risk is a safety boundary, but a candidate should not lose
+    their whole evaluation because a parser happened to capture an ``age`` or
+    ``gender`` field. Instead of failing the task, we strip every protected
+    attribute from the parsed structures and continue on a fair,
+    job-relevant-only payload — recording exactly what was removed so the
+    redaction is auditable.
+    """
 
     if state.get("error_code"):
         return {"node_trace": _trace(state, "fairness_check")}
 
-    checked_payload: dict[str, object] = {
-        "resume_structure": state.get("resume_structure", {}),
-        "jd_structure": state.get("jd_structure", {}),
-    }
-    violations = sorted(_find_sensitive_fields(checked_payload))
-    if violations:
+    resume_structure = state.get("resume_structure", {})
+    jd_structure = state.get("jd_structure", {})
+    redacted_fields = sorted(
+        _find_sensitive_fields(
+            {"resume_structure": resume_structure, "jd_structure": jd_structure}
+        )
+    )
+    if redacted_fields:
         return {
-            "fairness_passed": False,
-            "fairness_violation_details": violations,
-            "task_status": "failed",
-            "persisted": False,
-            "error_code": "FAIRNESS_VIOLATION",
+            "resume_structure": cast(
+                "ResumeStructuredPayload", _redact_sensitive_fields(resume_structure)
+            ),
+            "jd_structure": cast(
+                "JDStructuredPayload", _redact_sensitive_fields(jd_structure)
+            ),
+            "fairness_passed": True,
+            "fairness_violation_details": redacted_fields,
+            "boundary_message": _redaction_message(redacted_fields),
             "node_trace": _trace(state, "fairness_check"),
         }
     return {
@@ -134,6 +154,15 @@ def fairness_check_node(state: RecruitmentWorkflowState) -> RecruitmentWorkflowU
         "fairness_violation_details": [],
         "node_trace": _trace(state, "fairness_check"),
     }
+
+
+def _redaction_message(redacted_fields: list[str]) -> str:
+    return (
+        "检测到材料中包含受保护的敏感信息（"
+        + "、".join(redacted_fields)
+        + "），已自动脱敏后继续评估。本次分析仅依据与岗位相关的能力与经历，"
+        "不会使用上述字段。"
+    )
 
 
 def gap_question_gen_node(state: RecruitmentWorkflowState) -> RecruitmentWorkflowUpdate:
@@ -254,6 +283,19 @@ def _find_sensitive_fields(value: object) -> set[str]:
             list_found.update(_find_sensitive_fields(item))
         return list_found
     return set()
+
+
+def _redact_sensitive_fields(value: object) -> object:
+    """Return a deep copy with every protected-attribute key removed."""
+    if isinstance(value, dict):
+        return {
+            key: _redact_sensitive_fields(nested)
+            for key, nested in value.items()
+            if key not in SENSITIVE_ATTRIBUTE_FIELDS
+        }
+    if isinstance(value, list):
+        return [_redact_sensitive_fields(item) for item in value]
+    return value
 
 
 def _gap_from_match_item(item: MatchItemHint) -> GapHint:

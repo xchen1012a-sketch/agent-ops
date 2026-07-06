@@ -62,7 +62,7 @@ plugins = ["pydantic.mypy"]
 packages = ["data_query_agent"]
 
 [[tool.mypy.overrides]]
-module = ["langgraph.*", "chromadb.*", "sentence_transformers.*"]
+module = ["langgraph.*", "chromadb.*", "sentence_transformers.*", "redis.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

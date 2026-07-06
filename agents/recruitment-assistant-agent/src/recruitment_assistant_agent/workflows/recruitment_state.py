@@ -124,6 +124,7 @@ class RecruitmentWorkflowState(TypedDict, total=False):
     interview_questions: list[InterviewQuestionHint]
     persisted: bool
     error_code: str | None
+    boundary_message: str | None
     node_trace: list[str]
 
     # Test-only / adapter boundary inputs. Production callers should provide
@@ -151,4 +152,5 @@ class RecruitmentWorkflowUpdate(TypedDict, total=False):
     interview_questions: list[InterviewQuestionHint]
     persisted: bool
     error_code: str | None
+    boundary_message: str | None
     node_trace: list[str]

@@ -12,6 +12,7 @@ from legal_consulting_agent.prompts import (
     PromptOutputValidator,
     PromptTemplateLoader,
 )
+from legal_consulting_agent.prompts.policy import with_system_policy
 from legal_consulting_agent.workflows.legal_state import (
     LegalEntityHints,
     LegalWorkflowState,
@@ -74,7 +75,7 @@ class LegalClassificationPromptService:
             prompt=self._prompt,
             variables={"question": question},
         )
-        raw_output = self._llm_adapter.complete(rendered.content)
+        raw_output = self._llm_adapter.complete(with_system_policy(rendered.content))
         validated = self._output_validator.validate_json(
             prompt=self._prompt,
             raw_output=raw_output,
@@ -101,11 +102,13 @@ def make_prompt_classification_node(
         try:
             result = service.classify(state.get("safe_question") or "")
         except (PromptOutputValidationError, ValueError):
+            # Fail-open: a malformed classification must not become a refusal.
+            # Degrade to a general legal question so generation still answers,
+            # and leave error_code unset so the workflow proceeds.
             return {
-                "category": "other",
-                "intent": "分类失败，降级为 other",
+                "category": "general",
+                "intent": "分类失败，按一般法律问题处理",
                 "legal_entities": {},
-                "error_code": "CLASSIFY_FAILED",
                 "node_trace": [*state.get("node_trace", []), "classification"],
             }
         return {

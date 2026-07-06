@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const BASE_URL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:5666';
+const BASE_URL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:7777';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -29,7 +29,7 @@ export default defineConfig({
   webServer: process.env.E2E_SKIP_WEB_SERVER
     ? undefined
     : {
-        command: 'pnpm preview --port 5666 --strictPort',
+        command: 'pnpm preview --port 7777 --strictPort',
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,

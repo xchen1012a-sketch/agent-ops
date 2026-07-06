@@ -28,6 +28,13 @@ export interface DataRunStreamOptions {
   onStateChange?: (state: StreamState) => void;
 }
 
+export interface DataRunCompletionStreamOptions {
+  threadId: string;
+  question: string;
+  onEvent: (event: AgentStreamEvent) => void;
+  onStateChange?: (state: StreamState) => void;
+}
+
 export const dataQueryClient = {
   async getHealthLive(): Promise<DataHealthLive> {
     const { data } = await dataApi.get<DataHealthLive>('/health/live');
@@ -114,6 +121,18 @@ export const dataQueryClient = {
       url: buildDataApiUrl(`/runs/${encodeURIComponent(options.runId)}/stream`),
       token: useAuthStore().accessToken,
       headers: buildDataStreamHeaders(),
+      onEvent: options.onEvent,
+      onStateChange: options.onStateChange,
+    });
+  },
+
+  createRunCompletionStream(options: DataRunCompletionStreamOptions): AgentStreamClient {
+    return new AgentStreamClient({
+      url: buildDataApiUrl(`/threads/${encodeURIComponent(options.threadId)}/runs/stream`),
+      method: 'POST',
+      body: JSON.stringify({ question: options.question }),
+      token: useAuthStore().accessToken,
+      headers: { ...buildDataStreamHeaders(), 'Content-Type': 'application/json' },
       onEvent: options.onEvent,
       onStateChange: options.onStateChange,
     });

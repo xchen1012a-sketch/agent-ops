@@ -98,7 +98,7 @@ async def test_runner_executes_nodes_in_order_and_records_audits() -> None:
 
 
 @pytest.mark.asyncio
-async def test_runner_stops_after_non_retryable_fairness_error() -> None:
+async def test_runner_redacts_sensitive_field_and_completes() -> None:
     repo = FakeAuditRepository()
     runner = build_runner(repo)
     state = state_with_mock_inputs()
@@ -106,21 +106,20 @@ async def test_runner_stops_after_non_retryable_fairness_error() -> None:
 
     result = await runner.run_once(state, user_public_id="user-public-1")
 
-    assert result.stopped_at_node == "fairness_check"
-    assert result.state["error_code"] == "FAIRNESS_VIOLATION"
-    assert result.state["persisted"] is False
-    assert repo.agent_runs[0].status is RunStatus.FAILED
-    assert repo.agent_runs[0].error_code == "FAIRNESS_VIOLATION"
-    assert len(repo.node_runs) == 6
-    assert repo.node_runs[-1].status is RunStatus.FAILED
-    assert repo.node_runs[-1].metadata == {
-        "event": "finished",
-        "node_name": "fairness_check",
-        "retryable": False,
-        "has_overall_tier": True,
-        "match_items_count": 2,
-        "has_fairness_violation": True,
-    }
+    # Choice B: the protected attribute is stripped and the run completes on a
+    # fair payload, with the redaction recorded for audit — no hard stop.
+    assert result.stopped_at_node is None
+    assert result.state["error_code"] is None
+    assert result.state["persisted"] is True
+    assert result.state["fairness_passed"] is True
+    assert result.state["fairness_violation_details"] == ["gender"]
+    assert "gender" not in result.state["resume_structure"]
+    assert repo.agent_runs[0].status is RunStatus.SUCCESS
+    assert len(repo.node_runs) == 8
+    assert [node.status for node in repo.node_runs] == [RunStatus.SUCCESS] * 8
+    fairness_run = repo.node_runs[5]
+    assert fairness_run.metadata["node_name"] == "fairness_check"
+    assert fairness_run.metadata["has_fairness_violation"] is True
 
 
 @pytest.mark.asyncio

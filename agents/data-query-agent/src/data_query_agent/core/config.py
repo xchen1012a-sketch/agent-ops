@@ -11,6 +11,11 @@ from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _split_csv(raw: str) -> tuple[str, ...]:
+    """Parse a comma-separated config value into a tuple of trimmed names."""
+    return tuple(item.strip() for item in raw.split(",") if item.strip())
+
+
 def _load_local_env_defaults() -> None:
     """Load the module .env into process env when pydantic does not pre-load it."""
     env_path = Path(__file__).resolve().parents[3] / ".env"
@@ -76,6 +81,12 @@ class Settings(BaseSettings):
     deepseek_max_retries: int = 3
     deepseek_backoff_seconds: str = "1,2,4"
 
+    # LLM streaming field mapping (STREAM-100): model-agnostic classification of
+    # streamed delta fields into thinking vs answer channels. Comma-separated,
+    # ordered by priority. Not bound to any single provider's field name.
+    llm_stream_thinking_fields: str = "reasoning_content,reasoning,thinking"
+    llm_stream_answer_fields: str = "content,text"
+
     # SQL safety
     sql_whitelist_path: str = "/app/data/rules/sql-whitelist.yaml"
     indicators_path: str = "/app/data/rules/indicators.yaml"
@@ -85,11 +96,33 @@ class Settings(BaseSettings):
     sql_audit_retention_days: int = 90
     mcp_server_url: str = ""
     mcp_timeout_seconds: int = 30
+
+    # Feishu bot integration (FEISHU-100). Credentials only required when
+    # feishu_enabled is true; encrypt_key is optional (event encryption is
+    # only on when configured in the Feishu console).
     feishu_enabled: bool = False
+    feishu_app_id: str = ""
+    feishu_app_secret: SecretStr = Field(default=SecretStr(""))
+    feishu_verification_token: SecretStr = Field(default=SecretStr(""))
+    feishu_encrypt_key: SecretStr = Field(default=SecretStr(""))
+    feishu_api_base: str = "https://open.feishu.cn/open-apis"
+    feishu_timeout_seconds: int = 10
+    feishu_token_cache_ttl_seconds: int = 6600
+    feishu_event_dedup_ttl_seconds: int = 3600
 
     # Agent API config center (CONFIG-100): Fernet master key for encrypting
     # upstream API keys stored in agent_api_config.api_key_encrypted.
     agent_config_encryption_key: SecretStr = Field(default=SecretStr(""))
+
+    @property
+    def llm_stream_thinking_field_names(self) -> tuple[str, ...]:
+        """Ordered field names treated as thinking-channel deltas."""
+        return _split_csv(self.llm_stream_thinking_fields)
+
+    @property
+    def llm_stream_answer_field_names(self) -> tuple[str, ...]:
+        """Ordered field names treated as answer-channel deltas."""
+        return _split_csv(self.llm_stream_answer_fields)
 
     def validate_required(self) -> None:
         """Hard fail on missing critical secrets. Called from lifespan."""
@@ -106,6 +139,13 @@ class Settings(BaseSettings):
             errors.append("REDIS_URL is required")
         if not self.deepseek_api_base:
             errors.append("DEEPSEEK_API_BASE is required")
+        if self.feishu_enabled:
+            if not self.feishu_app_id:
+                errors.append("FEISHU_APP_ID is required when FEISHU_ENABLED=true")
+            if not self.feishu_app_secret.get_secret_value():
+                errors.append("FEISHU_APP_SECRET is required when FEISHU_ENABLED=true")
+            if not self.feishu_verification_token.get_secret_value():
+                errors.append("FEISHU_VERIFICATION_TOKEN is required when FEISHU_ENABLED=true")
         if errors:
             raise RuntimeError("Configuration validation failed: " + "; ".join(errors))
 

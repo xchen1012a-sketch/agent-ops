@@ -7,6 +7,7 @@ from typing import Literal
 
 from data_query_agent.application.services.prompt_template_service import PromptTemplateService
 from data_query_agent.domain.ports.llm_adapter import LlmAdapter, LlmCompletionRequest
+from data_query_agent.prompts.policy import with_system_policy
 from data_query_agent.workflows.state import DataQueryState, NodeTrace
 
 
@@ -38,7 +39,7 @@ class PromptBackedWorkflowNodes:
             LlmCompletionRequest(
                 prompt_name=template.name,
                 version=template.version,
-                rendered_prompt=rendered,
+                rendered_prompt=with_system_policy(rendered),
             )
         )
         output = self._prompt_service.validate_output(
@@ -71,7 +72,7 @@ class PromptBackedWorkflowNodes:
             LlmCompletionRequest(
                 prompt_name=template.name,
                 version=template.version,
-                rendered_prompt=rendered,
+                rendered_prompt=with_system_policy(rendered),
             )
         )
         output = self._prompt_service.validate_output(

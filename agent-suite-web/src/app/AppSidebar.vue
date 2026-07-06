@@ -143,13 +143,7 @@ function isActionActive(action: SidebarAction): boolean {
         <span class="app-sidebar__agent-icon">
           <AppIcon :name="agent.icon" />
         </span>
-        <span v-if="!props.collapsed" class="app-sidebar__agent-copy">
-          <span class="app-sidebar__agent-label">{{ agent.label }}</span>
-          <span class="app-sidebar__agent-description">{{ agent.description }}</span>
-        </span>
-        <span v-if="!props.collapsed" class="app-sidebar__agent-badge">
-          {{ agent.accentLabel }}
-        </span>
+        <span v-if="!props.collapsed" class="app-sidebar__agent-label">{{ agent.label }}</span>
       </button>
 
       <div v-if="!props.collapsed" class="app-sidebar__actions">
@@ -305,11 +299,11 @@ function isActionActive(action: SidebarAction): boolean {
 
 .app-sidebar__agent {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 28px minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  min-height: 48px;
+  min-height: 40px;
   padding: var(--space-2);
   color: var(--color-text-muted);
   text-align: left;
@@ -329,11 +323,11 @@ function isActionActive(action: SidebarAction): boolean {
 .app-sidebar__agent-icon {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   color: var(--color-text-muted);
   background: var(--color-surface-muted);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 
 .app-sidebar__agent.is-active .app-sidebar__agent-icon {
@@ -351,9 +345,20 @@ function isActionActive(action: SidebarAction): boolean {
   white-space: nowrap;
 }
 
-.app-sidebar__agent-badge {
-  color: var(--color-text-subtle);
-  font-size: 11px;
+.app-sidebar__agent-icon,
+.app-sidebar__agent-label,
+.app-sidebar__action,
+.app-sidebar__utility {
+  transition:
+    background-color var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-out-expo);
+}
+
+.app-sidebar__agent:active,
+.app-sidebar__action:active,
+.app-sidebar__utility:active {
+  transform: scale(0.985);
 }
 
 .app-sidebar__actions {

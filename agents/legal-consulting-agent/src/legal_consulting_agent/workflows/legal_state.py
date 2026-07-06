@@ -56,6 +56,9 @@ class LegalWorkflowState(TypedDict, total=False):
     category: str | None
     intent: str | None
     legal_entities: LegalEntityHints
+    response_tier: str | None
+    offtopic_streak: int
+    boundary_message: str | None
     context_messages: list[dict[str, str]]
     chunks: list[RetrievalChunk]
     answer_draft: str | None
@@ -81,6 +84,9 @@ class LegalWorkflowUpdate(TypedDict, total=False):
     category: str | None
     intent: str | None
     legal_entities: LegalEntityHints
+    response_tier: str | None
+    offtopic_streak: int
+    boundary_message: str | None
     context_messages: list[dict[str, str]]
     chunks: list[RetrievalChunk]
     answer_draft: str | None

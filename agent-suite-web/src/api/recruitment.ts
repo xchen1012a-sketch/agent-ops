@@ -1,10 +1,13 @@
 import { recruitmentApi, suiteEnv } from '@lib/config';
 import { AgentStreamClient } from '@lib/sse-client';
 import { useAuthStore } from '@stores/auth';
+import type { AgentStreamEvent, StreamState } from '@/types/sse';
 import type {
   RecruitReportCreateEnvelope,
   RecruitReportDetailEnvelope,
   RecruitReportFormat,
+  RecruitReviewEnvelope,
+  RecruitReviewInput,
   RecruitRunEnvelope,
   RecruitRunStartInput,
   RecruitRunStartResponse,
@@ -15,6 +18,12 @@ import type {
   RecruitTaskListQuery,
   RecruitTaskListResponse,
 } from '@/types/recruitment';
+
+export interface RecruitRunCompletionStreamOptions {
+  taskId: string;
+  onEvent: (event: AgentStreamEvent) => void;
+  onStateChange?: (state: StreamState) => void;
+}
 
 export const recruitmentClient = {
   async createTask(payload: RecruitTaskCreateInput): Promise<RecruitTaskCreateResponse> {
@@ -68,6 +77,14 @@ export const recruitmentClient = {
     return data;
   },
 
+  async reviewTask(taskId: string, payload: RecruitReviewInput): Promise<RecruitReviewEnvelope> {
+    const { data } = await recruitmentApi.post<RecruitReviewEnvelope>(
+      `/admin/recruitment-tasks/${encodeURIComponent(taskId)}/review`,
+      payload,
+    );
+    return data;
+  },
+
   async createReport(taskId: string): Promise<RecruitReportCreateEnvelope> {
     const { data } = await recruitmentApi.post<RecruitReportCreateEnvelope>(
       `/recruitment-tasks/${encodeURIComponent(taskId)}/reports`,
@@ -98,4 +115,30 @@ export const recruitmentClient = {
       onStateChange: options.onStateChange,
     });
   },
+
+  createRunCompletionStream(options: RecruitRunCompletionStreamOptions): AgentStreamClient {
+    return new AgentStreamClient({
+      url: `${suiteEnv.apiBaseUrl}${suiteEnv.recruitmentPrefix}/recruitment-tasks/${encodeURIComponent(
+        options.taskId,
+      )}/runs/stream`,
+      method: 'POST',
+      body: JSON.stringify({}),
+      token: useAuthStore().accessToken,
+      headers: buildRecruitmentStreamHeaders(),
+      onEvent: options.onEvent,
+      onStateChange: options.onStateChange,
+    });
+  },
 };
+
+function buildRecruitmentStreamHeaders(): Record<string, string> {
+  const auth = useAuthStore();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (auth.profile?.public_id) {
+    headers['X-User-Public-Id'] = auth.profile.public_id;
+  }
+  if (auth.role) {
+    headers['X-User-Role'] = auth.role;
+  }
+  return headers;
+}

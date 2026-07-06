@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { API_ERROR_CODES } from '@/types/api';
 import {
   createCancelledState,
+  createErrorState,
   createIdleState,
   createLoadingState,
   createSuccessState,
   isDataEmpty,
   mapRequestError,
+  toRequestError,
 } from '@lib/request-state';
 
 const fixedClock = {
@@ -136,5 +138,34 @@ describe('mapRequestError', () => {
       traceId: 'trace-1',
       retryable: true,
     });
+  });
+});
+
+describe('toRequestError', () => {
+  it('keeps a plain ApiError object mappable instead of stringifying it', () => {
+    const apiError = { error_code: 'AGENT_DEPENDENCY_TIMEOUT', message: '服务暂时不可用' };
+
+    const state = createErrorState(toRequestError(apiError));
+
+    // Regression guard: a thrown ApiError object must not collapse to "[object Object]".
+    expect(state.error?.message).not.toBe('[object Object]');
+    expect(state.error).toMatchObject({
+      code: 'AGENT_DEPENDENCY_TIMEOUT',
+      message: '服务暂时不可用',
+    });
+  });
+
+  it('falls back to a readable message for an opaque object', () => {
+    const state = createErrorState(toRequestError({ weird: true }));
+
+    expect(state.error?.message).toBe('请求失败，请稍后重试。');
+    expect(state.error?.message).not.toContain('[object Object]');
+  });
+
+  it('passes Error, string and nullish through', () => {
+    expect(toRequestError(new Error('boom'))).toBeInstanceOf(Error);
+    expect(toRequestError('oops')).toBe('oops');
+    expect(toRequestError(null)).toBeNull();
+    expect(toRequestError(undefined)).toBeNull();
   });
 });

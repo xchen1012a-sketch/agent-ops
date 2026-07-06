@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 from collections.abc import Iterable
 from datetime import datetime
 from typing import Annotated
@@ -10,7 +11,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 
-from recruitment_assistant_agent.api.dependencies import RequestIdDep
+from recruitment_assistant_agent.api.dependencies import (
+    RecruitmentStreamAdapterDep,
+    RequestIdDep,
+)
 from recruitment_assistant_agent.api.v1.schemas.recruitment_runs import (
     RecruitmentRunEnvelope,
     RecruitmentRunEventPayload,
@@ -24,8 +28,13 @@ from recruitment_assistant_agent.application.services.recruit_task_api_service i
     RecruitmentTaskApiService,
     get_recruitment_task_api_service,
 )
+from recruitment_assistant_agent.domain.ports.llm_adapter import LlmCompletionRequest
+from recruitment_assistant_agent.infrastructure.sse import iter_llm_sse
 
 router = APIRouter()
+
+_STREAM_PROMPT_NAME = "recruitment_analysis"
+_STREAM_PROMPT_VERSION = "v1"
 
 TaskServiceDep = Annotated[
     RecruitmentTaskApiService,
@@ -54,6 +63,29 @@ async def start_recruitment_run(
         request_id=request_id,
         run=_run_response(run),
         stream_url=f"/v1/recruitment-runs/{run.run_id}/stream",
+    )
+
+
+@router.post("/recruitment-tasks/{task_id}/runs/stream")
+async def stream_recruitment_run_completion(
+    task_id: str,
+    payload: RecruitmentRunStartRequest,
+    llm_adapter: RecruitmentStreamAdapterDep,
+) -> StreamingResponse:
+    """Stream a live thinking/answer analysis for a task as SSE.
+
+    STREAM-100 阶段4：mock 垂直切片。经模型无关的 SSE 转发层，把 adapter 归一化的
+    thinking/analysis 分块推给前端；本阶段不落库、不跑真实工作流。
+    """
+    request = LlmCompletionRequest(
+        prompt_name=_STREAM_PROMPT_NAME,
+        version=_STREAM_PROMPT_VERSION,
+        rendered_prompt=f"task={task_id}; prompt={payload.prompt_version}",
+    )
+    run_id = f"run_{uuid.uuid4().hex}"
+    return StreamingResponse(
+        iter_llm_sse(llm_adapter.stream(request), run_id=run_id),
+        media_type="text/event-stream",
     )
 
 

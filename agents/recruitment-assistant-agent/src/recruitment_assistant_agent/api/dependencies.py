@@ -9,9 +9,13 @@ from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from recruitment_assistant_agent.application.services.agent_api_config import ApiConfigCrypto
+from recruitment_assistant_agent.application.services.stream_adapter_resolver import (
+    resolve_stream_adapter,
+)
 from recruitment_assistant_agent.core.config import Settings, get_settings
 from recruitment_assistant_agent.core.errors import AuthError, ForbiddenError
 from recruitment_assistant_agent.core.request_context import REQUEST_ID_KEY, request_context
+from recruitment_assistant_agent.domain.ports.llm_adapter import LlmAdapter
 from recruitment_assistant_agent.infrastructure.db.repositories.agent_api_config import (
     SqlAlchemyAgentApiConfigRepository,
 )
@@ -68,6 +72,20 @@ def require_admin_role(
     return role
 
 
+async def get_recruitment_stream_adapter(
+    user_public_id: CurrentUserPublicIdDep,
+    repo: AgentApiConfigRepoDep,
+    settings: SettingsDep,
+) -> LlmAdapter:
+    """Resolve the streaming LLM adapter from the current account's API config.
+
+    CONFIG-200：读该账号的 deepseek 配置，启用且有可解密 key → 真实 DeepSeek 流式；
+    否则回退 FakeLlmAdapter。请求需带 X-User-Public-Id 身份头。
+    """
+
+    return await resolve_stream_adapter(subject=user_public_id, reader=repo, settings=settings)
+
+
 def get_agent_api_config_crypto(settings: SettingsDep) -> ApiConfigCrypto:
     """Build the Fernet crypto service from settings."""
 
@@ -91,3 +109,4 @@ AgentApiConfigRepoDep = Annotated[
     SqlAlchemyAgentApiConfigRepository, Depends(get_agent_api_config_repository)
 ]
 AgentApiConfigCryptoDep = Annotated[ApiConfigCrypto, Depends(get_agent_api_config_crypto)]
+RecruitmentStreamAdapterDep = Annotated[LlmAdapter, Depends(get_recruitment_stream_adapter)]

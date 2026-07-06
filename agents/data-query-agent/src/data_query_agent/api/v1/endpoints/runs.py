@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 from collections.abc import AsyncIterator
 
 from fastapi import APIRouter
@@ -11,6 +12,7 @@ from fastapi.responses import StreamingResponse
 from data_query_agent.api.dependencies import (
     CurrentSubjectDep,
     IdentityThreadServiceDep,
+    LlmStreamAdapterDep,
     QueryRunTraceServiceDep,
 )
 from data_query_agent.api.v1.schemas.runs import (
@@ -23,6 +25,11 @@ from data_query_agent.api.v1.schemas.runs import (
 from data_query_agent.core.errors import NotFoundError
 from data_query_agent.domain.entities.identity import MessageRole
 from data_query_agent.domain.entities.run import NodeRun, NodeStatus, QueryRun, RunStatus
+from data_query_agent.domain.ports.llm_adapter import LlmCompletionRequest
+from data_query_agent.infrastructure.sse import iter_llm_sse
+
+_STREAM_PROMPT_NAME = "stream_answer"
+_STREAM_PROMPT_VERSION = "v1"
 
 router = APIRouter()
 
@@ -58,6 +65,37 @@ async def create_run(
             thread_public_id=thread.public_id,
             question=payload.question,
         )
+    )
+
+
+@router.post("/threads/{thread_id}/runs/stream")
+async def stream_run_completion(
+    thread_id: str,
+    payload: RunCreateRequest,
+    subject: CurrentSubjectDep,
+    identity_service: IdentityThreadServiceDep,
+    llm_adapter: LlmStreamAdapterDep,
+) -> StreamingResponse:
+    """Stream a live thinking/answer completion for a question as SSE.
+
+    STREAM-100 阶段1：mock 垂直切片。校验线程归属后，将 adapter 归一化的
+    thinking/answer 分块经模型无关的 SSE 转发层推给前端；本阶段不落库、不跑工作流。
+    """
+    thread = await identity_service.get_owned_thread(
+        thread_public_id=thread_id,
+        external_subject=subject,
+    )
+    if thread is None:
+        raise NotFoundError("thread not found")
+    run_id = uuid.uuid4().hex
+    request = LlmCompletionRequest(
+        prompt_name=_STREAM_PROMPT_NAME,
+        version=_STREAM_PROMPT_VERSION,
+        rendered_prompt=payload.question,
+    )
+    return StreamingResponse(
+        iter_llm_sse(llm_adapter.stream(request), run_id=run_id),
+        media_type="text/event-stream",
     )
 
 

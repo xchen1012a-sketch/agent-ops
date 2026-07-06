@@ -4,6 +4,8 @@ export type AgentStreamEventName =
   | 'run.started'
   | 'node.started'
   | 'node.completed'
+  | 'message.thinking.delta'
+  | 'message.thinking.completed'
   | 'message.delta'
   | 'message.completed'
   | 'run.completed'
@@ -25,6 +27,15 @@ export interface AgentStreamEvent<T = unknown> {
 export interface NodeStartedPayload {
   node_name: string;
   metadata?: Record<string, unknown>;
+}
+
+export interface ThinkingDeltaPayload {
+  delta: string;
+  cumulative_length?: number;
+}
+
+export interface ThinkingCompletedPayload {
+  duration_ms: number;
 }
 
 export interface MessageDeltaPayload {

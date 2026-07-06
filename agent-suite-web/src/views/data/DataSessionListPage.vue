@@ -7,7 +7,12 @@ import AgentChatLanding from '@components/chat/AgentChatLanding.vue';
 import AsyncState from '@components/ui/AsyncState.vue';
 import { useToastStore } from '@stores/toast';
 import { createConversationTitle } from '@lib/conversation-title';
-import { createErrorState, createLoadingState, createSuccessState } from '@lib/request-state';
+import {
+  createErrorState,
+  createLoadingState,
+  createSuccessState,
+  toRequestError,
+} from '@lib/request-state';
 import type { DataThread, DataThreadListData } from '@/types/data-query';
 import type { RequestState } from '@/types/request-state';
 
@@ -37,7 +42,7 @@ async function loadThreads(): Promise<void> {
       isEmpty: (data) => data.items.length === 0,
     });
   } catch (error) {
-    state.value = createErrorState(normalizeRequestError(error));
+    state.value = createErrorState(toRequestError(error));
   }
 }
 
@@ -74,10 +79,6 @@ function formatDate(value: string): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value));
-}
-
-function normalizeRequestError(error: unknown): Error | string {
-  return error instanceof Error ? error : String(error ?? '加载失败');
 }
 
 onMounted(() => {

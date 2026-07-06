@@ -36,6 +36,23 @@ async def test_prompt_backed_sql_generate_uses_fake_llm_and_validated_output() -
 
 
 @pytest.mark.asyncio
+async def test_prompt_backed_nodes_prepend_system_policy() -> None:
+    adapter = FakeLlmAdapter()
+    nodes = PromptBackedWorkflowNodes(
+        prompt_service=PromptTemplateService(),
+        llm_adapter=adapter,
+    )
+
+    await nodes.sql_generate_node({"question": "total sales", "schema_context": "wide_orders"})
+
+    sent = adapter.requests[0].rendered_prompt
+    # Identity + refusal policy reaches the model ahead of the task prompt.
+    assert 'You are the "data analysis assistant."' in sent
+    assert "[Refusal rules]" in sent
+    assert "total sales" in sent
+
+
+@pytest.mark.asyncio
 async def test_prompt_backed_sql_generate_rejects_invalid_structured_output() -> None:
     adapter = FakeLlmAdapter(fixtures={("nl2sql", "v1"): json.dumps({"sql": "SELECT 1"})})
     nodes = PromptBackedWorkflowNodes(

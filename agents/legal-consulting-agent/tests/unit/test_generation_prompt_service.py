@@ -146,6 +146,40 @@ def test_prompt_generation_node_maps_invalid_output_to_citation_invalid(
     assert result["error_code"] == "CITATION_INVALID"
 
 
+class RecordingLLMAdapter:
+    def __init__(self, response: str) -> None:
+        self.response = response
+        self.last_prompt: str | None = None
+
+    def complete(self, prompt: str) -> str:
+        self.last_prompt = prompt
+        return self.response
+
+
+def test_generation_prompt_prepends_system_policy(tmp_path: Path) -> None:
+    write_template(tmp_path)
+    adapter = RecordingLLMAdapter(valid_generation_response())
+    service = LegalGenerationPromptService(
+        prompt=generation_prompt(),
+        template_loader=PromptTemplateLoader(tmp_path),
+        output_validator=PromptOutputValidator(),
+        llm_adapter=adapter,
+    )
+
+    service.generate(
+        question="公司单方面调岗，我可以拒绝吗？",
+        context_messages=[],
+        chunks=base_state()["chunks"],
+        category="civil_labor",
+    )
+
+    assert adapter.last_prompt is not None
+    # Identity + refusal policy reaches the model, ahead of the task prompt.
+    assert "你是「法律咨询助手」" in adapter.last_prompt
+    assert "拒绝规则" in adapter.last_prompt
+    assert "公司单方面调岗" in adapter.last_prompt
+
+
 def test_graph_accepts_prompt_backed_generation_node(tmp_path: Path) -> None:
     service = build_service(tmp_path, valid_generation_response())
     node = make_prompt_generation_node(service)

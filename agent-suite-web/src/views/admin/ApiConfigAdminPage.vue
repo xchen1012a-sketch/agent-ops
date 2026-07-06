@@ -86,6 +86,13 @@ function selectAgent(agent: AgentName): void {
   activeAgent.value = agent;
 }
 
+// CONFIG-200: only the deepseek dependency drives real-vs-mock streaming; a row
+// counts as "真实" once it is enabled and has a stored key hint.
+function effectiveSource(row: AgentApiConfigView): '真实' | '模拟' | '—' {
+  if (row.api_type !== 'deepseek') return '—';
+  return row.enabled && row.api_key_hint ? '真实' : '模拟';
+}
+
 function openEditorFromRow(agent: AgentName, row: unknown): void {
   editorAgent.value = agent;
   editorConfig.value = row as AgentApiConfigView;
@@ -156,6 +163,10 @@ onMounted(() => {
           <p>{{ activeAgentCard.description }}</p>
           <span>{{ configsByAgent[card.agent].length }} 项依赖</span>
         </div>
+        <p class="api-config-page__note">
+          DeepSeek 启用并填入 Key 后，思考与回答会切换为真实模型；未配置时使用内置模拟。同一
+          Key 需在每个 Agent 各配置一次。
+        </p>
         <el-alert
           v-if="activeLoadError"
           class="api-config-page__alert"
@@ -194,6 +205,18 @@ onMounted(() => {
               <el-tag :type="row.enabled ? 'success' : 'info'" effect="light">
                 {{ row.enabled ? '启用' : '停用' }}
               </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="生效来源" width="100">
+            <template #default="{ row }">
+              <el-tag
+                v-if="effectiveSource(row as AgentApiConfigView) !== '—'"
+                :type="effectiveSource(row as AgentApiConfigView) === '真实' ? 'success' : 'info'"
+                effect="plain"
+              >
+                {{ effectiveSource(row as AgentApiConfigView) }}
+              </el-tag>
+              <span v-else>—</span>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="80" fixed="right">
@@ -327,6 +350,13 @@ onMounted(() => {
   flex: 0 0 auto;
   color: var(--color-text-subtle);
   font-size: var(--text-xs);
+}
+
+.api-config-page__note {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  line-height: var(--line-relaxed);
 }
 
 .api-config-page__alert {

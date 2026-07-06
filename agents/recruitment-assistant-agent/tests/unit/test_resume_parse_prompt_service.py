@@ -141,7 +141,9 @@ def test_service_renders_prompt_and_returns_resume_structure(tmp_path: Path) -> 
 
     result = service.parse("Built Python services.")
 
-    assert adapter.prompts == ["Resume: Built Python services."]
+    # The rendered task prompt is preserved, with the system policy prepended.
+    assert adapter.prompts[0].endswith("Resume: Built Python services.")
+    assert "你是「招聘评估助手」" in adapter.prompts[0]
     assert result.resume_structure["summary"] == "Python backend engineer."
     assert result.resume_structure["skills"][0]["skill_name"] == "Python"
 

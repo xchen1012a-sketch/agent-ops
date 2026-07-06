@@ -4,7 +4,12 @@ import { useRouter } from 'vue-router';
 
 import { recruitmentClient } from '@api/recruitment';
 import AsyncState from '@components/ui/AsyncState.vue';
-import { createErrorState, createLoadingState, createSuccessState } from '@lib/request-state';
+import {
+  createErrorState,
+  createLoadingState,
+  createSuccessState,
+  toRequestError,
+} from '@lib/request-state';
 import type { RequestState } from '@/types/request-state';
 import type {
   RecruitTask,
@@ -61,7 +66,7 @@ async function loadTasks(): Promise<void> {
       isEmpty: (data) => data.items.length === 0,
     });
   } catch (error) {
-    state.value = createErrorState(error instanceof Error ? error : String(error ?? '加载失败'));
+    state.value = createErrorState(toRequestError(error));
   }
 }
 

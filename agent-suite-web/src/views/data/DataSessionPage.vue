@@ -1,19 +1,26 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { dataQueryClient } from '@api/data-query';
 import ChatComposer from '@components/chat/ChatComposer.vue';
+import ThinkingPanel from '@components/chat/ThinkingPanel.vue';
 import AsyncState from '@components/ui/AsyncState.vue';
 import AppIcon from '@components/ui/AppIcon.vue';
+import SafeMarkdown from '@components/ui/SafeMarkdown.vue';
 import SSEStatusIndicator from '@components/ui/SSEStatusIndicator.vue';
 import { useToastStore } from '@stores/toast';
 import { createConversationTitle } from '@lib/conversation-title';
-import { createErrorState, createLoadingState, createSuccessState } from '@lib/request-state';
-import type { DataRunDetail, DataSseContractEvent, DataThread } from '@/types/data-query';
+import {
+  createErrorState,
+  createLoadingState,
+  createSuccessState,
+  toRequestError,
+} from '@lib/request-state';
+import { useAgentStream } from '@/composables/useAgentStream';
+import { useTypewriter } from '@/composables/useTypewriter';
+import type { DataRunDetail, DataThread } from '@/types/data-query';
 import type { RequestState } from '@/types/request-state';
-import type { AgentStreamClient } from '@lib/sse-client';
-import type { AgentStreamEvent, StreamState } from '@/types/sse';
 
 const route = useRoute();
 const router = useRouter();
@@ -30,9 +37,33 @@ const question = ref(typeof route.query.q === 'string' ? route.query.q : '');
 const currentQuestion = ref('');
 const submitting = ref(false);
 const runDetail = ref<DataRunDetail | null>(null);
-const streamState = ref<StreamState>('idle');
-const streamEvents = ref<DataSseContractEvent[]>([]);
-let streamClient: AgentStreamClient | null = null;
+
+// STREAM-100: live thinking/answer stream driven by the shared, agent-agnostic
+// state machine. The old status-replay stream is superseded here.
+const {
+  phase: streamPhase,
+  thinkingText,
+  answerText,
+  thinkingElapsedSeconds,
+  thinkingDurationMs,
+  panelExpanded,
+  streamState,
+  errorMessage: streamError,
+  isStreaming,
+  start: startStream,
+  stop: stopStream,
+  reset: resetStream,
+  togglePanel,
+} = useAgentStream({
+  createClient: ({ onEvent, onStateChange }) =>
+    dataQueryClient.createRunCompletionStream({
+      threadId: threadId.value,
+      question: currentQuestion.value,
+      onEvent,
+      onStateChange,
+    }),
+});
+const { displayed: displayedAnswer, flush: flushAnswer } = useTypewriter(answerText);
 
 const generatedThreadTitle = computed(() =>
   createConversationTitle(currentQuestion.value || question.value, '新的问数对话'),
@@ -54,13 +85,20 @@ const runStatusType = computed(() => {
   }
 });
 
+watch(streamPhase, (phase) => {
+  if (phase === 'done') {
+    flushAnswer();
+    void refreshRun(runDetail.value?.run_id);
+  }
+});
+
 async function loadThread(): Promise<void> {
   threadState.value = createLoadingState();
   try {
     const response = await dataQueryClient.getThread(threadId.value);
     threadState.value = createSuccessState(response.data);
   } catch (error) {
-    threadState.value = createErrorState(normalizeRequestError(error));
+    threadState.value = createErrorState(toRequestError(error));
   }
 }
 
@@ -69,8 +107,7 @@ async function submitQuestion(): Promise<void> {
   if (!trimmed) return;
 
   submitting.value = true;
-  stopStream();
-  streamEvents.value = [];
+  resetStream();
   runDetail.value = null;
   try {
     const response = await dataQueryClient.createRun(threadId.value, {
@@ -82,7 +119,7 @@ async function submitQuestion(): Promise<void> {
     currentQuestion.value = response.data.question;
     question.value = '';
     await refreshRun(response.data.run_id);
-    startStream(response.data.run_id);
+    startStream();
     toast.success('问题已提交到智能问数 Agent');
   } catch (error) {
     toast.error(error instanceof Error ? error.message : '提交问数问题失败');
@@ -118,31 +155,11 @@ async function retryRun(): Promise<void> {
   try {
     const response = await dataQueryClient.retryRun(runDetail.value.run_id);
     runDetail.value = response.data;
-    streamEvents.value = [];
-    startStream(response.data.run_id);
+    resetStream();
+    startStream();
     toast.success('运行已重试');
   } catch (error) {
     toast.error(error instanceof Error ? error.message : '重试运行失败');
-  }
-}
-
-function startStream(runId: string): void {
-  stopStream();
-  streamClient = dataQueryClient.createRunStream({
-    runId,
-    onEvent: handleStreamEvent,
-    onStateChange: (state) => {
-      streamState.value = state;
-    },
-  });
-  streamClient.start();
-}
-
-function stopStream(): void {
-  streamClient?.stop();
-  streamClient = null;
-  if (streamState.value !== 'idle') {
-    streamState.value = 'closed';
   }
 }
 
@@ -150,18 +167,6 @@ async function copyText(content: string): Promise<void> {
   if (typeof navigator === 'undefined' || !navigator.clipboard) return;
   await navigator.clipboard.writeText(content);
   toast.success('已复制');
-}
-
-function handleStreamEvent(event: AgentStreamEvent): void {
-  streamEvents.value.push({
-    event: event.event ?? 'message',
-    payload: (event.payload ?? {}) as Record<string, unknown>,
-    received_at: event.timestamp,
-  });
-
-  if (event.event === 'run.completed' || event.event === 'run.failed') {
-    void refreshRun(event.run_id);
-  }
 }
 
 function formatDate(value: string | null | undefined): string {
@@ -173,24 +178,6 @@ function formatDate(value: string | null | undefined): string {
     minute: '2-digit',
     second: '2-digit',
   }).format(new Date(value));
-}
-
-function formatRunThoughtLabel(detail: DataRunDetail): string {
-  if (detail.status === 'running' || detail.status === 'retrying') {
-    return 'Thinking';
-  }
-  if (detail.started_at && detail.finished_at) {
-    const elapsedMs =
-      new Date(detail.finished_at).getTime() - new Date(detail.started_at).getTime();
-    if (Number.isFinite(elapsedMs) && elapsedMs > 0) {
-      return `Thought for ${Math.max(1, Math.round(elapsedMs / 1000))}s`;
-    }
-  }
-  return 'Thought through answer';
-}
-
-function normalizeRequestError(error: unknown): Error | string {
-  return error instanceof Error ? error : String(error ?? '加载失败');
 }
 
 onMounted(() => {
@@ -230,7 +217,7 @@ onBeforeUnmount(() => {
 
         <main class="data-chat-page__conversation" aria-label="问数对话">
           <EmptyState
-            v-if="!currentQuestion && !runDetail && streamEvents.length === 0"
+            v-if="!currentQuestion && !runDetail && !isStreaming && !answerText"
             title="直接问数据"
             description="把问题写在下方。"
             icon="DataAnalysis"
@@ -245,22 +232,36 @@ onBeforeUnmount(() => {
               </div>
             </article>
 
-            <article v-if="runDetail" class="data-message data-message--assistant">
+            <article
+              v-if="currentQuestion || isStreaming || answerText || runDetail"
+              class="data-message data-message--assistant"
+            >
               <div class="data-message__avatar" aria-hidden="true">AI</div>
               <div class="data-message__body">
-                <div class="data-message__meta">
-                  <strong>{{ formatRunThoughtLabel(runDetail) }}</strong>
+                <ThinkingPanel
+                  :thinking="thinkingText"
+                  :phase="streamPhase"
+                  :elapsed-seconds="thinkingElapsedSeconds"
+                  :duration-ms="thinkingDurationMs"
+                  :expanded="panelExpanded"
+                  tone="data"
+                  @toggle="togglePanel"
+                />
+
+                <div v-if="runDetail" class="data-message__meta">
                   <el-tag :type="runStatusType" effect="light">{{ runDetail.status }}</el-tag>
                 </div>
 
-                <p v-if="runDetail.status === 'success'">分析已完成。</p>
-                <p v-else-if="runDetail.status === 'failed'" class="data-message__error">
-                  {{ runDetail.error_message || '这次分析失败了，可以重试。' }}
-                </p>
-                <p v-else-if="runDetail.status === 'canceled'">已取消。</p>
-                <p v-else>正在分析…</p>
+                <div class="data-message__content">
+                  <SafeMarkdown v-if="answerText" :source="displayedAnswer" />
+                  <p v-else-if="streamPhase === 'thinking'">正在思考…</p>
+                  <p v-else-if="streamPhase === 'error'" class="data-message__error">
+                    {{ streamError || '这次分析失败了，可以重试。' }}
+                  </p>
+                  <p v-else>正在分析…</p>
+                </div>
 
-                <div class="data-message__actions">
+                <div v-if="runDetail" class="data-message__actions">
                   <el-button text circle aria-label="复制问题" @click="copyText(currentQuestion)">
                     <AppIcon name="Copy" />
                   </el-button>
@@ -293,7 +294,7 @@ onBeforeUnmount(() => {
                   </el-button>
                 </div>
 
-                <details class="data-message__details">
+                <details v-if="runDetail" class="data-message__details">
                   <summary>运行细节</summary>
                   <dl>
                     <div>
@@ -317,16 +318,6 @@ onBeforeUnmount(() => {
                       <dd>{{ runDetail.error_code }}</dd>
                     </div>
                   </dl>
-                </details>
-
-                <details v-if="streamEvents.length" class="data-message__details">
-                  <summary>事件记录</summary>
-                  <ol class="data-message__events">
-                    <li v-for="(item, index) in streamEvents" :key="`${item.event}-${index}`">
-                      <strong>{{ item.event }}</strong>
-                      <span>{{ formatDate(item.received_at) }}</span>
-                    </li>
-                  </ol>
                 </details>
               </div>
             </article>

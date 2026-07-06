@@ -12,6 +12,7 @@ from recruitment_assistant_agent.prompts import (
     PromptOutputValidator,
     PromptTemplateLoader,
 )
+from recruitment_assistant_agent.prompts.policy import with_system_policy
 from recruitment_assistant_agent.workflows.recruitment_nodes import SENSITIVE_ATTRIBUTE_FIELDS
 from recruitment_assistant_agent.workflows.recruitment_state import (
     EducationEvidenceHint,
@@ -77,7 +78,7 @@ class ResumeParsePromptService:
             variables=self._prompt.variables or {},
             values={"resume_text": resume_text},
         )
-        raw_output = self._llm_adapter.complete(rendered.rendered_text)
+        raw_output = self._llm_adapter.complete(with_system_policy(rendered.rendered_text))
         validated = self._output_validator.validate_json(raw_output)
         if _contains_sensitive_text(validated.value.values()):
             raise PromptOutputValidationError("resume parse output contains sensitive text")

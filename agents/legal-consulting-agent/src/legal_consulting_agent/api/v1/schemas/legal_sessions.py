@@ -33,3 +33,33 @@ class LegalSessionCreateEnvelope(BaseModel):
 
     data: LegalSessionResponse
     error: Literal[None] = None
+
+
+class LegalSessionEnvelope(BaseModel):
+    """Success envelope for a single session (e.g. rename)."""
+
+    data: LegalSessionResponse
+    error: Literal[None] = None
+
+
+class LegalSessionListData(BaseModel):
+    """Paginated list of the caller's sessions, newest first."""
+
+    items: list[LegalSessionResponse]
+    limit: int
+    offset: int
+
+
+class LegalSessionListEnvelope(BaseModel):
+    """Success envelope for the session list."""
+
+    data: LegalSessionListData
+    error: Literal[None] = None
+
+
+class LegalSessionRenameRequest(BaseModel):
+    """Request body for renaming a session."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    title: str = Field(min_length=1, max_length=120)

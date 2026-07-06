@@ -11,6 +11,11 @@ from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _split_csv(raw: str) -> tuple[str, ...]:
+    """Parse a comma-separated config value into a tuple of trimmed names."""
+    return tuple(item.strip() for item in raw.split(",") if item.strip())
+
+
 def _load_local_env_defaults() -> None:
     """Load the module .env into process env when pydantic does not pre-load it."""
     env_path = Path(__file__).resolve().parents[3] / ".env"
@@ -69,6 +74,12 @@ class Settings(BaseSettings):
     deepseek_max_retries: int = 3
     deepseek_backoff_seconds: str = "1,2,4"
 
+    # LLM streaming field mapping (STREAM-100): model-agnostic classification of
+    # streamed delta fields into thinking vs answer channels. Comma-separated,
+    # ordered by priority. Not bound to any single provider's field name.
+    llm_stream_thinking_fields: str = "reasoning_content,reasoning,thinking"
+    llm_stream_answer_fields: str = "content,text"
+
     # Legal KB & RAG (hybrid retrieval per ADR-0012)
     legal_kb_path: str = "/app/data/legal_kb"
     high_risk_keywords_path: str = "/app/data/legal_kb/high-risk-keywords.yaml"
@@ -102,6 +113,16 @@ class Settings(BaseSettings):
     @property
     def rag_top_k(self) -> int:
         return self.rag_rerank_top_n
+
+    @property
+    def llm_stream_thinking_field_names(self) -> tuple[str, ...]:
+        """Ordered field names treated as thinking-channel deltas."""
+        return _split_csv(self.llm_stream_thinking_fields)
+
+    @property
+    def llm_stream_answer_field_names(self) -> tuple[str, ...]:
+        """Ordered field names treated as answer-channel deltas."""
+        return _split_csv(self.llm_stream_answer_fields)
 
     def validate_required(self) -> None:
         """Hard fail on missing critical secrets. Called from lifespan."""

@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: '0.0.0.0',
-      port: 5666,
+      port: 7777,
       strictPort: true,
       proxy: {
         ...(enableDevAuth

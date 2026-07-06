@@ -17,6 +17,9 @@ class DataQueryState(TypedDict, total=False):
 
     question: str
     intent: Literal["data_query", "non_data"]
+    intent_confidence: Literal["high", "low"]
+    response_tier: Literal["in_scope", "anchor_light", "redirect_firm", "refuse_adversarial"]
+    offtopic_streak: int
     refusal_reason: str
     schema_context: str
     generated_sql: str

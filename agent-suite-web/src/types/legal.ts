@@ -18,6 +18,22 @@ export interface LegalSessionCreateEnvelope {
   error: null;
 }
 
+export interface LegalSessionEnvelope {
+  data: LegalSession;
+  error: null;
+}
+
+export interface LegalSessionListData {
+  items: LegalSession[];
+  limit: number;
+  offset: number;
+}
+
+export interface LegalSessionListEnvelope {
+  data: LegalSessionListData;
+  error: null;
+}
+
 export interface LegalCitation {
   source?: string;
   section?: string;

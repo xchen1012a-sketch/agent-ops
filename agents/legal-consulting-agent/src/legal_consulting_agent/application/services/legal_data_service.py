@@ -114,6 +114,57 @@ class LegalDataService:
             )
         )
 
+    async def list_sessions(
+        self,
+        *,
+        user_public_id: str,
+        limit: int,
+        offset: int,
+    ) -> list[LegalSession]:
+        """List the caller's sessions (newest first) with bounded pagination."""
+
+        if limit < 1 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+        if offset < 0:
+            raise ValueError("offset must be greater than or equal to 0")
+        user = await self.get_user_mirror(user_public_id)
+        return await self._repository.list_sessions_for_user(
+            user_id=user.id or 0,
+            limit=limit,
+            offset=offset,
+        )
+
+    async def rename_session(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        title: str,
+    ) -> LegalSession:
+        """Rename a user-owned session; ownership is enforced before writing."""
+
+        normalized = title.strip()
+        if not normalized:
+            raise ValueError("title must not be empty")
+        if len(normalized) > 120:
+            raise ValueError("title must be at most 120 characters")
+
+        user = await self._repository.get_user_by_public_id(user_public_id)
+        if user is None or user.id is None:
+            raise LegalDataNotFoundError("User mirror not found")
+
+        session = await self._repository.get_session_for_user(
+            session_public_id=session_public_id,
+            user_id=user.id,
+        )
+        if session is None or session.id is None:
+            raise LegalDataNotFoundError("Legal session not found")
+
+        return await self._repository.update_session_title(
+            session_id=session.id,
+            title=normalized,
+        )
+
     async def append_message(
         self,
         *,
@@ -169,6 +220,24 @@ class LegalDataService:
             user_id=user.id or 0,
             limit=limit,
             offset=offset,
+        )
+
+    async def list_recent_session_messages(
+        self,
+        *,
+        user_public_id: str,
+        session_public_id: str,
+        limit: int,
+    ) -> list[LegalMessage]:
+        """Return the newest messages (chronological) for context memory."""
+
+        if limit < 1 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+        user = await self.get_user_mirror(user_public_id)
+        return await self._repository.list_recent_messages_for_user_session(
+            session_public_id=session_public_id,
+            user_id=user.id or 0,
+            limit=limit,
         )
 
     async def create_agent_run(

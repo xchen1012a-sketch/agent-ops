@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { legalClient } from '@api/legal';
 import ChatComposer from '@components/chat/ChatComposer.vue';
+import ThinkingPanel from '@components/chat/ThinkingPanel.vue';
 import EmptyState from '@components/ui/EmptyState.vue';
 import AppIcon from '@components/ui/AppIcon.vue';
 import LoadingState from '@components/ui/LoadingState.vue';
@@ -11,9 +12,9 @@ import SafeMarkdown from '@components/ui/SafeMarkdown.vue';
 import SSEStatusIndicator from '@components/ui/SSEStatusIndicator.vue';
 import { useToastStore } from '@stores/toast';
 import { createConversationTitle } from '@lib/conversation-title';
-import type { AgentStreamClient } from '@lib/sse-client';
-import type { AgentStreamEvent, StreamState } from '@/types/sse';
-import type { LegalMessage, LegalQuestionAnswer } from '@/types/legal';
+import { useAgentStream } from '@/composables/useAgentStream';
+import { useTypewriter } from '@/composables/useTypewriter';
+import type { LegalMessage } from '@/types/legal';
 
 const route = useRoute();
 const router = useRouter();
@@ -21,15 +22,11 @@ const toast = useToastStore();
 
 const sessionPublicId = computed(() => String(route.params.id));
 const messages = ref<LegalMessage[]>([]);
-const currentAnswer = ref<LegalQuestionAnswer | null>(null);
 const loadingMessages = ref(false);
 const submitting = ref(false);
 const question = ref(typeof route.query.q === 'string' ? route.query.q : '');
 const pendingQuestion = ref('');
-const streamingAnswer = ref('');
-const streamState = ref<StreamState>('idle');
-const thinkingStartedAt = ref<number | null>(null);
-const thinkingElapsedSeconds = ref(0);
+const pendingIsFirstExchange = ref(false);
 const feedbackDialogVisible = ref(false);
 const reviewDialogVisible = ref(false);
 const selectedMessage = ref<LegalMessage | null>(null);
@@ -37,20 +34,66 @@ const feedbackRating = ref(5);
 const feedbackComment = ref('');
 const reviewReason = ref('');
 const secondarySubmitting = ref(false);
-let streamClient: AgentStreamClient | null = null;
-let thinkingTimer: number | null = null;
 
-const liveThoughtLabel = computed(() =>
-  streamingAnswer.value || currentAnswer.value
-    ? `Thought for ${formatThoughtSeconds(thinkingElapsedSeconds.value)}`
-    : 'Thinking',
-);
+// STREAM-100: shared thinking/answer stream state machine + component.
+const {
+  phase: streamPhase,
+  thinkingText,
+  answerText,
+  thinkingElapsedSeconds,
+  thinkingDurationMs,
+  panelExpanded,
+  streamState,
+  errorMessage: streamError,
+  isStreaming,
+  start: startStream,
+  stop: stopStream,
+  reset: resetStream,
+  togglePanel,
+} = useAgentStream({
+  createClient: ({ onEvent, onStateChange }) =>
+    legalClient.createQuestionStream({
+      sessionPublicId: sessionPublicId.value,
+      question: pendingQuestion.value,
+      onEvent,
+      onStateChange,
+    }),
+});
+const { displayed: displayedAnswer, flush: flushAnswer } = useTypewriter(answerText);
+
 const sessionTitle = computed(() => {
   const firstUserMessage = messages.value.find((message) => message.role === 'user');
   return createConversationTitle(
     pendingQuestion.value || question.value || firstUserMessage?.content,
     '新的法律咨询',
   );
+});
+const lastHighRiskMessage = computed(() => {
+  const assistants = messages.value.filter((message) => message.role === 'assistant');
+  const last = assistants.at(-1);
+  return last?.high_risk ? last : null;
+});
+
+watch(streamPhase, (phase) => {
+  if (phase === 'done') {
+    flushAnswer();
+    submitting.value = false;
+    void (async () => {
+      await loadMessages();
+      pendingQuestion.value = '';
+      resetStream();
+      toast.success('已回复');
+      // After the first exchange, auto-name the session (LLM + fallback). Fire and
+      // forget: naming must never disrupt the conversation.
+      if (pendingIsFirstExchange.value) {
+        pendingIsFirstExchange.value = false;
+        void legalClient.generateSessionTitle(sessionPublicId.value).catch(() => {});
+      }
+    })();
+  } else if (phase === 'error') {
+    submitting.value = false;
+    toast.error(streamError.value || '流式连接中断，请重试');
+  }
 });
 
 async function loadMessages(): Promise<void> {
@@ -72,103 +115,17 @@ async function submitQuestion(): Promise<void> {
   const normalized = question.value.trim();
   if (!normalized) return;
 
+  pendingIsFirstExchange.value = messages.value.length === 0;
   submitting.value = true;
-  stopStream();
-  currentAnswer.value = null;
+  resetStream();
   pendingQuestion.value = normalized;
-  streamingAnswer.value = '';
-  startThinkingTimer();
+  question.value = '';
   try {
-    streamClient = legalClient.createQuestionStream({
-      sessionPublicId: sessionPublicId.value,
-      question: normalized,
-      onEvent: handleStreamEvent,
-      onStateChange: handleStreamStateChange,
-    });
-    streamClient.start();
+    startStream();
   } catch (error) {
     submitting.value = false;
     toast.error(error instanceof Error ? error.message : '发送失败，请重试');
   }
-}
-
-function handleStreamStateChange(state: StreamState): void {
-  streamState.value = state;
-  if (state === 'error') {
-    submitting.value = false;
-    stopThinkingTimer();
-    toast.error('流式连接中断，请重试');
-  }
-}
-
-function handleStreamEvent(event: AgentStreamEvent): void {
-  const payload = (event.payload ?? {}) as Record<string, unknown>;
-
-  if (event.event === 'message.delta' && typeof payload.delta === 'string') {
-    streamingAnswer.value += payload.delta;
-    return;
-  }
-
-  if (event.event === 'completed') {
-    const answer = payload as unknown as LegalQuestionAnswer;
-    currentAnswer.value = answer;
-    streamingAnswer.value = answer.answer || streamingAnswer.value;
-    question.value = '';
-    submitting.value = false;
-    stopThinkingTimer();
-    stopStream();
-    void (async () => {
-      await loadMessages();
-      pendingQuestion.value = '';
-      streamingAnswer.value = '';
-      toast.success('已回复');
-    })();
-  }
-}
-
-function stopStream(): void {
-  streamClient?.stop();
-  streamClient = null;
-  if (streamState.value !== 'idle') {
-    streamState.value = 'closed';
-  }
-}
-
-function startThinkingTimer(): void {
-  stopThinkingTimer();
-  thinkingStartedAt.value = Date.now();
-  thinkingElapsedSeconds.value = 0;
-  thinkingTimer = window.setInterval(() => {
-    if (!thinkingStartedAt.value) return;
-    thinkingElapsedSeconds.value = Math.max(
-      1,
-      Math.round((Date.now() - thinkingStartedAt.value) / 1000),
-    );
-  }, 250);
-}
-
-function stopThinkingTimer(): void {
-  if (thinkingTimer !== null) {
-    window.clearInterval(thinkingTimer);
-    thinkingTimer = null;
-  }
-  if (thinkingStartedAt.value) {
-    thinkingElapsedSeconds.value = Math.max(
-      1,
-      Math.round((Date.now() - thinkingStartedAt.value) / 1000),
-    );
-  }
-}
-
-function formatThoughtSeconds(seconds: number): string {
-  return `${Math.max(1, seconds)}s`;
-}
-
-function assistantThoughtLabel(message: LegalMessage): string {
-  if (currentAnswer.value?.answer_message.public_id === message.public_id) {
-    return `Thought for ${formatThoughtSeconds(thinkingElapsedSeconds.value)}`;
-  }
-  return 'Thought through answer';
 }
 
 function messageTone(role: LegalMessage['role']): string {
@@ -243,7 +200,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  stopThinkingTimer();
   stopStream();
 });
 </script>
@@ -283,11 +239,7 @@ onBeforeUnmount(() => {
           <div class="legal-message__body">
             <div class="legal-message__meta">
               <strong>{{
-                message.role === 'assistant'
-                  ? assistantThoughtLabel(message)
-                  : message.role === 'system'
-                    ? '系统'
-                    : '我'
+                message.role === 'assistant' ? '法律助手' : message.role === 'system' ? '系统' : '我'
               }}</strong>
               <el-tag v-if="message.high_risk" type="warning" effect="light">需确认</el-tag>
             </div>
@@ -333,16 +285,25 @@ onBeforeUnmount(() => {
         </article>
 
         <article
-          v-if="pendingQuestion || streamingAnswer"
+          v-if="pendingQuestion || isStreaming || answerText"
           class="legal-message legal-message--assistant"
         >
           <div class="legal-message__avatar" aria-hidden="true">AI</div>
           <div class="legal-message__body">
-            <div class="legal-message__meta">
-              <strong>{{ liveThoughtLabel }}</strong>
-            </div>
+            <ThinkingPanel
+              :thinking="thinkingText"
+              :phase="streamPhase"
+              :elapsed-seconds="thinkingElapsedSeconds"
+              :duration-ms="thinkingDurationMs"
+              :expanded="panelExpanded"
+              tone="legal"
+              @toggle="togglePanel"
+            />
             <div class="legal-message__content">
-              <SafeMarkdown :source="streamingAnswer || '正在生成…'" />
+              <SafeMarkdown v-if="answerText" :source="displayedAnswer" />
+              <p v-else-if="streamPhase === 'thinking'">正在思考…</p>
+              <p v-else-if="streamPhase === 'error'">{{ streamError || '生成失败，请重试' }}</p>
+              <p v-else>正在生成…</p>
             </div>
           </div>
         </article>
@@ -351,10 +312,10 @@ onBeforeUnmount(() => {
 
     <footer class="legal-chat-page__composer-shell" aria-label="发送问题">
       <el-alert
-        v-if="currentAnswer?.high_risk"
+        v-if="lastHighRiskMessage"
         class="legal-chat-page__risk"
         type="warning"
-        :title="currentAnswer.risk_reason ?? '这类问题建议再做人工确认'"
+        title="这类问题建议再做人工确认"
         show-icon
         :closable="false"
       />
@@ -473,6 +434,19 @@ onBeforeUnmount(() => {
   grid-template-columns: 36px minmax(0, 1fr);
   gap: var(--space-3);
   align-items: start;
+  animation: legal-message-rise 400ms var(--ease-out-expo) both;
+}
+
+@keyframes legal-message-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .legal-message--user {

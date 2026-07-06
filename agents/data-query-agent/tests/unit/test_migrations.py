@@ -24,7 +24,7 @@ def _make_config() -> Config:
 
 def test_single_head_revision() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
-    assert script_dir.get_heads() == ["0007_prompt_versions"]
+    assert script_dir.get_heads() == ["0008_user_api_config"]
 
 
 def test_baseline_has_no_down_revision() -> None:
@@ -43,6 +43,7 @@ def test_walk_revisions_returns_exactly_one() -> None:
     script_dir = ScriptDirectory.from_config(_make_config())
     revisions = list(script_dir.walk_revisions())
     assert [revision.revision for revision in revisions] == [
+        "0008_user_api_config",
         "0007_prompt_versions",
         "0006_feedbacks_followups",
         "0005_sql_audits",
@@ -93,3 +94,10 @@ def test_prompt_versions_revision_follows_feedbacks() -> None:
     prompt_revision = script_dir.get_revision("0007_prompt_versions")
     assert prompt_revision is not None
     assert prompt_revision.down_revision == "0006_feedbacks_followups"
+
+
+def test_user_api_config_revision_follows_prompt_versions() -> None:
+    script_dir = ScriptDirectory.from_config(_make_config())
+    api_config_revision = script_dir.get_revision("0008_user_api_config")
+    assert api_config_revision is not None
+    assert api_config_revision.down_revision == "0007_prompt_versions"

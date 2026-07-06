@@ -15,9 +15,13 @@ from legal_consulting_agent.application.services import (
     LegalRunControlService,
 )
 from legal_consulting_agent.application.services.agent_api_config import ApiConfigCrypto
+from legal_consulting_agent.application.services.stream_adapter_resolver import (
+    resolve_stream_adapter,
+)
 from legal_consulting_agent.core.config import Settings, get_settings
 from legal_consulting_agent.core.errors import AuthError, ForbiddenError
 from legal_consulting_agent.core.request_context import REQUEST_ID_KEY, request_context
+from legal_consulting_agent.domain.ports.llm_adapter import LlmAdapter
 from legal_consulting_agent.infrastructure.db.repositories.agent_api_config import (
     SqlAlchemyAgentApiConfigRepository,
 )
@@ -115,6 +119,20 @@ def get_legal_run_control_service() -> LegalRunControlService:
     return LegalRunControlService()
 
 
+async def get_legal_stream_adapter(
+    user_public_id: CurrentUserPublicIdDep,
+    repo: AgentApiConfigRepoDep,
+    settings: SettingsDep,
+) -> LlmAdapter:
+    """Resolve the streaming LLM adapter from the current account's API config.
+
+    CONFIG-200：读该账号的 deepseek 配置，启用且有可解密 key → 真实 DeepSeek 流式
+    （提供真实思考）；否则回退 FakeLlmAdapter。确定性答复仍来自问答服务。
+    """
+
+    return await resolve_stream_adapter(subject=user_public_id, reader=repo, settings=settings)
+
+
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
 RequestIdDep = Annotated[str, Depends(get_request_id)]
@@ -134,3 +152,4 @@ LegalRunControlServiceDep = Annotated[
     LegalRunControlService,
     Depends(get_legal_run_control_service),
 ]
+LegalStreamAdapterDep = Annotated[LlmAdapter, Depends(get_legal_stream_adapter)]

@@ -111,7 +111,7 @@ def test_evidence_match_keeps_no_evidence_without_snippet() -> None:
         "hukou",
     ],
 )
-def test_fairness_check_fails_closed_on_each_sensitive_attribute(field_name: str) -> None:
+def test_fairness_check_redacts_each_sensitive_attribute_and_continues(field_name: str) -> None:
     state = base_state()
     state["resume_structure"] = {
         "summary": "Candidate includes forbidden field.",
@@ -130,13 +130,16 @@ def test_fairness_check_fails_closed_on_each_sensitive_attribute(field_name: str
 
     result = fairness_check_node(state)
 
-    assert result["fairness_passed"] is False
+    # Redact-and-continue: the protected attribute is stripped, the evaluation
+    # proceeds, and the removal is recorded — no hard task failure.
+    assert result["fairness_passed"] is True
     assert result["fairness_violation_details"] == [field_name]
-    assert result["task_status"] == "failed"
-    assert result["error_code"] == "FAIRNESS_VIOLATION"
+    assert "error_code" not in result
+    assert field_name not in result["resume_structure"]["experiences"][0]
+    assert result["boundary_message"]
 
 
-def test_fairness_check_fails_closed_on_sensitive_attribute_field() -> None:
+def test_fairness_check_redacts_top_level_sensitive_field() -> None:
     state = base_state()
     state["resume_structure"] = {
         "summary": "Candidate includes forbidden field.",
@@ -150,9 +153,10 @@ def test_fairness_check_fails_closed_on_sensitive_attribute_field() -> None:
 
     result = fairness_check_node(state)
 
-    assert result["fairness_passed"] is False
+    assert result["fairness_passed"] is True
     assert result["fairness_violation_details"] == ["gender"]
-    assert result["error_code"] == "FAIRNESS_VIOLATION"
+    assert "error_code" not in result
+    assert "gender" not in result["resume_structure"]
 
 
 def test_graph_runs_mock_boundary_without_external_services() -> None:
@@ -194,17 +198,20 @@ def test_graph_stops_after_file_safety_failure() -> None:
     assert result["node_trace"] == ["file_safety"]
 
 
-def test_graph_stops_after_fairness_violation_without_persisting() -> None:
+def test_graph_redacts_sensitive_field_and_completes() -> None:
     graph = build_recruitment_workflow_graph()
     state = state_with_mock_inputs()
     state["mock_resume"]["id_card"] = "redacted"
 
     result = cast(RecruitmentWorkflowState, graph.invoke(state))
 
-    assert result["fairness_passed"] is False
-    assert result["task_status"] == "failed"
-    assert result["persisted"] is False
-    assert result["error_code"] == "FAIRNESS_VIOLATION"
+    # Choice B: strip the protected attribute and complete the fair evaluation.
+    assert result["fairness_passed"] is True
+    assert result["fairness_violation_details"] == ["id_card"]
+    assert "id_card" not in result["resume_structure"]
+    assert result["error_code"] is None
+    assert result["persisted"] is True
+    assert result["task_status"] == "completed"
     assert result["node_trace"] == [
         "file_safety",
         "task_route",
@@ -212,6 +219,8 @@ def test_graph_stops_after_fairness_violation_without_persisting() -> None:
         "jd_parse",
         "evidence_match",
         "fairness_check",
+        "gap_question_gen",
+        "persist",
     ]
 
 

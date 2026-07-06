@@ -149,6 +149,24 @@ class FakeLegalDataRepository:
             offset : offset + limit
         ]
 
+    async def list_recent_messages_for_user_session(
+        self,
+        *,
+        session_public_id: str,
+        user_id: int,
+        limit: int,
+    ) -> list[LegalMessage]:
+        if (
+            self.session is None
+            or self.session.public_id != session_public_id
+            or self.session.user_id != user_id
+        ):
+            return []
+        session_messages = [
+            message for message in self.messages if message.session_id == self.session.id
+        ]
+        return session_messages[-limit:]
+
     async def create_consultation_record(
         self,
         record: ConsultationRecord,

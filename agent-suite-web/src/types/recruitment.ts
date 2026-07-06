@@ -106,6 +106,26 @@ export interface RecruitRunEnvelope {
   run: RecruitRun;
 }
 
+// ---- 管理员复核（schemas/recruitment_admin.py）----
+
+export interface RecruitReviewInput {
+  review_status: RecruitReviewStatus;
+  review_note?: string | null;
+}
+
+export interface RecruitReview {
+  task_id: string;
+  review_status: RecruitReviewStatus;
+  review_note: string | null;
+  reviewed_by: string;
+  reviewed_at: string;
+}
+
+export interface RecruitReviewEnvelope {
+  request_id: string;
+  review: RecruitReview;
+}
+
 // ---- 鎶ュ憡锛坰chemas/recruitment_reports.py锛?---
 
 export interface RecruitReportSummary {

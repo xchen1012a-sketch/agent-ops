@@ -133,6 +133,20 @@ export function createCancelledState<T>(): RequestState<T> {
   };
 }
 
+/**
+ * Normalize a caught `unknown` into a mappable request error WITHOUT
+ * stringifying objects. The suite throws plain `ApiError` objects
+ * (`{ error_code, message }`), so `String(error)` would collapse them to
+ * "[object Object]"; keeping the object lets `mapRequestError` surface the
+ * real backend message and error code instead.
+ */
+export function toRequestError(error: unknown): RequestErrorInput {
+  if (error instanceof Error) return error;
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object') return error as RequestErrorSource;
+  return null;
+}
+
 export function mapRequestError(error: RequestErrorInput): RequestErrorView {
   const source = normalizeErrorSource(error);
   const code = source.error_code ?? 'UNKNOWN_ERROR';

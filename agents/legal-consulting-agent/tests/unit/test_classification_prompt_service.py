@@ -118,7 +118,7 @@ def test_prompt_classification_node_updates_state(tmp_path: Path) -> None:
     assert result["node_trace"] == ["input_safety", "classification"]
 
 
-def test_prompt_classification_node_maps_invalid_output_to_classify_failed(
+def test_prompt_classification_node_degrades_invalid_output_to_general(
     tmp_path: Path,
 ) -> None:
     service = build_service(tmp_path, '{"category": ["bad"], "intent": "x", "legal_entities": {}}')
@@ -126,8 +126,10 @@ def test_prompt_classification_node_maps_invalid_output_to_classify_failed(
 
     result = node(base_state())
 
-    assert result["category"] == "other"
-    assert result["error_code"] == "CLASSIFY_FAILED"
+    # Fail-open: malformed classification degrades to a general legal question
+    # that still gets answered, instead of a hard CLASSIFY_FAILED refusal.
+    assert result["category"] == "general"
+    assert "error_code" not in result
 
 
 def test_graph_accepts_prompt_backed_classification_node(tmp_path: Path) -> None:

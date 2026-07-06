@@ -14,6 +14,8 @@ import type {
   LegalReportEnvelope,
   LegalSessionCreateEnvelope,
   LegalSessionCreateInput,
+  LegalSessionEnvelope,
+  LegalSessionListEnvelope,
 } from '@/types/legal';
 
 export interface LegalQuestionStreamOptions {
@@ -26,6 +28,29 @@ export interface LegalQuestionStreamOptions {
 export const legalClient = {
   async createSession(payload: LegalSessionCreateInput): Promise<LegalSessionCreateEnvelope> {
     const { data } = await legalApi.post<LegalSessionCreateEnvelope>('/sessions', payload);
+    return data;
+  },
+
+  async listSessions(
+    query: { limit?: number; offset?: number } = {},
+  ): Promise<LegalSessionListEnvelope> {
+    const { data } = await legalApi.get<LegalSessionListEnvelope>('/sessions', { params: query });
+    return data;
+  },
+
+  async renameSession(sessionPublicId: string, title: string): Promise<LegalSessionEnvelope> {
+    const { data } = await legalApi.patch<LegalSessionEnvelope>(
+      `/sessions/${encodeURIComponent(sessionPublicId)}`,
+      { title },
+    );
+    return data;
+  },
+
+  async generateSessionTitle(sessionPublicId: string): Promise<LegalSessionEnvelope> {
+    const { data } = await legalApi.post<LegalSessionEnvelope>(
+      `/sessions/${encodeURIComponent(sessionPublicId)}/title`,
+      {},
+    );
     return data;
   },
 

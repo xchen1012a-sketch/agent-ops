@@ -11,6 +11,7 @@ from recruitment_assistant_agent.application.services.resume_parse_prompt_servic
 )
 from recruitment_assistant_agent.domain.entities.recruit_data import PromptVersion
 from recruitment_assistant_agent.prompts import PromptOutputValidator, PromptTemplateLoader
+from recruitment_assistant_agent.prompts.policy import with_system_policy
 from recruitment_assistant_agent.workflows.recruitment_nodes import SENSITIVE_ATTRIBUTE_FIELDS
 from recruitment_assistant_agent.workflows.recruitment_state import (
     GapHint,
@@ -20,6 +21,7 @@ from recruitment_assistant_agent.workflows.recruitment_state import (
     MatchItemHint,
     RecruitmentWorkflowState,
     RecruitmentWorkflowUpdate,
+    ResumeStructuredPayload,
 )
 
 
@@ -67,7 +69,7 @@ class _PromptServiceBase:
             values=values,
         )
         return self._output_validator.validate_json(
-            self._llm_adapter.complete(rendered.rendered_text)
+            self._llm_adapter.complete(with_system_policy(rendered.rendered_text))
         ).value
 
 
@@ -178,31 +180,41 @@ def make_prompt_fairness_check_node(
         node_trace = [*state.get("node_trace", []), "fairness_check"]
         if state.get("error_code"):
             return {"node_trace": node_trace}
-        deterministic_violations = sorted(
+        resume_structure = state.get("resume_structure", {})
+        jd_structure = state.get("jd_structure", {})
+        redacted_fields = sorted(
             _find_sensitive_fields(
-                {
-                    "resume_structure": state.get("resume_structure", {}),
-                    "jd_structure": state.get("jd_structure", {}),
-                }
+                {"resume_structure": resume_structure, "jd_structure": jd_structure}
             )
         )
-        if deterministic_violations:
-            return _fairness_violation_update(deterministic_violations, node_trace)
+        update: RecruitmentWorkflowUpdate = {"node_trace": node_trace}
+        if redacted_fields:
+            # Choice B: strip protected attributes and continue on a fair,
+            # job-relevant-only payload instead of failing the whole task.
+            resume_structure = cast(
+                "ResumeStructuredPayload", _redact_sensitive_fields(resume_structure)
+            )
+            jd_structure = cast(
+                "JDStructuredPayload", _redact_sensitive_fields(jd_structure)
+            )
+            update["resume_structure"] = resume_structure
+            update["jd_structure"] = jd_structure
+            update["boundary_message"] = _redaction_message(redacted_fields)
         try:
             result = service.check(
-                resume_structure=state.get("resume_structure", {}),
-                jd_structure=state.get("jd_structure", {}),
+                resume_structure=resume_structure,
+                jd_structure=jd_structure,
                 match_items=state.get("match_items", []),
             )
         except Exception:
             return _failed_update("PARSE_FAILED", node_trace)
         if not result.fairness_passed:
+            # Content-level bias the model flags is a genuine stop, not a
+            # removable field — keep this branch fail-closed.
             return _fairness_violation_update(result.violation_details, node_trace)
-        return {
-            "fairness_passed": True,
-            "fairness_violation_details": [],
-            "node_trace": node_trace,
-        }
+        update["fairness_passed"] = True
+        update["fairness_violation_details"] = redacted_fields
+        return update
 
     return prompt_fairness_check_node
 
@@ -263,6 +275,27 @@ def _find_sensitive_fields(value: object) -> set[str]:
             list_found.update(_find_sensitive_fields(item))
         return list_found
     return set()
+
+
+def _redact_sensitive_fields(value: object) -> object:
+    """Return a deep copy with every protected-attribute key removed."""
+    if isinstance(value, Mapping):
+        return {
+            key: _redact_sensitive_fields(nested)
+            for key, nested in value.items()
+            if key not in SENSITIVE_ATTRIBUTE_FIELDS
+        }
+    if isinstance(value, list):
+        return [_redact_sensitive_fields(item) for item in value]
+    return value
+
+
+def _redaction_message(redacted_fields: list[str]) -> str:
+    return (
+        "检测到材料中包含受保护的敏感信息（"
+        + "、".join(redacted_fields)
+        + "），已自动脱敏后继续评估。本次分析仅依据与岗位相关的能力与经历。"
+    )
 
 
 def _jd_structure(value: Mapping[str, object]) -> JDStructuredPayload:

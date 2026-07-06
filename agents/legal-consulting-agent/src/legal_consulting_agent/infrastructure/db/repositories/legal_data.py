@@ -104,6 +104,32 @@ class SqlAlchemyLegalDataRepository:
         model = result.scalar_one_or_none()
         return self._to_session(model) if model is not None else None
 
+    async def list_sessions_for_user(
+        self,
+        *,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> list[LegalSession]:
+        """Return the user's sessions ordered newest first."""
+        result = await self._session.execute(
+            select(LegalSessionModel)
+            .where(LegalSessionModel.user_id == user_id)
+            .order_by(LegalSessionModel.id.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return [self._to_session(model) for model in result.scalars().all()]
+
+    async def update_session_title(self, *, session_id: int, title: str) -> LegalSession:
+        """Update a session title and return the refreshed session."""
+        model = await self._session.get(LegalSessionModel, session_id)
+        if model is None:
+            raise LookupError("Legal session not found")
+        model.title = title
+        await self._session.flush()
+        return self._to_session(model)
+
     async def append_message(self, message: LegalMessage) -> LegalMessage:
         """Persist one message inside an existing session."""
         model = LegalMessageModel(
@@ -158,6 +184,28 @@ class SqlAlchemyLegalDataRepository:
             .offset(offset)
         )
         return [self._to_message(model) for model in result.scalars().all()]
+
+    async def list_recent_messages_for_user_session(
+        self,
+        *,
+        session_public_id: str,
+        user_id: int,
+        limit: int,
+    ) -> list[LegalMessage]:
+        """Return the newest ``limit`` messages in chronological order."""
+        result = await self._session.execute(
+            select(LegalMessageModel)
+            .join(LegalSessionModel, LegalMessageModel.session_id == LegalSessionModel.id)
+            .where(
+                LegalSessionModel.public_id == session_public_id,
+                LegalSessionModel.user_id == user_id,
+            )
+            .order_by(LegalMessageModel.id.desc())
+            .limit(limit)
+        )
+        models = list(result.scalars().all())
+        models.reverse()
+        return [self._to_message(model) for model in models]
 
     async def create_consultation_record(
         self,

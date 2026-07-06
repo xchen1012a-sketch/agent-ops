@@ -5,12 +5,16 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from legal_consulting_agent.api.dependencies import get_legal_question_answer_service
+from legal_consulting_agent.api.dependencies import (
+    get_legal_question_answer_service,
+    get_legal_stream_adapter,
+)
 from legal_consulting_agent.api.error_handlers import register_error_handlers
 from legal_consulting_agent.api.v1.router import router as v1_router
 from legal_consulting_agent.application.services import LegalQuestionAnswerResult
 from legal_consulting_agent.domain.entities.legal_data import LegalMessage
 from legal_consulting_agent.domain.value_objects.legal_enums import MessageRole
+from legal_consulting_agent.infrastructure.llm.fake_llm_adapter import FakeLlmAdapter
 
 
 class FakeQuestionAnswerService:
@@ -67,6 +71,8 @@ def build_client(fake_service: FakeQuestionAnswerService) -> TestClient:
     app = FastAPI()
     app.include_router(v1_router, prefix="/v1")
     app.dependency_overrides[get_legal_question_answer_service] = lambda: fake_service
+    # Force the mock adapter so the SSE test needs no DB-backed config lookup.
+    app.dependency_overrides[get_legal_stream_adapter] = lambda: FakeLlmAdapter()
     register_error_handlers(app)
     return TestClient(app)
 
@@ -116,7 +122,7 @@ def test_answer_question_rejects_empty_question() -> None:
     assert response.status_code == 422
 
 
-def test_answer_question_events_returns_sse_started_delta_and_completed() -> None:
+def test_answer_question_events_streams_thinking_then_answer_contract() -> None:
     fake_service = FakeQuestionAnswerService()
     client = build_client(fake_service)
 
@@ -128,8 +134,14 @@ def test_answer_question_events_returns_sse_started_delta_and_completed() -> Non
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/event-stream")
-    assert "event: started" in response.text
-    assert "event: message.delta" in response.text
-    assert '"delta":"Mock legal answer"' in response.text
-    assert "event: completed" in response.text
-    assert '"answer":"Mock legal answer"' in response.text
+    body = response.text
+    assert "event: run.started" in body
+    assert "event: message.thinking.delta" in body
+    assert "event: message.thinking.completed" in body
+    assert "event: message.delta" in body
+    assert '"delta":"Mock legal answer"' in body
+    assert "event: message.completed" in body
+    # The terminal event still carries the legal DTO for the frontend.
+    assert '"answer":"Mock legal answer"' in body
+    # Thinking must be streamed before the answer body starts.
+    assert body.index("message.thinking.delta") < body.index("message.delta")

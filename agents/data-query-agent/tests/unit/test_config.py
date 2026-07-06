@@ -79,3 +79,38 @@ def test_validate_required_fails_on_missing_deepseek_key() -> None:
     with pytest.raises(RuntimeError) as exc_info:
         settings.validate_required()
     assert "DEEPSEEK_API_KEY" in str(exc_info.value)
+
+
+def _base_settings(**overrides: object) -> Settings:
+    kwargs: dict[str, object] = {
+        "jwt_secret": "x" * 32,
+        "database_url": "mysql+asyncmy://u:p@mysql:3306/db",
+        "shop_db_read_url": "mysql+asyncmy://u:p@mysql:3306/shop_db",
+        "deepseek_api_key": "sk-test",
+        "deepseek_api_base": "https://api.deepseek.com",
+        "redis_url": "redis://redis:6379/0",
+    }
+    kwargs.update(overrides)
+    return Settings(**kwargs)
+
+
+def test_validate_required_skips_feishu_when_disabled() -> None:
+    settings = _base_settings(feishu_enabled=False)
+    settings.validate_required()
+
+
+def test_validate_required_fails_on_missing_feishu_app_id_when_enabled() -> None:
+    settings = _base_settings(feishu_enabled=True, feishu_verification_token="vt")
+    with pytest.raises(RuntimeError) as exc_info:
+        settings.validate_required()
+    assert "FEISHU_APP_ID" in str(exc_info.value)
+
+
+def test_validate_required_passes_with_full_feishu_config() -> None:
+    settings = _base_settings(
+        feishu_enabled=True,
+        feishu_app_id="cli_test",
+        feishu_app_secret="secret",
+        feishu_verification_token="vt",
+    )
+    settings.validate_required()

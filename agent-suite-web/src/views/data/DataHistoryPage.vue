@@ -4,7 +4,12 @@ import { onMounted, ref } from 'vue';
 import { dataQueryClient } from '@api/data-query';
 import AsyncState from '@components/ui/AsyncState.vue';
 import { useToastStore } from '@stores/toast';
-import { createErrorState, createLoadingState, createSuccessState } from '@lib/request-state';
+import {
+  createErrorState,
+  createLoadingState,
+  createSuccessState,
+  toRequestError,
+} from '@lib/request-state';
 import type { DataQueryHistoryItem, DataQueryHistoryListData } from '@/types/data-query';
 import type { RequestState } from '@/types/request-state';
 
@@ -28,7 +33,7 @@ async function loadHistory(): Promise<void> {
       isEmpty: (data) => data.items.length === 0,
     });
   } catch (error) {
-    state.value = createErrorState(normalizeRequestError(error));
+    state.value = createErrorState(toRequestError(error));
   }
 }
 
@@ -72,10 +77,6 @@ function formatDate(value: string | null): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value));
-}
-
-function normalizeRequestError(error: unknown): Error | string {
-  return error instanceof Error ? error : String(error ?? '????');
 }
 
 onMounted(() => {

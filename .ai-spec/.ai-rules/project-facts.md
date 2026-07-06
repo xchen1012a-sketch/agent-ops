@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: 6d92937f11068800
-- last refresh: 2026-07-05 21:34:54 +08:00
+- source hash: 9c893b93a3472a0b
+- last refresh: 2026-07-06 14:53:35 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -21,12 +21,7 @@
 ## [auto] Directory structure (top 2 levels)
 
 ```text
-agent/
-|-- .claude/
-|   |-- hooks/
-|   |-- state/
-|   |-- settings.json
-|   |-- settings.local.json
+agent-ops/
 |-- agents/
 |   |-- auth-service/
 |   |-- data-query-agent/
@@ -36,7 +31,6 @@ agent/
 |   |-- docs/
 |   |-- nginx/
 |   |-- scripts/
-|   |-- .env
 |   |-- .env.example
 |   |-- .gitignore
 |   |-- AGENTS.md
@@ -46,14 +40,12 @@ agent/
 |   |-- README.md
 |-- agent-suite-web/
 |   |-- docs/
-|   |-- logs/
 |   |-- nginx/
 |   |-- public/
 |   |-- src/
 |   |-- tests/
 |   |-- .dockerignore
 |   |-- .editorconfig
-|   |-- .env
 |   |-- .env.example
 |   |-- .eslintrc-auto-import.json
 |   |-- .gitignore
@@ -65,12 +57,13 @@ agent/
 |   |-- dev-auth-plugin.ts
 |   |-- Dockerfile
 |   |-- eslint.config.mjs
+|   |-- index.html
+|   |-- package.json
 |-- docs/
 |   |-- contracts/
 |   |-- homework/
 |   |-- plans/
-|-- logs/
-|   |-- local-agent-runtime/
+|-- .gitattributes
 |-- .gitignore
 |-- AGENTS.md
 |-- CLAUDE.md
@@ -83,11 +76,7 @@ agent/
 
 ## [auto] Git status
 
-- Current branch: legal-100-data-workflow-local
-- Working tree: has uncommitted changes
-- Remotes:
-  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)
-  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (push)
+- Git status check failed: git-lfs filter-process --skip: line 1: git-lfs: command not found
 <!-- ai-facts:auto:end -->
 
 <!-- ai-facts:manual:start -->

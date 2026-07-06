@@ -335,6 +335,19 @@ def test_prompt_nodes_return_expected_updates(tmp_path: Path) -> None:
     assert gap_update["interview_questions"][0]["difficulty"] == "medium"
 
 
+def test_prompt_services_prepend_system_policy(tmp_path: Path) -> None:
+    adapter = SequenceLLMAdapter([jd_raw_output()])
+    jd_service, _, _, _ = service_bundle(tmp_path, adapter)
+
+    jd_service.parse("Backend engineer with Python experience")
+
+    sent = adapter.prompts[0]
+    # Identity + fairness + refusal policy reaches the model ahead of the task.
+    assert "你是「招聘评估助手」" in sent
+    assert "公平原则" in sent
+    assert "JD:" in sent
+
+
 def test_prompt_fairness_node_blocks_failed_check(tmp_path: Path) -> None:
     _, _, fairness_service, _ = service_bundle(
         tmp_path,
@@ -380,7 +393,7 @@ def test_prompt_fairness_node_converts_adapter_error_to_parse_failed(tmp_path: P
     assert update["node_trace"] == ["fairness_check"]
 
 
-def test_prompt_fairness_node_fails_closed_on_sensitive_fields(tmp_path: Path) -> None:
+def test_prompt_fairness_node_redacts_sensitive_fields_and_continues(tmp_path: Path) -> None:
     _, _, fairness_service, _ = service_bundle(
         tmp_path,
         SequenceLLMAdapter([fairness_pass_raw_output()]),
@@ -392,9 +405,13 @@ def test_prompt_fairness_node_fails_closed_on_sensitive_fields(tmp_path: Path) -
 
     update = make_prompt_fairness_check_node(fairness_service)(state)
 
-    assert update["fairness_passed"] is False
-    assert update["error_code"] == "FAIRNESS_VIOLATION"
+    # Choice B: strip the protected attribute, then let the model check the
+    # fair payload and continue — the removal is recorded, no hard failure.
+    assert update["fairness_passed"] is True
+    assert "error_code" not in update
     assert update["fairness_violation_details"] == ["gender"]
+    assert "gender" not in update["resume_structure"]
+    assert update["boundary_message"]
     assert update["node_trace"] == ["fairness_check"]
 
 

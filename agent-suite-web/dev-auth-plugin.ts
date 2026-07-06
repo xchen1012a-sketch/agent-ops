@@ -50,6 +50,11 @@ export function createDevAuthPlugin(prefix: string): Plugin {
           sendJson(res, 200, path === '/refresh' ? createSession(DEV_USERS[0]) : { ok: true });
           return;
         }
+        if (method === 'POST' && path === '/change-password') {
+          // Dev mock: accept the change without touching a real credential store.
+          sendJson(res, 200, { ok: true });
+          return;
+        }
 
         next();
       });

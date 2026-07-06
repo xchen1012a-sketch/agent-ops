@@ -47,6 +47,18 @@ class LegalDataRepository(Protocol):
     ) -> LegalSession | None:
         """Return a user-owned session or None when absent/unauthorized."""
 
+    async def list_sessions_for_user(
+        self,
+        *,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> list[LegalSession]:
+        """Return the user's sessions ordered newest first."""
+
+    async def update_session_title(self, *, session_id: int, title: str) -> LegalSession:
+        """Update a session title and return the refreshed session."""
+
     async def append_message(self, message: LegalMessage) -> LegalMessage:
         """Persist one message inside an existing session."""
 
@@ -68,6 +80,15 @@ class LegalDataRepository(Protocol):
         offset: int,
     ) -> list[LegalMessage]:
         """Return messages from a user-owned session ordered by id."""
+
+    async def list_recent_messages_for_user_session(
+        self,
+        *,
+        session_public_id: str,
+        user_id: int,
+        limit: int,
+    ) -> list[LegalMessage]:
+        """Return the newest ``limit`` messages in chronological order."""
 
     async def create_consultation_record(
         self,

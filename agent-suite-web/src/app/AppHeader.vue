@@ -15,9 +15,6 @@ const auth = useAuthStore();
 const theme = useThemeStore();
 const toast = useToastStore();
 
-const brandTitle = '\u4f01\u4e1a\u667a\u80fd\u4f53';
-const brandSubtitle =
-  '\u4f60\u7684\u6cd5\u5f8b\u3001\u62db\u8058\u4e0e\u6570\u636e\u667a\u80fd\u52a9\u624b';
 const openAccountMenuLabel = '\u6253\u5f00\u8d26\u53f7\u83dc\u5355';
 const themeLabel = computed(() =>
   theme.isDark
@@ -66,11 +63,6 @@ async function handleCommand(command: string): Promise<void> {
       <el-icon><AppIcon name="Menu" /></el-icon>
     </button>
 
-    <div class="app-header__brand" :aria-label="brandTitle">
-      <span class="app-header__brand-title">{{ brandTitle }}</span>
-      <span class="app-header__brand-subtitle">{{ brandSubtitle }}</span>
-    </div>
-
     <div class="app-header__actions">
       <el-button
         class="app-header__theme"
@@ -116,18 +108,21 @@ async function handleCommand(command: string): Promise<void> {
   z-index: var(--z-sticky);
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-4);
   height: var(--layout-header-height);
   padding: var(--space-3) var(--space-6);
-  background: color-mix(in oklch, var(--color-surface), var(--color-bg) 22%);
-  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  border-bottom: 0;
 }
 
+/* Sidebar toggle lives in the sidebar on desktop; this is the mobile menu button only. */
 .app-header__toggle {
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
+  margin-right: auto;
   width: 44px;
   height: 44px;
   border: 1px solid transparent;
@@ -144,29 +139,6 @@ async function handleCommand(command: string): Promise<void> {
   background-color: var(--color-surface);
   border-color: var(--color-border);
   color: var(--color-text);
-}
-
-.app-header__brand {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.app-header__brand-title {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  line-height: var(--line-tight);
-  color: var(--color-text);
-}
-
-.app-header__brand-subtitle {
-  margin-top: 2px;
-  overflow: hidden;
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .app-header__actions {
@@ -228,7 +200,10 @@ async function handleCommand(command: string): Promise<void> {
     padding: var(--space-2) var(--space-3);
   }
 
-  .app-header__brand-subtitle,
+  .app-header__toggle {
+    display: inline-flex;
+  }
+
   .app-header__user-copy,
   .app-header__user-arrow {
     display: none;

@@ -46,7 +46,6 @@ function chooseSuggestion(prompt: string): void {
       <span class="agent-chat-landing__avatar" aria-hidden="true">
         <AppIcon :name="props.icon" />
       </span>
-      <p>{{ props.agentName }}</p>
       <h1 :id="`${props.tone}-chat-title`">{{ props.title }}</h1>
       <span class="agent-chat-landing__description">{{ props.description }}</span>
     </section>
@@ -115,46 +114,75 @@ function chooseSuggestion(prompt: string): void {
 .agent-chat-landing__welcome {
   display: grid;
   justify-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
   text-align: center;
 }
 
 .agent-chat-landing__avatar {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   margin-bottom: var(--space-2);
   color: var(--chat-tone);
   background: var(--chat-tone-soft);
-  border: 1px solid color-mix(in oklch, var(--chat-tone) 28%, var(--color-border));
-  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in oklch, var(--chat-tone) 26%, var(--color-border));
+  border-radius: var(--radius-lg);
   font-size: var(--text-xl);
 }
 
-.agent-chat-landing__welcome p {
-  color: var(--chat-tone);
-  font-size: var(--text-xs);
-  font-weight: 760;
-  letter-spacing: 0.08em;
-}
-
+/* Claude-style greeting: serif display headline, quiet and roomy. */
 .agent-chat-landing__welcome h1 {
-  font-size: 2.6rem;
-  font-weight: 720;
-  letter-spacing: 0;
+  font-family: 'Georgia', 'Songti SC', 'Noto Serif CJK SC', 'Times New Roman', serif;
+  font-size: 2.15rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 .agent-chat-landing__description {
-  max-width: 560px;
+  max-width: 520px;
   color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   line-height: var(--line-relaxed);
 }
 
 .agent-chat-landing__interaction {
   display: grid;
   gap: var(--space-3);
+}
+
+/* Claude-style entrance: a quiet staggered rise on first paint. */
+@keyframes agent-chat-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.agent-chat-landing__avatar,
+.agent-chat-landing__welcome h1,
+.agent-chat-landing__description,
+.agent-chat-landing__interaction {
+  animation: agent-chat-rise 520ms var(--ease-out-expo) both;
+}
+
+.agent-chat-landing__welcome h1 {
+  animation-delay: 70ms;
+}
+
+.agent-chat-landing__description {
+  animation-delay: 130ms;
+}
+
+.agent-chat-landing__interaction {
+  animation-delay: 190ms;
 }
 
 .agent-chat-landing__suggestions {

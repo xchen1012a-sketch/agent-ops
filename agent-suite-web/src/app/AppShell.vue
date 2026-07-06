@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router';
 
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
-import AppBreadcrumb from './AppBreadcrumb.vue';
 import ErrorBoundary from './ErrorBoundary.vue';
 import GlobalToast from './GlobalToast.vue';
 
@@ -30,20 +29,21 @@ function toggleSidebar(): void {
     <AppSidebar :collapsed="sidebarCollapsed" @toggle="toggleSidebar" />
     <div class="app-shell__main">
       <AppHeader :sidebar-collapsed="sidebarCollapsed" @toggle-sidebar="toggleSidebar" />
-      <AppBreadcrumb />
       <main class="app-shell__content" role="main">
         <div class="app-shell__content-inner">
           <ErrorBoundary>
             <RouterView v-slot="{ Component }">
-              <Suspense>
-                <component :is="Component" />
-                <template #fallback>
-                  <div class="app-shell__loading" role="status" aria-live="polite">
-                    <span class="app-shell__loading-mark" aria-hidden="true" />
-                    <span>{{ loadingLabel }}</span>
-                  </div>
-                </template>
-              </Suspense>
+              <Transition name="app-view" mode="out-in" appear>
+                <Suspense>
+                  <component :is="Component" />
+                  <template #fallback>
+                    <div class="app-shell__loading" role="status" aria-live="polite">
+                      <span class="app-shell__loading-mark" aria-hidden="true" />
+                      <span>{{ loadingLabel }}</span>
+                    </div>
+                  </template>
+                </Suspense>
+              </Transition>
             </RouterView>
           </ErrorBoundary>
         </div>
@@ -86,6 +86,26 @@ function toggleSidebar(): void {
 .app-shell__content-inner {
   width: min(100%, var(--layout-content-max-width));
   margin: 0 auto;
+}
+
+/* Claude-style route cross-fade: leave fast, enter with a gentle rise. */
+.app-view-enter-active {
+  transition:
+    opacity var(--duration-normal) var(--ease-out-expo),
+    transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.app-view-leave-active {
+  transition: opacity var(--duration-fast) var(--ease-in-out);
+}
+
+.app-view-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.app-view-leave-to {
+  opacity: 0;
 }
 
 .app-shell__loading {

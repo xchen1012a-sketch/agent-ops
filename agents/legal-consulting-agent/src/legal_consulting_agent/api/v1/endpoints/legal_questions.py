@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
-import json
 from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, status
@@ -12,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from legal_consulting_agent.api.dependencies import (
     CurrentUserPublicIdDep,
     LegalQuestionAnswerServiceDep,
+    LegalStreamAdapterDep,
 )
 from legal_consulting_agent.api.v1.schemas.legal_questions import (
     LegalMessageRef,
@@ -20,8 +19,18 @@ from legal_consulting_agent.api.v1.schemas.legal_questions import (
     LegalQuestionRequest,
 )
 from legal_consulting_agent.application.services import LegalQuestionAnswerResult
+from legal_consulting_agent.domain.ports.llm_adapter import (
+    LlmAdapter,
+    LlmCompletionRequest,
+    LlmStreamChunk,
+)
+from legal_consulting_agent.infrastructure.sse import iter_llm_sse
 
 router = APIRouter()
+
+_STREAM_PROMPT_NAME = "legal_answer"
+_STREAM_PROMPT_VERSION = "v1"
+_ANSWER_CHUNK_SIZE = 24
 
 
 def _to_question_answer_response(
@@ -66,8 +75,9 @@ async def answer_question_events(
     payload: LegalQuestionRequest,
     user_public_id: CurrentUserPublicIdDep,
     question_answer_service: LegalQuestionAnswerServiceDep,
+    stream_adapter: LegalStreamAdapterDep,
 ) -> StreamingResponse:
-    """Return deterministic question-answer progress as SSE events."""
+    """Stream the deterministic answer with a thinking channel via the shared SSE layer."""
 
     return StreamingResponse(
         _stream_question_answer_events(
@@ -75,6 +85,7 @@ async def answer_question_events(
             payload=payload,
             user_public_id=user_public_id,
             question_answer_service=question_answer_service,
+            stream_adapter=stream_adapter,
         ),
         media_type="text/event-stream",
     )
@@ -86,36 +97,50 @@ async def _stream_question_answer_events(
     payload: LegalQuestionRequest,
     user_public_id: str,
     question_answer_service: LegalQuestionAnswerServiceDep,
+    stream_adapter: LlmAdapter,
 ) -> AsyncIterator[str]:
-    yield _sse_event(
-        "started",
-        {
-            "session_public_id": session_public_id,
-        },
-    )
     result = await question_answer_service.answer_question(
         user_public_id=user_public_id,
         session_public_id=session_public_id,
         question=payload.question,
     )
-    for chunk in _chunk_answer(result.answer):
-        yield _sse_event("message.delta", {"delta": chunk})
-        await asyncio.sleep(0)
-    yield _sse_event(
-        "completed",
-        _to_question_answer_response(result).model_dump(mode="json"),
+    response = _to_question_answer_response(result)
+    chunks = _thinking_then_answer(
+        stream_adapter,
+        question=payload.question,
+        answer=result.answer,
     )
+    async for frame in iter_llm_sse(
+        chunks,
+        run_id=result.answer_message.public_id,
+        completed_extra=response.model_dump(mode="json"),
+    ):
+        yield frame
 
 
-def _chunk_answer(answer: str, *, chunk_size: int = 24) -> list[str]:
+async def _thinking_then_answer(
+    adapter: LlmAdapter,
+    *,
+    question: str,
+    answer: str,
+) -> AsyncIterator[LlmStreamChunk]:
+    """Yield adapter-generated thinking, then the deterministic answer in deltas."""
+
+    request = LlmCompletionRequest(
+        prompt_name=_STREAM_PROMPT_NAME,
+        version=_STREAM_PROMPT_VERSION,
+        rendered_prompt=question,
+    )
+    async for chunk in adapter.stream(request):
+        if chunk.kind == "thinking":
+            yield chunk
+    for piece in _chunk_answer(answer):
+        yield LlmStreamChunk(kind="answer", text=piece)
+
+
+def _chunk_answer(answer: str, *, chunk_size: int = _ANSWER_CHUNK_SIZE) -> list[str]:
     """Split a persisted answer into small SSE deltas for MVP streaming display."""
 
     if not answer:
         return []
     return [answer[index : index + chunk_size] for index in range(0, len(answer), chunk_size)]
-
-
-def _sse_event(event: str, data: dict[str, object]) -> str:
-    return (
-        f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, separators=(',', ':'))}\n\n"
-    )

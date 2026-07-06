@@ -12,6 +12,7 @@ from legal_consulting_agent.prompts import (
     PromptOutputValidator,
     PromptTemplateLoader,
 )
+from legal_consulting_agent.prompts.policy import with_system_policy
 from legal_consulting_agent.workflows.legal_state import (
     Citation,
     LegalWorkflowState,
@@ -83,7 +84,7 @@ class LegalGenerationPromptService:
                 "category": category or "other",
             },
         )
-        raw_output = self._llm_adapter.complete(rendered.content)
+        raw_output = self._llm_adapter.complete(with_system_policy(rendered.content))
         validated = self._output_validator.validate_json(
             prompt=self._prompt,
             raw_output=raw_output,
