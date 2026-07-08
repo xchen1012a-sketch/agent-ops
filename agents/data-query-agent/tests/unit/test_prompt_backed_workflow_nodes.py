@@ -47,8 +47,8 @@ async def test_prompt_backed_nodes_prepend_system_policy() -> None:
 
     sent = adapter.requests[0].rendered_prompt
     # Identity + refusal policy reaches the model ahead of the task prompt.
-    assert 'You are the "data analysis assistant."' in sent
-    assert "[Refusal rules]" in sent
+    assert "你是「智能问数助手」" in sent
+    assert "【拒绝规则】" in sent
     assert "total sales" in sent
 
 

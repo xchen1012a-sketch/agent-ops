@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "source_status": "Local deterministic fixtures derived from the project data-query detailed design and existing MVP fixture results. They are not live MySQL results.",
+  "source_status": "本地确定性评估样本，来源于智能问数详细设计和现有 MVP 样例结果；不是实时 MySQL 查询结果。",
   "fixtures": [
     {
       "case_id": "T1",

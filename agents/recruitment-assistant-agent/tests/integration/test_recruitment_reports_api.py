@@ -17,6 +17,7 @@ async def _approved_task_id(app_client: AsyncClient) -> str:
     review_response = await app_client.post(
         f"/v1/admin/recruitment-tasks/{task_id}/review",
         json={"review_status": "approved", "review_note": "Approved for report."},
+        headers={"x-user-role": "admin"},
     )
     assert review_response.status_code == 200
     return task_id
@@ -57,10 +58,11 @@ async def test_create_and_get_recruitment_report(app_client: AsyncClient) -> Non
     assert detail_response.status_code == 200
     detail = detail_response.json()["report"]
     assert detail["report_id"] == report["report_id"]
-    assert "# Recruitment Analysis Report" in detail["content_markdown"]
-    assert "Rule version: recruitment_mvp:v1" in detail["content_markdown"]
-    assert "## Dify-equivalent Workflow Evidence" in detail["content_markdown"]
-    assert "## Fairness Boundary" in detail["content_markdown"]
+    assert "# 招聘评估报告" in detail["content_markdown"]
+    assert "规则版本：recruitment_mvp:v1" in detail["content_markdown"]
+    assert "## Dify 等价工作流证据" in detail["content_markdown"]
+    assert "## 公平性边界" in detail["content_markdown"]
+    assert "Match score:" not in detail["content_markdown"]
 
 
 async def test_export_recruitment_report_as_markdown_and_pdf(app_client: AsyncClient) -> None:
@@ -77,8 +79,9 @@ async def test_export_recruitment_report_as_markdown_and_pdf(app_client: AsyncCl
 
     assert md_response.status_code == 200
     assert md_response.headers["content-type"].startswith("text/markdown")
-    assert "Recruitment Analysis Report" in md_response.text
-    assert "Match score:" in md_response.text
+    assert "招聘评估报告" in md_response.text
+    assert "结论：" in md_response.text
+    assert "Match score:" not in md_response.text
     assert pdf_response.status_code == 200
     assert pdf_response.headers["content-type"] == "application/pdf"
     assert pdf_response.content.startswith(b"%PDF-1.4")
@@ -100,6 +103,7 @@ async def test_reports_available_on_legacy_prefix(app_client: AsyncClient) -> No
     review_response = await app_client.post(
         f"/api/recruitment/v1/admin/recruitment-tasks/{task_id}/review",
         json={"review_status": "approved"},
+        headers={"x-user-role": "admin"},
     )
     assert review_response.status_code == 200
 

@@ -54,6 +54,7 @@ async def test_recruitment_mvp_api_closes_main_flow_under_mock_boundary(
     review_response = await app_client.post(
         f"/v1/admin/recruitment-tasks/{task_id}/review",
         json={"review_status": "approved", "review_note": "Acceptance approved."},
+        headers={"x-user-role": "admin"},
     )
     assert review_response.status_code == 200
     assert review_response.json()["review"]["review_status"] == "approved"
@@ -65,6 +66,7 @@ async def test_recruitment_mvp_api_closes_main_flow_under_mock_boundary(
             "new_value": "medium",
             "reason": "Acceptance smoke manual review.",
         },
+        headers={"x-user-role": "admin"},
     )
     assert override_response.status_code == 200
     assert override_response.json()["override"]["field_path"] == "overall_tier"
@@ -76,8 +78,9 @@ async def test_recruitment_mvp_api_closes_main_flow_under_mock_boundary(
     report_detail_response = await app_client.get(f"/v1/recruitment-reports/{report_id}")
     assert report_detail_response.status_code == 200
     report_markdown = report_detail_response.json()["report"]["content_markdown"]
-    assert "Recruitment Analysis Report" in report_markdown
-    assert "Match score: 95/100" in report_markdown
+    assert "招聘评估报告" in report_markdown
+    assert "结论：匹配" in report_markdown
+    assert "Match score:" not in report_markdown
     assert "fairness_check" in report_markdown
 
     md_response = await app_client.get(

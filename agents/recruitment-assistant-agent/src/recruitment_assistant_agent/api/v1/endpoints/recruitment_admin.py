@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from recruitment_assistant_agent.api.dependencies import RequestIdDep
+from recruitment_assistant_agent.api.dependencies import AdminUserDep, RequestIdDep
 from recruitment_assistant_agent.api.v1.endpoints.recruitment_runs import _run_response
 from recruitment_assistant_agent.api.v1.endpoints.recruitment_tasks import _task_detail_response
 from recruitment_assistant_agent.api.v1.schemas.recruitment_admin import (
@@ -37,6 +37,7 @@ TaskServiceDep = Annotated[
 async def get_admin_recruitment_task(
     task_id: str,
     request_id: RequestIdDep,
+    _admin_user: AdminUserDep,
     service: TaskServiceDep,
 ) -> RecruitmentAdminTaskEnvelope:
     """Return task details plus latest run and review metadata for admin UI."""
@@ -56,6 +57,7 @@ async def review_recruitment_task(
     task_id: str,
     payload: RecruitmentReviewRequest,
     request_id: RequestIdDep,
+    _admin_user: AdminUserDep,
     service: TaskServiceDep,
 ) -> RecruitmentReviewEnvelope:
     """Record an MVP admin review decision for one task."""
@@ -79,6 +81,7 @@ async def create_match_result_override(
     match_result_id: str,
     payload: RecruitmentManualOverrideRequest,
     request_id: RequestIdDep,
+    _admin_user: AdminUserDep,
     service: TaskServiceDep,
 ) -> RecruitmentManualOverrideEnvelope:
     """Record a mock manual override for one match result field."""

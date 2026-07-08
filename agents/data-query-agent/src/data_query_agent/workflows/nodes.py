@@ -52,8 +52,7 @@ _OFF_TOPIC_SIGNALS = (
 )
 
 _CAPABILITY_LINE = (
-    "I'm a data analysis assistant — I can answer questions about orders, "
-    "sales, revenue, refunds, profit, customers, regions, and business trends."
+    "我是智能问数助手，可以回答订单、销售额、营收、退款、利润、客户、地区和业务趋势问题。"
 )
 
 # Adversarial guard (Layer 1 — deterministic, defense-in-depth).
@@ -212,7 +211,11 @@ def interpret_node(state: DataQueryState) -> DataQueryState:
     result = state.get("query_result", {})
     rows = result.get("rows", []) if isinstance(result, dict) else []
     value = rows[0][0] if rows else None
-    answer = f"Query result is {value}." if value is not None else "No result found."
+    answer = (
+        f"结论：本次查询结果为 {value}。"
+        if value is not None
+        else "结论：当前没有查到可用结果。"
+    )
     projection = (
         ResultProjectionService().project(
             question=state.get("question", ""),
@@ -248,21 +251,18 @@ def polite_refusal_node(state: DataQueryState) -> DataQueryState:
     tier = state.get("response_tier", "anchor_light")
     if tier == "refuse_adversarial":
         answer = (
-            "I can't take on a different role, reveal internal instructions or "
-            "credentials, or return data outside this workspace. "
-            f"{_CAPABILITY_LINE} I'm glad to help with a data question."
+            "我不能更换身份、泄露内部指令或密钥，也不能返回本工作区之外的数据。"
+            f"{_CAPABILITY_LINE} 你可以问一个合法的业务数据问题。"
         )
     elif tier == "redirect_firm":
         answer = (
-            "I'll stay focused on data questions, so I can't help with that one. "
-            f"{_CAPABILITY_LINE} "
-            'For example: "total sales by region last month."'
+            "这个问题超出了我的范围，我会继续专注在业务数据分析上。"
+            f"{_CAPABILITY_LINE} 例如可以问：「上个月各地区销售额是多少？」"
         )
     else:  # anchor_light — first off-topic turn
         answer = (
-            "That's a little outside what I do, so I won't dive into it. "
-            f"{_CAPABILITY_LINE} "
-            'What would you like to know — say, "how many refunds did we have this week?"'
+            "这个问题有点偏离问数范围，我先不展开。"
+            f"{_CAPABILITY_LINE} 你可以问：「本周退款量是多少？」"
         )
     next_state: DataQueryState = {**state, "answer": answer}
     return _with_trace(next_state, "polite_refusal", "completed")

@@ -102,11 +102,11 @@ class RunLocalDemoResponse(BaseModel):
             question=question,
             source_status=source_status,
             source_note=(
-                "Local deterministic MVP evidence only; this is not live MySQL, "
-                "real Dify, or real Feishu output."
+                "本地确定性 MVP 证据，仅用于演示；当前结果不是实时 MySQL、"
+                "真实 Dify 或真实飞书输出。"
             ),
             fixture_case_id=fixture_case_id,
-            generated_sql=generated_sql,
+            generated_sql=None,
             policy_allowed=bool(state.get("policy_allowed", False)),
             policy_error_code=_string_or_none(state.get("policy_error_code")),
             query_result=_dict_or_none(state.get("query_result")),

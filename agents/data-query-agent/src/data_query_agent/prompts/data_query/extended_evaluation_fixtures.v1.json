@@ -3,7 +3,7 @@
   "fixtures": [
     {
       "case_id": "E01",
-      "question": "???????? Top 5",
+      "question": "各渠道销售额 Top 5",
       "baseline_sql": "SELECT channel, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel ORDER BY metric_value DESC LIMIT 5",
       "verifies": "topn_channel_sales",
       "expected_result": {
@@ -22,8 +22,8 @@
     },
     {
       "case_id": "E02",
-      "question": "??????? Top 10",
-      "baseline_sql": "SELECT province, SUM(total_amount) AS metric_value FROM wide_order_details WHERE region = '??' GROUP BY province ORDER BY metric_value DESC LIMIT 10",
+      "question": "华东各省销售额 Top 10",
+      "baseline_sql": "SELECT province, SUM(total_amount) AS metric_value FROM wide_order_details WHERE region = '华东' GROUP BY province ORDER BY metric_value DESC LIMIT 10",
       "verifies": "topn_region_province_sales",
       "expected_result": {
         "columns": [
@@ -41,8 +41,8 @@
     },
     {
       "case_id": "E03",
-      "question": "???????? Top 5",
-      "baseline_sql": "SELECT brand, SUM(quantity) AS metric_value FROM wide_order_details WHERE category = '??' GROUP BY brand ORDER BY metric_value DESC LIMIT 5",
+      "question": "数码品类销量 Top 5",
+      "baseline_sql": "SELECT brand, SUM(quantity) AS metric_value FROM wide_order_details WHERE category = '数码' GROUP BY brand ORDER BY metric_value DESC LIMIT 5",
       "verifies": "topn_brand_quantity",
       "expected_result": {
         "columns": [
@@ -60,7 +60,7 @@
     },
     {
       "case_id": "E04",
-      "question": "???????? Top 10",
+      "question": "复购客户销售额 Top 10",
       "baseline_sql": "SELECT customer_id, SUM(total_amount) AS metric_value FROM wide_order_details WHERE is_repeat_purchase = 1 GROUP BY customer_id ORDER BY metric_value DESC LIMIT 10",
       "verifies": "topn_repeat_customer_sales",
       "expected_result": {
@@ -79,7 +79,7 @@
     },
     {
       "case_id": "E05",
-      "question": "????????? Top 5",
+      "question": "退款渠道金额 Top 5",
       "baseline_sql": "SELECT channel, SUM(refund_amount) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY channel ORDER BY metric_value DESC LIMIT 5",
       "verifies": "topn_refund_channel",
       "expected_result": {
@@ -98,7 +98,7 @@
     },
     {
       "case_id": "E06",
-      "question": "?????????",
+      "question": "今年每月销售额趋势",
       "baseline_sql": "SELECT MONTH(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders WHERE YEAR(date) = YEAR(CURRENT_DATE) GROUP BY MONTH(date) ORDER BY period LIMIT 12",
       "verifies": "monthly_sales_trend",
       "expected_result": {
@@ -117,7 +117,7 @@
     },
     {
       "case_id": "E07",
-      "question": "????????",
+      "question": "今年每月毛利趋势",
       "baseline_sql": "SELECT MONTH(date) AS period, SUM(gross_profit) AS metric_value FROM wide_order_details WHERE YEAR(date) = YEAR(CURRENT_DATE) GROUP BY MONTH(date) ORDER BY period LIMIT 12",
       "verifies": "monthly_margin_trend",
       "expected_result": {
@@ -136,7 +136,7 @@
     },
     {
       "case_id": "E08",
-      "question": "???? 7 ?????",
+      "question": "最近 7 天各渠道销售额",
       "baseline_sql": "SELECT channel, DATE(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel, DATE(date) ORDER BY period LIMIT 100",
       "verifies": "channel_daily_trend",
       "expected_result": {
@@ -155,7 +155,7 @@
     },
     {
       "case_id": "E09",
-      "question": "???????",
+      "question": "工作日与周末销售额",
       "baseline_sql": "SELECT DAYOFWEEK(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY DAYOFWEEK(date) ORDER BY period LIMIT 7",
       "verifies": "weekday_sales_trend",
       "expected_result": {
@@ -174,7 +174,7 @@
     },
     {
       "case_id": "E10",
-      "question": "????????",
+      "question": "每月退款金额趋势",
       "baseline_sql": "SELECT MONTH(date) AS period, SUM(refund_amount) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY MONTH(date) ORDER BY period LIMIT 12",
       "verifies": "monthly_refund_trend",
       "expected_result": {
@@ -193,7 +193,7 @@
     },
     {
       "case_id": "E11",
-      "question": "???????",
+      "question": "年度销售额对比",
       "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY YEAR(date) ORDER BY period LIMIT 2",
       "verifies": "sales_yoy",
       "expected_result": {
@@ -212,7 +212,7 @@
     },
     {
       "case_id": "E12",
-      "question": "????????",
+      "question": "年度退款金额对比",
       "baseline_sql": "SELECT YEAR(date) AS period, SUM(refund_amount) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY YEAR(date) ORDER BY period LIMIT 2",
       "verifies": "refund_yoy",
       "expected_result": {
@@ -231,8 +231,8 @@
     },
     {
       "case_id": "E13",
-      "question": "?????????",
-      "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_order_details WHERE category = '??' GROUP BY YEAR(date) ORDER BY period LIMIT 2",
+      "question": "数码品类年度销售额",
+      "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_order_details WHERE category = '数码' GROUP BY YEAR(date) ORDER BY period LIMIT 2",
       "verifies": "category_sales_yoy",
       "expected_result": {
         "columns": [
@@ -250,8 +250,8 @@
     },
     {
       "case_id": "E14",
-      "question": "???????",
-      "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders WHERE region = '??' GROUP BY YEAR(date) ORDER BY period LIMIT 2",
+      "question": "华东年度销售额",
+      "baseline_sql": "SELECT YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders WHERE region = '华东' GROUP BY YEAR(date) ORDER BY period LIMIT 2",
       "verifies": "region_sales_yoy",
       "expected_result": {
         "columns": [
@@ -269,7 +269,7 @@
     },
     {
       "case_id": "E15",
-      "question": "????????",
+      "question": "各渠道年度销售额",
       "baseline_sql": "SELECT channel, YEAR(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel, YEAR(date) ORDER BY channel, period LIMIT 100",
       "verifies": "channel_sales_yoy",
       "expected_result": {
@@ -288,7 +288,7 @@
     },
     {
       "case_id": "E16",
-      "question": "???????",
+      "question": "最近两个月销售额",
       "baseline_sql": "SELECT MONTH(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY MONTH(date) ORDER BY period LIMIT 2",
       "verifies": "sales_mom",
       "expected_result": {
@@ -307,7 +307,7 @@
     },
     {
       "case_id": "E17",
-      "question": "????????",
+      "question": "最近两个月客户数",
       "baseline_sql": "SELECT MONTH(date) AS period, COUNT(customer_id) AS metric_value FROM wide_orders GROUP BY MONTH(date) ORDER BY period LIMIT 2",
       "verifies": "customer_count_mom",
       "expected_result": {
@@ -326,7 +326,7 @@
     },
     {
       "case_id": "E18",
-      "question": "?????",
+      "question": "月度毛利",
       "baseline_sql": "SELECT MONTH(date) AS period, SUM(gross_profit) AS metric_value FROM wide_order_details GROUP BY MONTH(date) ORDER BY period LIMIT 2",
       "verifies": "gross_profit_mom",
       "expected_result": {
@@ -345,7 +345,7 @@
     },
     {
       "case_id": "E19",
-      "question": "???????",
+      "question": "月度退款订单数",
       "baseline_sql": "SELECT MONTH(date) AS period, COUNT(order_id) AS metric_value FROM wide_orders WHERE is_refunded = 1 GROUP BY MONTH(date) ORDER BY period LIMIT 2",
       "verifies": "refund_order_mom",
       "expected_result": {
@@ -364,7 +364,7 @@
     },
     {
       "case_id": "E20",
-      "question": "???????",
+      "question": "各渠道月度销售额",
       "baseline_sql": "SELECT channel, MONTH(date) AS period, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel, MONTH(date) ORDER BY channel, period LIMIT 100",
       "verifies": "channel_sales_mom",
       "expected_result": {
@@ -383,7 +383,7 @@
     },
     {
       "case_id": "E21",
-      "question": "????????",
+      "question": "各渠道销售额排行",
       "baseline_sql": "SELECT channel, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY channel ORDER BY metric_value DESC LIMIT 20",
       "verifies": "channel_sales_share",
       "expected_result": {
@@ -402,7 +402,7 @@
     },
     {
       "case_id": "E22",
-      "question": "????????",
+      "question": "各品类销售额排行",
       "baseline_sql": "SELECT category, SUM(total_amount) AS metric_value FROM wide_order_details GROUP BY category ORDER BY metric_value DESC LIMIT 20",
       "verifies": "category_sales_share",
       "expected_result": {
@@ -421,7 +421,7 @@
     },
     {
       "case_id": "E23",
-      "question": "????????",
+      "question": "各地区销售额排行",
       "baseline_sql": "SELECT region, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY region ORDER BY metric_value DESC LIMIT 20",
       "verifies": "region_sales_share",
       "expected_result": {
@@ -440,7 +440,7 @@
     },
     {
       "case_id": "E24",
-      "question": "????????",
+      "question": "各支付方式客户数",
       "baseline_sql": "SELECT payment_method, COUNT(customer_id) AS metric_value FROM wide_orders GROUP BY payment_method ORDER BY metric_value DESC LIMIT 20",
       "verifies": "payment_customer_share",
       "expected_result": {
@@ -459,7 +459,7 @@
     },
     {
       "case_id": "E25",
-      "question": "?????????",
+      "question": "各客户等级销售额",
       "baseline_sql": "SELECT customer_tier, SUM(total_amount) AS metric_value FROM wide_orders GROUP BY customer_tier ORDER BY metric_value DESC LIMIT 20",
       "verifies": "tier_sales_share",
       "expected_result": {
@@ -478,7 +478,7 @@
     },
     {
       "case_id": "E26",
-      "question": "??????",
+      "question": "各品类退款量",
       "baseline_sql": "SELECT category, SUM(is_refunded) AS refund_count, COUNT(order_id) AS order_count FROM wide_order_details GROUP BY category ORDER BY refund_count DESC LIMIT 20",
       "verifies": "category_refund_rate",
       "expected_result": {
@@ -497,7 +497,7 @@
     },
     {
       "case_id": "E27",
-      "question": "??????",
+      "question": "各渠道客单价",
       "baseline_sql": "SELECT channel, AVG(total_amount) AS metric_value FROM wide_orders GROUP BY channel ORDER BY metric_value DESC LIMIT 20",
       "verifies": "channel_avg_order_value",
       "expected_result": {
@@ -516,7 +516,7 @@
     },
     {
       "case_id": "E28",
-      "question": "??????",
+      "question": "各地区毛利率",
       "baseline_sql": "SELECT region, SUM(gross_profit) AS gross_profit, SUM(total_amount) AS total_sales FROM wide_order_details GROUP BY region ORDER BY gross_profit DESC LIMIT 20",
       "verifies": "region_margin_rate",
       "expected_result": {
@@ -535,7 +535,7 @@
     },
     {
       "case_id": "E29",
-      "question": "????????",
+      "question": "各节假日销售额",
       "baseline_sql": "SELECT holiday_name, SUM(total_amount) AS metric_value FROM wide_order_details GROUP BY holiday_name ORDER BY metric_value DESC LIMIT 20",
       "verifies": "holiday_sales_comparison",
       "expected_result": {
@@ -554,7 +554,7 @@
     },
     {
       "case_id": "E30",
-      "question": "????? Top 20",
+      "question": "城市销售额 Top 20",
       "baseline_sql": "SELECT city, SUM(total_amount) AS metric_value FROM wide_order_details GROUP BY city ORDER BY metric_value DESC LIMIT 20",
       "verifies": "city_sales_topn",
       "expected_result": {

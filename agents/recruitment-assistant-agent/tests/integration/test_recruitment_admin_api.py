@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from httpx import AsyncClient
 
+ADMIN_HEADERS = {"x-user-role": "admin"}
+
 
 async def test_admin_task_detail_includes_latest_run(app_client: AsyncClient) -> None:
     create_response = await app_client.post(
@@ -16,7 +18,7 @@ async def test_admin_task_detail_includes_latest_run(app_client: AsyncClient) ->
 
     response = await app_client.get(
         f"/v1/admin/recruitment-tasks/{task_id}",
-        headers={"x-request-id": "req-admin-detail"},
+        headers={"x-request-id": "req-admin-detail", **ADMIN_HEADERS},
     )
 
     assert response.status_code == 200
@@ -37,9 +39,11 @@ async def test_admin_review_updates_task_review_status(app_client: AsyncClient) 
     review_response = await app_client.post(
         f"/v1/admin/recruitment-tasks/{task_id}/review",
         json={"review_status": "approved", "review_note": "Ready for interview."},
-        headers={"x-request-id": "req-review"},
+        headers={"x-request-id": "req-review", **ADMIN_HEADERS},
     )
-    detail_response = await app_client.get(f"/v1/admin/recruitment-tasks/{task_id}")
+    detail_response = await app_client.get(
+        f"/v1/admin/recruitment-tasks/{task_id}", headers=ADMIN_HEADERS
+    )
 
     assert review_response.status_code == 200
     body = review_response.json()
@@ -58,6 +62,7 @@ async def test_admin_manual_override_records_supported_field(app_client: AsyncCl
             "new_value": "partial",
             "reason": "Candidate mentioned Kubernetes operations.",
         },
+        headers=ADMIN_HEADERS,
     )
 
     assert response.status_code == 200
@@ -77,6 +82,7 @@ async def test_admin_manual_override_rejects_unsupported_field(app_client: Async
             "new_value": "30",
             "reason": "Not allowed.",
         },
+        headers=ADMIN_HEADERS,
     )
 
     assert response.status_code == 422
@@ -93,7 +99,24 @@ async def test_admin_endpoints_available_on_legacy_prefix(app_client: AsyncClien
     response = await app_client.post(
         f"/api/recruitment/v1/admin/recruitment-tasks/{task_id}/review",
         json={"review_status": "changes_requested"},
+        headers=ADMIN_HEADERS,
     )
 
     assert response.status_code == 200
     assert response.json()["review"]["review_status"] == "changes_requested"
+
+
+async def test_admin_endpoints_reject_non_admin_role(app_client: AsyncClient) -> None:
+    create_response = await app_client.post(
+        "/v1/recruitment-tasks",
+        json={"title": "Reject non-admin"},
+    )
+    task_id = create_response.json()["task"]["task_id"]
+
+    response = await app_client.get(
+        f"/v1/admin/recruitment-tasks/{task_id}",
+        headers={"x-user-role": "user"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "AUTH_FORBIDDEN"

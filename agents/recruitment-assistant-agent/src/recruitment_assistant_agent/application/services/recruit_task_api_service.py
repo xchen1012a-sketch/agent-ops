@@ -391,6 +391,19 @@ DEFAULT_NODE_TRACE = (
 )
 MAX_EVENTS_PER_RUN = 32
 REPORT_TTL = timedelta(days=7)
+PROTECTED_ATTRIBUTE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("年龄", re.compile(r"(年龄|年纪|[1-9]\d\s*岁|出生日期|出生年月)")),
+    ("性别", re.compile(r"(性别|男性|女性|男士|女士|男[,，、\s]|女[,，、\s])")),
+    ("婚育", re.compile(r"(婚育|婚姻|已婚|未婚|已育|未育|离异)")),
+    ("民族", re.compile(r"(民族|汉族|回族|藏族|维吾尔族|满族|壮族)")),
+    ("健康", re.compile(r"(健康状况|病史|残疾|体检)")),
+    ("政治面貌", re.compile(r"(政治面貌|党员|团员|群众)")),
+    ("照片", re.compile(r"(照片|头像|photo)")),
+    ("身份证号", re.compile(r"(身份证|身份证号|id_card)")),
+    ("籍贯", re.compile(r"(籍贯|家乡|老家|hometown)")),
+    ("宗教", re.compile(r"(宗教|信仰|religion)")),
+    ("户口", re.compile(r"(户口|户籍|hukou)")),
+)
 MATCH_ITEM_OVERRIDE_FIELD_PATTERN = re.compile(
     r"^match_items\[(0|[1-9]\d*)\]\.(match_status|evidence_snippet)$"
 )
@@ -399,27 +412,27 @@ MATCH_ITEM_OVERRIDE_FIELD_PATTERN = re.compile(
 def _report_markdown(task: RecruitmentTaskRecord) -> str:
     title = task.title or task.task_id
     lines = [
-        "# Recruitment Analysis Report",
+        "# 招聘评估报告",
         "",
-        f"- Task: {title}",
-        f"- Task ID: {task.task_id}",
-        f"- Status: {task.status.value}",
-        f"- Review: {task.review_status.value}",
-        f"- Rule version: {task.analysis.rule_version if task.analysis else rule_version()}",
+        f"- 任务：{title}",
+        f"- 任务 ID：{task.task_id}",
+        f"- 状态：{task.status.value}",
+        f"- 复核：{task.review_status.value}",
+        f"- 规则版本：{task.analysis.rule_version if task.analysis else rule_version()}",
         "",
-        "## Dify-equivalent Workflow Evidence",
+        "## Dify 等价工作流证据",
         "",
         *[f"- {node}" for node in workflow_node_names()],
         "",
-        "## MVP Analysis",
+        "## 评估结论",
         "",
     ]
     if task.analysis is None:
         lines.extend(
             [
-                "No structured match analysis is available because the task does not contain both resume and JD materials.",
+                "结论：当前材料不足，暂不能给出候选人与岗位的匹配判断。",
                 "",
-                "This report does not claim a candidate match result.",
+                "请补充脱敏简历和 JD 后再生成报告。",
                 "",
             ]
         )
@@ -428,25 +441,25 @@ def _report_markdown(task: RecruitmentTaskRecord) -> str:
     analysis = task.analysis
     lines.extend(
         [
-            f"- Job title: {analysis.job_title or '未识别'}",
-            f"- Candidate summary: {analysis.candidate_summary}",
-            f"- Match score: {analysis.match_score}/100 ({analysis.match_tier})",
-            f"- Matched keywords: {_join_or_none(analysis.matched_keywords)}",
-            f"- Missing keywords: {_join_or_none(analysis.missing_keywords)}",
+            f"- 结论：{_public_match_tier_label(analysis.match_tier)}",
+            f"- 岗位：{analysis.job_title or '未识别'}",
+            f"- 候选人摘要：{analysis.candidate_summary}",
+            f"- 已找到证据：{_join_or_none(analysis.matched_keywords)}",
+            f"- 仍需追问：{_join_or_none(analysis.missing_keywords)}",
             "",
-            "## Risk Points",
+            "## 关键风险",
             "",
             *[f"- {item}" for item in analysis.risk_points],
             "",
-            "## Interview Questions",
+            "## 面试追问",
             "",
             *[f"- {question}" for question in analysis.interview_questions],
             "",
-            "## Fairness Boundary",
+            "## 公平性边界",
             "",
             analysis.fairness_note,
             "",
-            "## Source Boundary",
+            "## 来源边界",
             "",
             "当前 docs/homework 只展开实训报告大纲和报告模板；原始 Dify 招聘案例课件未在当前目录找到。"
             "本报告基于项目内版本化规则和当前脱敏材料派生摘要，不声明已接入真实 Dify、真实 DeepSeek 或外部候选人库。",
@@ -531,6 +544,15 @@ def _match_tier(score: int) -> str:
     return "weak"
 
 
+def _public_match_tier_label(match_tier: str) -> str:
+    labels = {
+        "strong": "匹配",
+        "medium": "部分匹配",
+        "weak": "未找到充分证据",
+    }
+    return labels.get(match_tier, "需人工复核")
+
+
 def _candidate_summary(*, resume: str, matched: tuple[str, ...]) -> str:
     if matched:
         return f"已解析脱敏简历，发现 {len(matched)} 项岗位相关关键词证据。"
@@ -557,12 +579,23 @@ def _risk_points(
         risks.append("JD 未命中当前规则包的技能关键词，需要人工确认岗位要求。")
     if missing:
         risks.append("以下岗位关键词缺少简历证据：" + "、".join(missing))
-    protected_hits = tuple(field for field in protected_attribute_fields() if field in resume or field in jd)
+    protected_hits = _protected_attribute_hits(f"{resume}\n{jd}")
     if protected_hits:
-        risks.append("材料疑似包含受保护字段标签，已按公平性规则忽略：" + "、".join(protected_hits))
+        risks.append("材料疑似包含受保护属性，已按公平性规则忽略：" + "、".join(protected_hits))
     if not risks:
         risks.append("未发现明显规则缺口，仍需面试确认项目真实性和贡献边界。")
     return tuple(risks)
+
+
+def _protected_attribute_hits(text: str) -> tuple[str, ...]:
+    hits: list[str] = []
+    for field in protected_attribute_fields():
+        if field in text:
+            hits.append(field)
+    for label, pattern in PROTECTED_ATTRIBUTE_PATTERNS:
+        if pattern.search(text):
+            hits.append(label)
+    return tuple(dict.fromkeys(hits))
 
 
 def _interview_questions(

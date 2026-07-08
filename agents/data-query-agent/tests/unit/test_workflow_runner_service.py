@@ -232,7 +232,7 @@ async def test_runner_records_success_run_node_and_audit_boundaries() -> None:
     assert result.succeeded is True
     assert result.retryable is False
     assert result.run.status is RunStatus.SUCCESS
-    assert result.state["answer"] == "Query result is 98765.43."
+    assert result.state["answer"] == "结论：本次查询结果为 98765.43。"
     assert any(
         event == ("query_execute", NodeStatus.RUNNING) for event in run_repository.node_events
     )

@@ -81,7 +81,7 @@ def _default_content(request: LlmCompletionRequest) -> str:
     if request.prompt_name == "interpret_result":
         return json.dumps(
             {
-                "answer": "Query result is available.",
+                "answer": "结论：查询结果已生成。",
                 "followups": [],
             }
         )

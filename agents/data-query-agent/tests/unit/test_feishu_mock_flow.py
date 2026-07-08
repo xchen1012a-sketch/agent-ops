@@ -38,7 +38,7 @@ async def test_feishu_mock_flow_reuses_data_query_workflow_and_card_projection()
     assert result.event.duplicate is False
     assert result.card is not None
     assert result.card.card_type == "table"
-    assert result.card.elements[0] == {"type": "markdown", "content": "Query result is 98765.43."}
+    assert result.card.elements[0] == {"type": "markdown", "content": "结论：本次查询结果为 98765.43。"}
     assert result.card.elements[1]["columns"] == ("total_sales",)
     assert result.card.actions
 

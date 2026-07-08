@@ -204,17 +204,17 @@ async def test_followup_suggestions_can_be_listed_by_run_and_thread() -> None:
 
     second = await service.create_followup_suggestion_for_run(
         run=run,
-        suggestion_text="???????",
+        suggestion_text="按地区拆分看看",
         rank=2,
     )
     first = await service.create_followup_suggestion_for_run(
         run=run,
-        suggestion_text="?????",
+        suggestion_text="查看趋势",
         rank=1,
     )
     thread_only = await service.create_followup_suggestion_for_thread(
         thread=thread,
-        suggestion_text="?????",
+        suggestion_text="对比上期",
         rank=3,
     )
 

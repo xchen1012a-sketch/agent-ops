@@ -35,7 +35,7 @@ class FeishuCardProjectionService:
         if chart is not None:
             return FeishuCardProjection(
                 card_type="chart",
-                title="??????",
+                title="问数结果",
                 elements=(
                     {"type": "markdown", "content": answer},
                     {"type": "chart", "chart": chart},
@@ -48,7 +48,7 @@ class FeishuCardProjectionService:
             visible_rows = rows[:MAX_TABLE_ROWS]
             return FeishuCardProjection(
                 card_type="table",
-                title="??????",
+                title="问数结果",
                 elements=(
                     {"type": "markdown", "content": answer},
                     {"type": "table", "columns": columns, "rows": visible_rows},
@@ -58,7 +58,7 @@ class FeishuCardProjectionService:
             )
         return FeishuCardProjection(
             card_type="text",
-            title="??????",
+            title="问数结果",
             elements=({"type": "markdown", "content": answer},),
             actions=actions,
         )

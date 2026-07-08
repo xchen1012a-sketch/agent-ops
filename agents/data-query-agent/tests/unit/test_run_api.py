@@ -209,10 +209,10 @@ def test_create_local_demo_run_returns_fixture_sql_result_and_chart() -> None:
     assert body["error"] is None
     data = body["data"]
     assert data["source_status"] == "local_deterministic_fixture"
-    assert "not live MySQL" in data["source_note"]
+    assert "不是实时 MySQL" in data["source_note"]
     assert data["fixture_case_id"] == "T2"
     assert data["policy_allowed"] is True
-    assert data["generated_sql"].startswith("SELECT channel, SUM(total_amount)")
+    assert data["generated_sql"] is None
     assert data["query_result"] == {
         "columns": ["channel", "total_sales"],
         "rows": [["app", 70000.0], ["web", 53456.78]],

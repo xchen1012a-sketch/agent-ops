@@ -92,6 +92,18 @@ const runStatusType = computed(() => {
 });
 const localDemoColumns = computed(() => localDemoResult.value?.query_result?.columns ?? []);
 const localDemoRows = computed(() => localDemoResult.value?.query_result?.rows ?? []);
+const localDemoStatusText = computed(() => {
+  switch (localDemoResult.value?.source_status) {
+    case 'local_deterministic_fixture':
+      return '本地样例结果';
+    case 'local_deterministic_workflow':
+      return '本地工作流结果';
+    case 'local_boundary_reply':
+      return '边界回复';
+    default:
+      return '本地演示结果';
+  }
+});
 const localDemoChartRows = computed(() => {
   const chart = localDemoResult.value?.chart;
   if (!chart) return [];
@@ -352,24 +364,22 @@ onBeforeUnmount(() => {
                 <section
                   v-if="localDemoLoading || localDemoResult || localDemoError"
                   class="data-evidence"
-                  aria-label="Local deterministic query evidence"
+                  aria-label="本地问数证据"
                 >
                   <p v-if="localDemoLoading" class="data-evidence__state">
-                    Loading local query evidence...
+                    正在加载本地问数证据…
                   </p>
                   <p v-else-if="localDemoError" class="data-evidence__error">
                     {{ localDemoError }}
                   </p>
                   <template v-else-if="localDemoResult">
                     <div class="data-evidence__header">
-                      <span>{{ localDemoResult.source_status }}</span>
+                      <span>{{ localDemoStatusText }}</span>
                       <el-tag v-if="localDemoResult.fixture_case_id" size="small" effect="plain">
                         {{ localDemoResult.fixture_case_id }}
                       </el-tag>
                     </div>
                     <p class="data-evidence__note">{{ localDemoResult.source_note }}</p>
-
-                    <pre v-if="localDemoResult.generated_sql" class="data-evidence__sql"><code>{{ localDemoResult.generated_sql }}</code></pre>
 
                     <div
                       v-if="localDemoColumns.length && localDemoRows.length"
@@ -722,18 +732,6 @@ onBeforeUnmount(() => {
 
 .data-evidence__error {
   color: var(--color-danger);
-}
-
-.data-evidence__sql {
-  max-width: 100%;
-  margin: 0;
-  padding: var(--space-3);
-  overflow-x: auto;
-  color: var(--color-text);
-  background: var(--color-surface-muted);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  line-height: 1.6;
 }
 
 .data-evidence__table-wrap {
