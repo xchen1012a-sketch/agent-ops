@@ -6,6 +6,7 @@ from collections.abc import AsyncIterator
 from typing import Annotated, cast
 
 from fastapi import Depends, Header, Request
+from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data_query_agent.application.services.agent_api_config import ApiConfigCrypto
@@ -159,17 +160,45 @@ async def _persist_feishu_subject(open_id: str) -> None:
         _logger.warning("feishu.subject_persist_failed", subject=subject, error=str(exc))
 
 
-def get_feishu_webhook_deps(settings: SettingsDep) -> FeishuWebhookDeps:
-    """Assemble webhook collaborators; disabled unless FEISHU_ENABLED=true."""
+async def get_feishu_webhook_deps(
+    settings: SettingsDep,
+    repo: AgentApiConfigRepoDep,
+    crypto: AgentApiConfigCryptoDep,
+) -> FeishuWebhookDeps:
+    """Assemble webhook collaborators from the latest enabled feishu config row.
+
+    FEISHU-300: 配置从 ``agent_api_config`` 表的「最新启用 feishu 行」读取，
+    而非环境变量。``FEISHU_ENABLED`` 保留为应急 kill switch（默认 false）。
+    Webhook 调用频率低，直接每次查 DB；新增/更新配置后无需重启或失效缓存。
+    """
     if not settings.feishu_enabled:
         return FeishuWebhookDeps(enabled=False, processor=None, dispatch=None)
+
+    entity = await repo.get_latest_enabled_feishu_config()
+    if entity is None or not entity.api_key_encrypted or not entity.extra:
+        return FeishuWebhookDeps(enabled=False, processor=None, dispatch=None)
+
+    app_id = str(entity.extra.get("app_id") or "")
+    verification_token = str(entity.extra.get("verification_token") or "")
+    encrypt_key = str(entity.extra.get("encrypt_key") or "")
+    if not app_id or not verification_token:
+        return FeishuWebhookDeps(enabled=False, processor=None, dispatch=None)
+
+    app_secret = crypto.decrypt(entity.api_key_encrypted)
+    client_config = FeishuClientConfig(
+        api_base=entity.base_url or settings.feishu_api_base,
+        app_id=app_id,
+        app_secret=SecretStr(app_secret),
+        timeout_seconds=entity.timeout_seconds or settings.feishu_timeout_seconds,
+        token_cache_ttl_seconds=settings.feishu_token_cache_ttl_seconds,
+    )
     processor = FeishuWebhookProcessor(
-        encrypt_key=settings.feishu_encrypt_key.get_secret_value(),
-        verification_token=settings.feishu_verification_token.get_secret_value(),
+        encrypt_key=encrypt_key,
+        verification_token=verification_token,
         dedup=_build_feishu_dedup(settings),
     )
     client = FeishuClient(
-        config=FeishuClientConfig.from_settings(settings),
+        config=client_config,
         token_cache=_build_feishu_token_cache(settings),
     )
     bot = FeishuBotService(client=client)

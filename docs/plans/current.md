@@ -1,14 +1,22 @@
 # Current Phase
 
-- Phase: `FIX-agent-ui-claude-alignment`
-- Name: Align data and recruitment agent pages with Claude-style legal baseline
-- Status: completed.
-- Phase file: `docs/plans/phases/FIX-agent-ui-claude-alignment.md`
-- Current module: `agent-suite-web` data and recruitment pages.
-- Planned scope: align data-query and recruitment landing/detail page layout, message styling, scrolling, and assistant avatar behavior with the legal agent Claude-style baseline.
-- Do not modify: production credentials, real Feishu configuration, global Claude/Codex configuration, or unverified external MCP/Dify services.
-- External services: real Dify, Feishu, DeepSeek, and external MySQL are not claimed unless verified in the current repo/runtime.
-- Current next step: wait for user review/next MVP priority.
+- Phase: `FEISHU-300-webhook-config-wiring`
+- Name: Wire feishu webhook to per-user API config + server deploy
+- Status: in_progress (Phase A + B 完成;待用户确认进入 Phase C 部署).
+- Phase file: `docs/plans/phases/FEISHU-300-webhook-config-wiring.md`
+- Current module: `data-query-agent` backend;后续 `agent-suite-web` 表单与 `agent-suite-ops` 部署.
+- Planned scope: 把 data-query-agent 的飞书 webhook 端点从 env 配置改为读 `agent_api_config` 表的 feishu 行；前端 API 配置页飞书项支持 4 字段；阿里云 ECS 部署；飞书后台配置 + 端到端联调.
+- Do not modify: 法律/招聘 agent、`feishu_events.py` mock 端点、`feishu_signature/client/bot_service/webhook_service` 业务代码、其它 api_type 存储/表单分支、用户全局 Claude/Codex 配置.
+- External services: 真飞书仅在 Phase D 由用户在飞书后台填真凭证后才接入;Phase A-C 不接外部.
+- Current next step: Phase A 第 1 步 — 仓库新增 `get_enabled_feishu_config()`.
+
+## Current Phase: FEISHU-300-webhook-config-wiring
+
+- See `docs/plans/phases/FEISHU-300-webhook-config-wiring.md` for full plan.
+- Phase A (后端 DB 接通): 仓库方法 + dep 改造 + 测试.
+- Phase B (前端 4 字段表单): ApiConfigEditor 分支 + admin-api-config 字段映射.
+- Phase C (阿里云部署): nginx + docker compose + DNS.
+- Phase D (飞书后台 + 端到端): 应用创建 + URL 校验 + 实机对话.
 
 ## Current Fix: FIX-agent-ui-claude-alignment
 

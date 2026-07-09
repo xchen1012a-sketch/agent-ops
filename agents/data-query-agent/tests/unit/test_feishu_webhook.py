@@ -22,6 +22,8 @@ from data_query_agent.infrastructure.integrations.feishu_event_dedup import (
 )
 from data_query_agent.main import create_app
 
+_DISABLED_DEPS = FeishuWebhookDeps(enabled=False, processor=None, dispatch=None)
+
 _TOKEN = "vt"
 _ENCRYPT_KEY = "ek"
 _BLOCK = 16
@@ -107,7 +109,11 @@ async def test_processor_rejects_bad_signature_on_encrypted_event() -> None:
 
 
 def test_route_returns_404_when_feishu_disabled() -> None:
-    client = TestClient(create_app())
+    # FEISHU-300: get_feishu_webhook_deps 现在需要 repo/crypto 构造，测试无 DB 时
+    # 直接 override 返回 disabled 状态，验证路由层 404 语义不变。
+    app = create_app()
+    app.dependency_overrides[get_feishu_webhook_deps] = lambda: _DISABLED_DEPS
+    client = TestClient(app)
     response = client.post("/v1/integrations/feishu/webhook", json={"type": "url_verification"})
     assert response.status_code == 404
 

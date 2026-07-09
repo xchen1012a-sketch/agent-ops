@@ -139,13 +139,8 @@ class Settings(BaseSettings):
             errors.append("REDIS_URL is required")
         if not self.deepseek_api_base:
             errors.append("DEEPSEEK_API_BASE is required")
-        if self.feishu_enabled:
-            if not self.feishu_app_id:
-                errors.append("FEISHU_APP_ID is required when FEISHU_ENABLED=true")
-            if not self.feishu_app_secret.get_secret_value():
-                errors.append("FEISHU_APP_SECRET is required when FEISHU_ENABLED=true")
-            if not self.feishu_verification_token.get_secret_value():
-                errors.append("FEISHU_VERIFICATION_TOKEN is required when FEISHU_ENABLED=true")
+        # FEISHU-300: 飞书凭证校验由 agent_api_config 表的「最新启用行」负责，
+        # 不再在启动期硬校验环境变量。FEISHU_ENABLED 仅作应急 kill switch。
         if errors:
             raise RuntimeError("Configuration validation failed: " + "; ".join(errors))
 

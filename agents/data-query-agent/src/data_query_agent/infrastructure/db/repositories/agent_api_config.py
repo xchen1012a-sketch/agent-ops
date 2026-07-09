@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,6 +38,24 @@ class SqlAlchemyAgentApiConfigRepository:
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model is not None else None
 
+    async def get_latest_enabled_feishu_config(self) -> AgentApiConfig | None:
+        """Return the most recently updated enabled feishu row, or None.
+
+        FEISHU-300: 飞书 webhook 是无用户头的全局回调，无法按 subject 路由。
+        取「最近更新的启用行」作为系统级配置；单 admin 演示场景下无歧义。
+        """
+        result = await self._session.execute(
+            select(AgentApiConfigModel)
+            .where(
+                AgentApiConfigModel.api_type == "feishu",
+                AgentApiConfigModel.enabled.is_(True),
+            )
+            .order_by(AgentApiConfigModel.updated_at.desc())
+            .limit(1)
+        )
+        model = result.scalar_one_or_none()
+        return self._to_entity(model) if model is not None else None
+
     async def upsert(
         self,
         *,
@@ -49,7 +69,7 @@ class SqlAlchemyAgentApiConfigRepository:
         timeout_seconds: int | None,
         max_retries: int | None,
         enabled: bool,
-        extra: dict | None,
+        extra: dict[str, Any] | None,
         updated_by: str,
     ) -> AgentApiConfig:
         """Insert or update a row by user and api_type; returns the persisted entity."""

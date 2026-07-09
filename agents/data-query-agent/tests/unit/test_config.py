@@ -99,18 +99,7 @@ def test_validate_required_skips_feishu_when_disabled() -> None:
     settings.validate_required()
 
 
-def test_validate_required_fails_on_missing_feishu_app_id_when_enabled() -> None:
-    settings = _base_settings(feishu_enabled=True, feishu_verification_token="vt")
-    with pytest.raises(RuntimeError) as exc_info:
-        settings.validate_required()
-    assert "FEISHU_APP_ID" in str(exc_info.value)
-
-
-def test_validate_required_passes_with_full_feishu_config() -> None:
-    settings = _base_settings(
-        feishu_enabled=True,
-        feishu_app_id="cli_test",
-        feishu_app_secret="secret",
-        feishu_verification_token="vt",
-    )
+def test_validate_required_ignores_feishu_credentials_when_enabled() -> None:
+    # FEISHU-300: 飞书凭证改为从 agent_api_config 表读取，启动期不再校验。
+    settings = _base_settings(feishu_enabled=True)
     settings.validate_required()

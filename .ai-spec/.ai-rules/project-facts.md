@@ -1,4 +1,4 @@
-﻿# Project facts
+# Project facts
 
 > [auto] is refreshed by AI or scripts from repository state and only records verifiable facts.
 > [manual] may be filled by AI from explicit sources and confirmed by humans. AI must mark uncertain entries as pending confirmation.
@@ -6,13 +6,13 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: 8fb42c1c3168be44
-- last refresh: 2026-07-06 22:06:28 +08:00
-- refresh command: scripts/refresh-project-facts.ps1
+- source hash: 491b3e0302dc6b6a
+- last refresh: 2026-07-08 17:45:25 +0800
+- refresh command: scripts/refresh-project-facts.sh
 
 ## [auto] Tech stack
 
-- No common framework or tool detected from package.json.
+- No package.json parser available.
 
 ## [auto] Scripts
 
@@ -21,63 +21,74 @@
 ## [auto] Directory structure (top 2 levels)
 
 ```text
-agent/
-|-- .claude/
-|   |-- hooks/
-|   |-- state/
-|   |-- settings.json
-|   |-- settings.local.json
-|-- agents/
-|   |-- auth-service/
-|   |-- data-query-agent/
-|   |-- legal-consulting-agent/
-|   |-- recruitment-assistant-agent/
-|-- agent-suite-ops/
-|   |-- docs/
-|   |-- nginx/
-|   |-- scripts/
-|   |-- .env
-|   |-- .env.example
-|   |-- .gitignore
-|   |-- AGENTS.md
-|   |-- CLAUDE.md
-|   |-- docker-compose.local.yml
-|   |-- docker-compose.yml
-|   |-- README.md
-|-- agent-suite-web/
-|   |-- docs/
-|   |-- logs/
-|   |-- nginx/
-|   |-- public/
-|   |-- src/
-|   |-- tests/
-|   |-- .dockerignore
-|   |-- .editorconfig
-|   |-- .env
-|   |-- .env.example
-|   |-- .eslintrc-auto-import.json
-|   |-- .gitignore
-|   |-- .npmrc
-|   |-- AGENTS.md
-|   |-- auto-imports.d.ts
-|   |-- CLAUDE.md
-|   |-- components.d.ts
-|   |-- dev-auth-plugin.ts
-|   |-- Dockerfile
-|   |-- eslint.config.mjs
-|-- docs/
-|   |-- contracts/
-|   |-- homework/
-|   |-- plans/
-|-- logs/
-|   |-- local-agent-runtime/
-|   |-- data-query-8103.err.log
-|   |-- data-query-8103.out.log
+agent-ops/
+|-- .DS_Store
 |-- .gitattributes
 |-- .gitignore
+|-- .pip-cache
+|   |-- .pip-cache/http-v2
+|   |-- .pip-cache/selfcheck
+|-- .venv
+|   |-- .venv/.gitignore
+|   |-- .venv/bin
+|   |-- .venv/include
+|   |-- .venv/lib
+|   |-- .venv/pyvenv.cfg
+|   |-- .venv/share
 |-- AGENTS.md
 |-- CLAUDE.md
 |-- README.md
+|-- agent-suite-ops
+|   |-- agent-suite-ops/.env.example
+|   |-- agent-suite-ops/.gitignore
+|   |-- agent-suite-ops/AGENTS.md
+|   |-- agent-suite-ops/CLAUDE.md
+|   |-- agent-suite-ops/README.md
+|   |-- agent-suite-ops/docker-compose.local.yml
+|   |-- agent-suite-ops/docker-compose.yml
+|   |-- agent-suite-ops/docs
+|   |-- agent-suite-ops/nginx
+|   |-- agent-suite-ops/scripts
+|-- agent-suite-web
+|   |-- agent-suite-web/.dockerignore
+|   |-- agent-suite-web/.editorconfig
+|   |-- agent-suite-web/.env.example
+|   |-- agent-suite-web/.eslintrc-auto-import.json
+|   |-- agent-suite-web/.gitignore
+|   |-- agent-suite-web/.npmrc
+|   |-- agent-suite-web/.pnpm-store
+|   |-- agent-suite-web/AGENTS.md
+|   |-- agent-suite-web/CLAUDE.md
+|   |-- agent-suite-web/Dockerfile
+|   |-- agent-suite-web/README.md
+|   |-- agent-suite-web/auto-imports.d.ts
+|   |-- agent-suite-web/components.d.ts
+|   |-- agent-suite-web/dev-auth-plugin.ts
+|   |-- agent-suite-web/docs
+|   |-- agent-suite-web/eslint.config.mjs
+|   |-- agent-suite-web/index.html
+|   |-- agent-suite-web/nginx
+|   |-- agent-suite-web/package.json
+|   |-- agent-suite-web/playwright.config.ts
+|   |-- agent-suite-web/pnpm-lock.yaml
+|   |-- agent-suite-web/pnpm-workspace.yaml
+|   |-- agent-suite-web/public
+|   |-- agent-suite-web/src
+|   |-- agent-suite-web/tests
+|   |-- agent-suite-web/tsconfig.json
+|   |-- agent-suite-web/tsconfig.node.json
+|   |-- agent-suite-web/vite.config.ts
+|   |-- agent-suite-web/vitest.config.ts
+|-- agents
+|   |-- agents/.DS_Store
+|   |-- agents/auth-service
+|   |-- agents/data-query-agent
+|   |-- agents/legal-consulting-agent
+|   |-- agents/recruitment-assistant-agent
+|-- docs
+|   |-- docs/contracts
+|   |-- docs/homework
+|   |-- docs/plans
 ```
 
 ## [auto] Environment keys
