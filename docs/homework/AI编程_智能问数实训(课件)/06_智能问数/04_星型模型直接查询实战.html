@@ -1,0 +1,973 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>04_星型模型直接查询实战</title><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; --title-bar-height:20px; }
+.mac-os-11 { --title-bar-height:28px; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 36px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li blockquote { margin: 1rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
+  #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  .typora-export #write { break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+.MathJax_ref { fill: currentcolor; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.md-inline-math .MathJax_SVG .noError { display: none !important; }
+.html-for-mac .inline-math-svg .MathJax_SVG { vertical-align: 0.2px; }
+.md-math-block .MathJax_SVG_Display { text-align: center; margin: 0px; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; overflow-y: hidden; display: block !important; }
+.MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
+.MathJax_SVG .MJX-monospace { font-family: var(--monospace); }
+.MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; overflow-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none 0s ease 0s; }
+.MathJax_SVG_Display svg { vertical-align: middle !important; margin-bottom: 0px !important; margin-top: 0px !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+mark .md-meta { color: rgb(0, 0, 0); opacity: 0.3 !important; }
+@media print {
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
+}
+.md-diagram-panel .messageText { stroke: none !important; }
+.md-diagram-panel .start-state { fill: var(--node-fill); }
+.md-diagram-panel .edgeLabel rect { opacity: 1 !important; }
+.md-require-zoom-fix foreignobject { font-size: var(--mermaid-font-zoom); }
+
+
+.CodeMirror { height: auto; }
+.CodeMirror.cm-s-inner { background: inherit; }
+.CodeMirror-scroll { overflow: auto hidden; z-index: 3; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: rgb(255, 255, 255); }
+.CodeMirror-gutters { border-right: 1px solid rgb(221, 221, 221); background: inherit; white-space: nowrap; }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-property { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: 700; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: red; }
+.cm-invalidchar { color: red; }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background: inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { height: 100%; outline: 0px; position: relative; box-sizing: content-box; background: inherit; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow: hidden; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow: hidden; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 30px; z-index: 3; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: 0px 0px !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0px; bottom: 0px; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-radius: 0px; border-width: 0px; background: 0px 0px; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; overflow-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; }
+.CodeMirror-wrap pre { overflow-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right: 30px solid transparent; width: fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.cm-searching { background: rgba(255, 255, 0, 0.4); }
+@media print {
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+
+
+@import '';
+
+:root {
+    --side-bar-bg-color: #fff;
+    --control-text-color: #777;
+    --font-sans-serif: 'Ubuntu', 'Source Sans Pro', sans-serif !important;
+    --font-monospace: 'Fira Code', 'Roboto Mono', monospace !important;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-sans-serif);
+    color: #34495e;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6rem;
+    letter-spacing: 0;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+#write {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 30px 100px;
+}
+
+#write p {
+    line-height: 1.6rem;
+    word-spacing: .05rem;
+}
+
+#write ol li {
+    padding-left: 0.5rem;
+}
+
+#write > ul:first-child,
+#write > ol:first-child {
+    margin-top: 30px;
+}
+
+body > *:first-child {
+    margin-top: 0 !important;
+}
+
+body > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+a {
+    color: #42b983;
+    font-weight: 600;
+    padding: 0 2px;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+
+h1 tt,
+h1 code {
+    font-size: inherit !important;
+}
+
+h2 tt,
+h2 code {
+    font-size: inherit !important;
+}
+
+h3 tt,
+h3 code {
+    font-size: inherit !important;
+}
+
+h4 tt,
+h4 code {
+    font-size: inherit !important;
+}
+
+h5 tt,
+h5 code {
+    font-size: inherit !important;
+}
+
+h6 tt,
+h6 code {
+    font-size: inherit !important;
+}
+
+h2 a,
+h3 a {
+    color: #34495e;
+}
+
+h1 {
+    padding-bottom: .4rem;
+    font-size: 2.2rem;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.75rem;
+    line-height: 1.225;
+    margin: 35px 0 15px;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid #ddd;
+}
+
+h3 {
+    font-size: 1.4rem;
+    line-height: 1.43;
+    margin: 20px 0 7px;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h6 {
+    font-size: 1rem;
+    color: #777;
+}
+
+p,
+blockquote,
+ul,
+ol,
+dl,
+table {
+    margin: 0.8em 0;
+}
+
+li > ol,
+li > ul {
+    margin: 0 0;
+}
+
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+body > h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child + h2 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h3:first-child,
+body > h4:first-child,
+body > h5:first-child,
+body > h6:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+a:first-child h1,
+a:first-child h2,
+a:first-child h3,
+a:first-child h4,
+a:first-child h5,
+a:first-child h6 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+h1 p,
+h2 p,
+h3 p,
+h4 p,
+h5 p,
+h6 p {
+    margin-top: 0;
+}
+
+li p.first {
+    display: inline-block;
+}
+
+ul,
+ol {
+    padding-left: 30px;
+}
+
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+
+blockquote {
+    border-left: 4px solid #42b983;
+    padding: 10px 15px;
+    color: #777;
+    background-color: rgba(66, 185, 131, .1);
+}
+
+table {
+    padding: 0;
+    word-break: initial;
+}
+
+table tr {
+    border-top: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+
+table tr:nth-child(2n),
+thead {
+    background-color: #fafafa;
+}
+
+table tr th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr td {
+    border: 1px solid #dfe2e5;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr th:first-child,
+table tr td:first-child {
+    margin-top: 0;
+}
+
+table tr th:last-child,
+table tr td:last-child {
+    margin-bottom: 0;
+}
+
+#write strong {
+    padding: 0 1px;
+}
+
+#write em {
+    padding: 0 5px 0 2px;
+}
+
+#write table thead th {
+    background-color: #f2f2f2;
+}
+
+#write .CodeMirror-gutters {
+    border-right: none;
+}
+
+#write .md-fences {
+    border: 1px solid #F4F4F4;
+    -webkit-font-smoothing: initial;
+    margin: 0.8rem 0 !important;
+    padding: 0.3rem 0 !important;
+    line-height: 1.43rem;
+    background-color: #F8F8F8 !important;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.85rem;
+    word-wrap: normal;
+}
+
+#write .CodeMirror-wrap .CodeMirror-code pre {
+    padding-left: 12px;
+}
+
+#write code, tt {
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.92rem;
+    color: #e96900;
+    background-color: #f8f8f8;
+}
+
+tt {
+    margin: 0 2px;
+}
+
+#write .md-footnote {
+    background-color: #f8f8f8;
+    color: #e96900;
+}
+
+/* heighlight. */
+#write mark {
+    background-color: #EBFFEB;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: 0 2px;
+    color: #222;
+    font-weight: 500;
+}
+
+#write del {
+    padding: 1px 2px;
+}
+
+.cm-s-inner .cm-link,
+.cm-s-inner.cm-link {
+    color: #22a2c9;
+}
+
+.cm-s-inner .cm-string {
+    color: #22a2c9;
+}
+
+.md-task-list-item > input {
+    margin-left: -1.3em;
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+
+    table,
+    pre {
+        page-break-inside: avoid;
+    }
+
+    pre {
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+    background-color: #f8f8f8;
+}
+
+.md-diagram-panel {
+    position: static !important;
+}
+
+#write pre.md-meta-block {
+    padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block > .code-tooltip {
+    bottom: .375rem;
+}
+
+#write > h3.md-focus:before {
+    left: -1.5625rem;
+    top: .375rem;
+}
+
+#write > h4.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h5.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h6.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+.md-image > .md-meta {
+    border-radius: 3px;
+    font-family: var(--font-monospace);
+    padding: 2px 0 0 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: inherit;
+}
+
+.md-toc {
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+#md-notification:before {
+    top: 10px;
+}
+
+/** focus mode */
+
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header,
+.context-menu,
+.megamenu-content,
+footer {
+    font-family: var(--font-sans-serif);
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state {
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: var(--side-bar-bg-color);
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+.html-for-mac .context-menu {
+    --item-hover-bg-color: #E6F0FE;
+}
+
+/**
+ * author: LPZ
+ * email: lpzmail@163.com
+ */
+
+h1, h2, h3, h4, strong {
+  font-weight: 600;
+}
+
+/* 添加自动序号样式 */
+#write {
+    counter-reset: h1
+}
+
+h1 {
+    counter-reset: h2
+}
+
+h2 {
+    counter-reset: h3
+}
+
+h3 {
+    counter-reset: h4
+}
+
+h4 {
+    counter-reset: h5
+}
+
+h5 {
+    counter-reset: h6
+}
+
+#write h1:before {
+    counter-increment: h1;
+    content: counter(h1) ". "
+}
+
+#write h2:before {
+  counter-increment: h2;
+  content: counter(h1) ". "counter(h2) ". ";
+}
+
+#write h3:before,
+h3.md-focus.md-heading:before { /** override the default style for focused headings */
+  counter-increment: h3;
+  content: counter(h1) ". "counter(h2) "."counter(h3) ". ";
+}
+
+#write h4:before,
+h4.md-focus.md-heading:before {
+  counter-increment: h4;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) ". ";
+}
+
+#write h5:before,
+h5.md-focus.md-heading:before {
+  counter-increment: h5;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) "."counter(h5) ". "
+}
+
+#write h6:before,
+h6.md-focus.md-heading:before {
+  counter-increment: h6;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) "."counter(h5) "."counter(h6) ". "
+}
+
+/** override the default style for focused headings */
+#write>h3.md-focus:before,
+#write>h4.md-focus:before,
+#write>h5.md-focus:before,
+#write>h6.md-focus:before,
+h3.md-focus:before,
+h4.md-focus:before,
+h5.md-focus:before,
+h6.md-focus:before {
+  color: inherit;
+  border: inherit;
+  border-radius: inherit;
+  position: inherit;
+  left: initial;
+  float: none;
+  top: initial;
+  font-size: inherit;
+  padding-left: inherit;
+  padding-right: inherit;
+  vertical-align: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* 自定义强制换号符，使得在导出PDF 或打印时强制换行 */
+@media print {
+
+  /* 这是自定义标签, 在需要换行的地方插入：<pb> */
+  pb {
+    display: block;
+    page-break-after: always;
+  }
+
+  h1 {
+    page-break-before: always;
+  }
+
+  h1:first-of-type {
+    page-break-before: avoid;
+  }
+}
+
+/* 完成的 Task 添加删除线 */
+.task-list-done {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.task-list-not-done {}
+
+/* 添加键盘样式 */
+kbd {
+  box-shadow: inset 0 -2px 0 #c6cbd1;
+  background-color: white;
+}
+
+/* TOC 中隐藏 H1 和 H6 
+.md-toc-h1, .md-toc-h6 {
+  display: none;
+}
+*/
+/* 添加 TOC 自动序号样式 */
+.md-toc-content {
+  counter-reset: toc-h1;
+}
+
+.md-toc-h1 {
+  counter-reset: toc-h2;
+}
+
+.md-toc-h2 {
+  counter-reset: toc-h3;
+}
+
+.md-toc-h3 {
+  counter-reset: toc-h4;
+}
+
+.md-toc-h4 {
+  counter-reset: toc-h5;
+}
+
+.md-toc-h5 {
+  counter-reset: toc-h6;
+}
+
+.md-toc-content .md-toc-h1 a:before {
+  counter-increment: toc-h1;
+  content: counter(toc-h1) ". ";
+}
+
+.md-toc-content .md-toc-h2 a:before {
+  counter-increment: toc-h2;
+  content: counter(toc-h1) ". "counter(toc-h2) ". ";
+}
+
+.md-toc-content .md-toc-h3 a:before {
+  counter-increment: toc-h3;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) ". ";
+}
+
+.md-toc-content .md-toc-h4 a:before {
+  counter-increment: toc-h4;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) ". ";
+}
+
+.md-toc-content .md-toc-h5 a:before {
+  counter-increment: toc-h5;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) "."counter(toc-h5) ". ";
+}
+
+.md-toc-content .md-toc-h6 a:before {
+  counter-increment: toc-h6;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) "."counter(toc-h5) "."counter(toc-h6) ". ";
+}
+
+/* 侧边栏自动编号 */
+.outline-content {
+  counter-reset: outline-h1;
+}
+
+.outline-h1 {
+  counter-reset: outline-h2;
+}
+
+.outline-h2 {
+  counter-reset: outline-h3;
+}
+
+.outline-h3 {
+  counter-reset: outline-h4;
+}
+
+.outline-h4 {
+  counter-reset: outline-h5;
+}
+
+.outline-h5 {
+  counter-reset: outline-h6;
+}
+
+.outline-content .outline-h1 .outline-label:before {
+  counter-increment: outline-h1;
+  content: counter(outline-h1) ". ";
+}
+
+
+.outline-content .outline-h2 .outline-label:before {
+  counter-increment: outline-h2;
+  content: counter(outline-h1) ". "counter(outline-h2) ". ";
+}
+
+.outline-content .outline-h3 .outline-label:before {
+  counter-increment: outline-h3;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) ". ";
+}
+
+.outline-content .outline-h4 .outline-label:before {
+  counter-increment: outline-h4;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) ". ";
+}
+
+.outline-content .outline-h5 .outline-label:before {
+  counter-increment: outline-h5;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) "."counter(outline-h5) ". ";
+}
+
+.outline-content .outline-h6 .outline-label:before {
+  counter-increment: outline-h6;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) "."counter(outline-h5) "."counter(outline-h6) ". ";
+}
+
+ :root {--mermaid-font-zoom:1.44em ;} 
+</style>
+</head>
+<body class='typora-export os-windows'>
+<div id='write'  class=''><h1><a name="🔬-星型模型直接查询实战" class="md-header-anchor"></a><span>🔬 星型模型直接查询实战</span></h1><h2><a name="第-4-章-·-多表-join-与-nl2sql-挑战" class="md-header-anchor"></a><span>第 4 章 · 多表 JOIN 与 NL2SQL 挑战</span></h2><blockquote><p><strong><span>讲师：大数据实训团队</span></strong><span> | </span><strong><span>课时：90 分钟</span></strong><span> | </span><strong><span>类型：实操为主</span></strong></p></blockquote><div class='md-toc' mdtype='toc'><p class="md-toc-content" role="list"><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n0"><a class="md-toc-inner" href="#🔬-星型模型直接查询实战">🔬 星型模型直接查询实战</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n2"><a class="md-toc-inner" href="#第-4-章-·-多表-join-与-nl2sql-挑战">第 4 章 · 多表 JOIN 与 NL2SQL 挑战</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n7"><a class="md-toc-inner" href="#📌-本章学习目标">📌 本章学习目标</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n21"><a class="md-toc-inner" href="#🎯-实验准备">🎯 实验准备</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n22"><a class="md-toc-inner" href="#环境确认">环境确认</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n24"><a class="md-toc-inner" href="#实验策略">实验策略</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n44"><a class="md-toc-inner" href="#📋-测试问题集10-题由易到难）">📋 测试问题集（10 题，由易到难）</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n102"><a class="md-toc-inner" href="#🧪-实验-a零样本测试不提供-schema）">🧪 实验 A：零样本测试（不提供 Schema）</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n103"><a class="md-toc-inner" href="#系统提示词">系统提示词</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n105"><a class="md-toc-inner" href="#典型-llm-输出与问题分析">典型 LLM 输出与问题分析</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n136"><a class="md-toc-inner" href="#🧪-实验-b完整-schema-注入测试">🧪 实验 B：完整 Schema 注入测试</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n137"><a class="md-toc-inner" href="#改进后的-system-prompt">改进后的 System Prompt</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n140"><a class="md-toc-inner" href="#逐题结果分析">逐题结果分析</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n141"><a class="md-toc-inner" href="#✅-q12-表-join）2026-年-5-月的总销售额">✅ Q1（2 表 JOIN）：2026 年 5 月的总销售额</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n143"><a class="md-toc-inner" href="#✅-q23-表-join）各渠道的订单量和销售额排行">✅ Q2（3 表 JOIN）：各渠道的订单量和销售额排行</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n145"><a class="md-toc-inner" href="#✅-q53-表-join）金卡会员的人均消费">✅ Q5（3 表 JOIN）：金卡会员的人均消费</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n148"><a class="md-toc-inner" href="#⚠️-q85-表-join）手机品类下各品牌的销售额排名">⚠️ Q8（5 表 JOIN）：手机品类下各品牌的销售额排名</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n152"><a class="md-toc-inner" href="#❌-q97-表-join）华东区金卡会员通过-app-购买手机品牌-top5">❌ Q9（7 表 JOIN）：华东区金卡会员通过 App 购买手机品牌 TOP5</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n161"><a class="md-toc-inner" href="#📊-nl2sql-错误模式系统分类">📊 NL2SQL 错误模式系统分类</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n200"><a class="md-toc-inner" href="#💸-注意力稀释效应为什么-join-越多问题越大">💸 注意力稀释效应：为什么 JOIN 越多问题越大</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n203"><a class="md-toc-inner" href="#token-消耗对比">Token 消耗对比</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n236"><a class="md-toc-inner" href="#🛠️-缓解策略临时方案治标不治本）">🛠️ 缓解策略（临时方案，治标不治本）</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n237"><a class="md-toc-inner" href="#策略-1创建视图封装常用-join">策略 1：创建视图封装常用 JOIN</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n246"><a class="md-toc-inner" href="#策略-2few-shot-优化">策略 2：Few-Shot 优化</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n248"><a class="md-toc-inner" href="#策略-3分步查询">策略 3：分步查询</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n253"><a class="md-toc-inner" href="#🎯-关键结论必须引入大宽表">🎯 关键结论：必须引入大宽表</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n291"><a class="md-toc-inner" href="#🧪-独立练习">🧪 独立练习</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n292"><a class="md-toc-inner" href="#基础练习">基础练习</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n298"><a class="md-toc-inner" href="#进阶挑战">进阶挑战</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n304"><a class="md-toc-inner" href="#思考题">思考题</a></span></p></div><hr /><h2><a name="📌-本章学习目标" class="md-header-anchor"></a><span>📌 本章学习目标</span></h2><p><span>学完本章后，你将能够：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>亲身感受星型模型在 NL2SQL 场景下的真实痛点</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>分析 LLM 在多表 JOIN 场景下的典型错误模式</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>掌握通过 Prompt Engineering 缓解多表查询问题的实用技巧</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>量化测量星型模型下的 NL2SQL 准确率</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>用数据证明引入大宽表的必要性</span></p></li></ul><hr /><h2><a name="🎯-实验准备" class="md-header-anchor"></a><span>🎯 实验准备</span></h2><h3><a name="环境确认" class="md-header-anchor"></a><span>环境确认</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash" style="break-inside: unset;"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><span><span>​</span>x</span></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 1. 确认 MySQL 服务运行中</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">mysql <span class="cm-attribute">-u</span> root <span class="cm-attribute">-padmin</span> <span class="cm-attribute">-e</span> <span class="cm-string">"SELECT 1"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 2. 确认 shop_db 数据完整性</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">mysql <span class="cm-attribute">-u</span> root <span class="cm-attribute">-padmin</span> shop_db <span class="cm-attribute">-e</span> <span class="cm-string">"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_customer'</span> AS 表名, COUNT(*) AS 行数 FROM dim_customer</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_product'</span>, COUNT(*) FROM dim_product</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_product_category'</span>, COUNT(*) FROM dim_product_category</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_region'</span>, COUNT(*) FROM dim_region</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_channel'</span>, COUNT(*) FROM dim_channel</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_order_status'</span>, COUNT(*) FROM dim_order_status</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_payment_method'</span>, COUNT(*) FROM dim_payment_method</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'dim_date'</span>, COUNT(*) FROM dim_date</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'fact_orders'</span>, COUNT(*) FROM fact_orders</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">UNION ALL</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">SELECT <span class="cm-string">'fact_order_details'</span>, COUNT(*) FROM fact_order_details;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-string">"</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 556px;"></div><div class="CodeMirror-gutters" style="display: none; height: 556px;"></div></div></div></pre><h3><a name="实验策略" class="md-header-anchor"></a><span>实验策略</span></h3><p><span>对</span><strong><span>同一批业务问题</span></strong><span>，采用三种方式对比：</span></p><figure><table><thead><tr><th><span>方式</span></th><th><span>描述</span></th><th><span>目的</span></th></tr></thead><tbody><tr><td><strong><span>A: 零样本</span></strong></td><td><span>不提供任何表结构，直接让 LLM 生成 SQL</span></td><td><span>测试 LLM 的「幻觉」程度</span></td></tr><tr><td><strong><span>B: Schema 注入</span></strong></td><td><span>提供全部 10 张表结构后生成 SQL</span></td><td><span>测试有上下文时的准确率</span></td></tr><tr><td><strong><span>C: 标准答案</span></strong></td><td><span>人工编写正确答案 SQL</span></td><td><span>作为对比基准</span></td></tr></tbody></table></figure><hr /><h2><a name="📋-测试问题集10-题由易到难）" class="md-header-anchor"></a><span>📋 测试问题集（10 题，由易到难）</span></h2><figure><table><thead><tr><th><span>#</span></th><th><span>业务问题</span></th><th style='text-align:center;' ><span>难度</span></th><th style='text-align:center;' ><span>最少需 JOIN 表数</span></th></tr></thead><tbody><tr><td><span>Q1</span></td><td><span>2026 年 5 月的总销售额是多少？</span></td><td style='text-align:center;' ><span>⭐</span></td><td style='text-align:center;' ><span>2</span></td></tr><tr><td><span>Q2</span></td><td><span>各渠道的订单量和销售额排行</span></td><td style='text-align:center;' ><span>⭐⭐</span></td><td style='text-align:center;' ><span>3</span></td></tr><tr><td><span>Q3</span></td><td><span>上月销售额最高的 5 个品类</span></td><td style='text-align:center;' ><span>⭐⭐</span></td><td style='text-align:center;' ><span>4</span></td></tr><tr><td><span>Q4</span></td><td><span>华东区各城市的 GMV 贡献</span></td><td style='text-align:center;' ><span>⭐⭐⭐</span></td><td style='text-align:center;' ><span>4</span></td></tr><tr><td><span>Q5</span></td><td><span>金卡会员的人均消费金额</span></td><td style='text-align:center;' ><span>⭐⭐⭐</span></td><td style='text-align:center;' ><span>3</span></td></tr><tr><td><span>Q6</span></td><td><span>各支付方式的使用占比</span></td><td style='text-align:center;' ><span>⭐⭐</span></td><td style='text-align:center;' ><span>3</span></td></tr><tr><td><span>Q7</span></td><td><span>2026 年 Q1 每月 GMV 趋势</span></td><td style='text-align:center;' ><span>⭐⭐⭐</span></td><td style='text-align:center;' ><span>3</span></td></tr><tr><td><span>Q8</span></td><td><span>手机品类下各品牌的销售额排名</span></td><td style='text-align:center;' ><span>⭐⭐⭐</span></td><td style='text-align:center;' ><span>5</span></td></tr><tr><td><span>Q9</span></td><td><span>华东区金卡会员通过 App 购买手机品牌的销售额 TOP5</span></td><td style='text-align:center;' ><span>⭐⭐⭐⭐</span></td><td style='text-align:center;' ><strong><span>7</span></strong></td></tr><tr><td><span>Q10</span></td><td><span>2026 年各品类月度退款率趋势</span></td><td style='text-align:center;' ><span>⭐⭐⭐⭐⭐</span></td><td style='text-align:center;' ><strong><span>6</span></strong></td></tr></tbody></table></figure><hr /><h2><a name="🧪-实验-a零样本测试不提供-schema）" class="md-header-anchor"></a><span>🧪 实验 A：零样本测试（不提供 Schema）</span></h2><h3><a name="系统提示词" class="md-header-anchor"></a><span>系统提示词</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">你是一个 SQL 专家。请根据用户问题生成 MySQL 查询。</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">直接输出 SQL，不要解释。</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 44px;"></div><div class="CodeMirror-gutters" style="display: none; height: 44px;"></div></div></div></pre><h3><a name="典型-llm-输出与问题分析" class="md-header-anchor"></a><span>典型 LLM 输出与问题分析</span></h3><p><strong><span>Q1: 2026 年 5 月的总销售额是多少？</span></strong></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- ❌ LLM 零样本输出（典型幻觉）</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span> SUM(amount) <span class="cm-keyword">AS</span> total_sales</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> orders</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHERE</span> <span class="cm-builtin">YEAR</span>(order_time) = <span class="cm-number">2026</span> <span class="cm-keyword">AND</span> MONTH(order_time) = <span class="cm-number">5</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 89px;"></div><div class="CodeMirror-gutters" style="display: none; height: 89px;"></div></div></div></pre><figure><table><thead><tr><th><span>问题</span></th><th><span>说明</span></th></tr></thead><tbody><tr><td><code>amount</code><span> 字段不存在</span></td><td><span>实际是 </span><code>fact_orders.actual_amount</code></td></tr><tr><td><code>orders</code><span> 表不存在</span></td><td><span>实际是 </span><code>fact_orders</code></td></tr><tr><td><code>order_time</code><span> 字段不存在</span></td><td><span>需关联 </span><code>dim_date.date_value</code></td></tr><tr><td><span>缺少 JOIN、缺少状态筛选</span></td><td><span>—</span></td></tr></tbody></table></figure><p><strong><span>Q3: 上月销售额最高的 5 个品类</span></strong></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- ❌ 零样本输出</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span> category, SUM(sales) <span class="cm-keyword">AS</span> total</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> products</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> order_items <span class="cm-keyword">ON</span> products<span class="cm-variable-2">.id</span> = order_items<span class="cm-variable-2">.product_id</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHERE</span> order_date <span class="cm-keyword">BETWEEN</span> <span class="cm-string">'2026-05-01'</span> <span class="cm-keyword">AND</span> <span class="cm-string">'2026-05-31'</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">GROUP</span> <span class="cm-keyword">BY</span> category</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">ORDER</span> <span class="cm-keyword">BY</span> total <span class="cm-keyword">DESC</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">LIMIT</span> <span class="cm-number">5</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 178px;"></div><div class="CodeMirror-gutters" style="display: none; height: 178px;"></div></div></div></pre><figure><table><thead><tr><th><span>问题</span></th><th><span>说明</span></th></tr></thead><tbody><tr><td><span>全部表名/字段名都是编造的</span></td><td><span>完全是幻觉输出</span></td></tr></tbody></table></figure><blockquote><p><span>📊 </span><strong><span>零样本准确率：0/10</span></strong><span> — 没有任何 Schema 上下文，LLM 只能凭对&quot;电商数据库&quot;的常识猜测，100% 产生幻觉。</span></p></blockquote><hr /><h2><a name="🧪-实验-b完整-schema-注入测试" class="md-header-anchor"></a><span>🧪 实验 B：完整 Schema 注入测试</span></h2><h3><a name="改进后的-system-prompt" class="md-header-anchor"></a><span>改进后的 System Prompt</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="markdown" style="break-inside: unset;"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="markdown"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">你是一个 MySQL 数据库专家。以下是 shop_db 电商数据仓库的完整表结构。</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## 表关系总览</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.customer_key → dim_customer.customer_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.order_date_key → dim_date.date_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.payment_date_key → dim_date.date_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.shipping_date_key → dim_date.date_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.region_key → dim_region.region_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.order_status_key → dim_order_status.order_status_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.payment_method_key → dim_payment_method.payment_method_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_orders.channel_key → dim_channel.channel_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_order_details.order_key → fact_orders.order_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_order_details.product_key → dim_product.product_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">fact_order_details.order_date_key → dim_date.date_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">- </span><span class="cm-variable-2">dim_product.category_key → dim_product_category.category_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_date（日期维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">date_key INT PK, date_value DATE, year SMALLINT, quarter TINYINT,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">month TINYINT, month_name VARCHAR(10), is_weekend TINYINT, is_holiday TINYINT</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_customer（客户维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">customer_key BIGINT PK, customer_id VARCHAR(32) UK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">customer_name VARCHAR(100), gender TINYINT, age_group VARCHAR(20),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">customer_level VARCHAR(20), total_order_amount DECIMAL(12,2),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">total_order_count INT, first_order_date DATE, last_order_date DATE</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_product（商品维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">product_key BIGINT PK, product_id VARCHAR(32) UK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">product_name VARCHAR(200), category_key INT FK, brand VARCHAR(100),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">unit VARCHAR(20), unit_price DECIMAL(10,2), cost_price DECIMAL(10,2)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_product_category（品类维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">category_key INT PK, category_id VARCHAR(32) UK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">category_name VARCHAR(100), parent_category_key INT,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">category_level TINYINT, category_path VARCHAR(500)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_region（区域维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">region_key INT PK, region_id VARCHAR(20) UK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">region_name VARCHAR(100), parent_region_key INT,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">region_level TINYINT, region_path VARCHAR(500)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_channel（渠道维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">channel_key TINYINT PK, channel_id VARCHAR(20) UK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">channel_name VARCHAR(50), channel_type VARCHAR(20)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_order_status（订单状态维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">order_status_key TINYINT PK, status_name VARCHAR(50), status_type VARCHAR(20)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## dim_payment_method（支付方式维度表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">payment_method_key TINYINT PK, method_name VARCHAR(50), method_type VARCHAR(20)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## fact_orders（订单事实表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">order_key BIGINT PK, order_id VARCHAR(32) UK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">customer_key BIGINT FK, order_date_key INT FK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">payment_date_key INT FK, shipping_date_key INT FK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">region_key INT FK, order_status_key TINYINT FK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">payment_method_key TINYINT FK, channel_key TINYINT FK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">item_count INT, item_sku_count INT,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">original_amount DECIMAL(12,2), discount_amount DECIMAL(12,2),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">coupon_amount DECIMAL(12,2), shipping_fee DECIMAL(10,2),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">actual_amount DECIMAL(12,2), paid_amount DECIMAL(12,2),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">refund_amount DECIMAL(12,2), is_first_order TINYINT</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## fact_order_details（订单明细事实表）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">order_detail_key BIGINT PK, order_detail_id VARCHAR(32) UK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">order_key BIGINT FK, product_key BIGINT FK,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">order_date_key INT FK, quantity INT,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">unit_price DECIMAL(10,2), original_unit_price DECIMAL(10,2),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">discount DECIMAL(10,2), sub_total DECIMAL(12,2),</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">cost_price DECIMAL(10,2)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" cm-header cm-header2 CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class=" cm-header cm-header2">## SQL 生成规则</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">1. </span><span class="cm-variable-2">仅生成 SELECT 语句，禁止 INSERT/UPDATE/DELETE/DROP</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">2. </span><span class="cm-variable-2">金额使用 ROUND(..., 2) 保留两位小数</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">3. </span><span class="cm-variable-2">排除已取消（status_key=5）和已退款（status_key=6）的订单</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">4. </span><span class="cm-variable-2">排名使用 ORDER BY ... DESC LIMIT N</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-block-start cm-variable-2">5. </span><span class="cm-variable-2">只输出纯 SQL，不要任何额外解释</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 1711px;"></div><div class="CodeMirror-gutters" style="display: none; height: 1711px;"></div></div></div></pre><hr /><h3><a name="逐题结果分析" class="md-header-anchor"></a><span>逐题结果分析</span></h3><h4><a name="✅-q12-表-join）2026-年-5-月的总销售额" class="md-header-anchor"></a><span>✅ Q1（2 表 JOIN）：2026 年 5 月的总销售额</span></h4><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- LLM 生成 ✅ 正确</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span> ROUND(SUM(o<span class="cm-variable-2">.actual_amount</span>), <span class="cm-number">2</span>) <span class="cm-keyword">AS</span> 总销售额</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> fact_orders o</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_date d <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.order_date_key</span> = d<span class="cm-variable-2">.date_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHERE</span> d<span class="cm-variable-2">.year</span> = <span class="cm-number">2026</span> <span class="cm-keyword">AND</span> d<span class="cm-variable-2">.month</span> = <span class="cm-number">5</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;<span class="cm-keyword">AND</span> o<span class="cm-variable-2">.order_status_key</span> <span class="cm-keyword">NOT</span> <span class="cm-keyword">IN</span> (<span class="cm-number">5</span>, <span class="cm-number">6</span>);</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 133px;"></div><div class="CodeMirror-gutters" style="display: none; height: 133px;"></div></div></div></pre><h4><a name="✅-q23-表-join）各渠道的订单量和销售额排行" class="md-header-anchor"></a><span>✅ Q2（3 表 JOIN）：各渠道的订单量和销售额排行</span></h4><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- LLM 生成 ✅ 正确</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span> ch<span class="cm-variable-2">.channel_name</span> <span class="cm-keyword">AS</span> 渠道,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; <span class="cm-keyword">COUNT</span>(<span class="cm-keyword">DISTINCT</span> o<span class="cm-variable-2">.order_key</span>) <span class="cm-keyword">AS</span> 订单量,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; ROUND(SUM(o<span class="cm-variable-2">.actual_amount</span>), <span class="cm-number">2</span>) <span class="cm-keyword">AS</span> 销售额</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> fact_orders o</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_channel ch <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.channel_key</span> = ch<span class="cm-variable-2">.channel_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_date d <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.order_date_key</span> = d<span class="cm-variable-2">.date_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHERE</span> d<span class="cm-variable-2">.year</span> = <span class="cm-number">2026</span> <span class="cm-keyword">AND</span> d<span class="cm-variable-2">.month</span> = <span class="cm-number">5</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">GROUP</span> <span class="cm-keyword">BY</span> ch<span class="cm-variable-2">.channel_name</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">ORDER</span> <span class="cm-keyword">BY</span> 销售额 <span class="cm-keyword">DESC</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 222px;"></div><div class="CodeMirror-gutters" style="display: none; height: 222px;"></div></div></div></pre><h4><a name="✅-q53-表-join）金卡会员的人均消费" class="md-header-anchor"></a><span>✅ Q5（3 表 JOIN）：金卡会员的人均消费</span></h4><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- LLM 生成 ✅ 正确</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span> ROUND(SUM(o<span class="cm-variable-2">.actual_amount</span>) / <span class="cm-keyword">COUNT</span>(<span class="cm-keyword">DISTINCT</span> c<span class="cm-variable-2">.customer_key</span>), <span class="cm-number">2</span>) <span class="cm-keyword">AS</span> 人均消费</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> fact_orders o</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_customer c <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.customer_key</span> = c<span class="cm-variable-2">.customer_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHERE</span> c<span class="cm-variable-2">.customer_level</span> = <span class="cm-string">'金卡'</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 111px;"></div><div class="CodeMirror-gutters" style="display: none; height: 111px;"></div></div></div></pre><hr /><h4><a name="⚠️-q85-表-join）手机品类下各品牌的销售额排名" class="md-header-anchor"></a><span>⚠️ Q8（5 表 JOIN）：手机品类下各品牌的销售额排名</span></h4><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- LLM 生成（⚠️ 有一处关联字段错误）</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span> p<span class="cm-variable-2">.brand</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; ROUND(SUM(od<span class="cm-variable-2">.sub_total</span>), <span class="cm-number">2</span>) <span class="cm-keyword">AS</span> 销售额</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> fact_order_details od</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_product p <span class="cm-keyword">ON</span> od<span class="cm-variable-2">.product_key</span> = p<span class="cm-variable-2">.product_key</span> &nbsp; &nbsp; &nbsp; <span class="cm-comment">-- ✅ 正确</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_product_category pc <span class="cm-keyword">ON</span> p<span class="cm-variable-2">.product_key</span> = pc<span class="cm-variable-2">.category_key</span> &nbsp;<span class="cm-comment">-- ❌ 错误！</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHERE</span> pc<span class="cm-variable-2">.category_name</span> = <span class="cm-string">'手机通讯'</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-comment">-- ✅ 筛选条件正确</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">GROUP</span> <span class="cm-keyword">BY</span> p<span class="cm-variable-2">.brand</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">ORDER</span> <span class="cm-keyword">BY</span> 销售额 <span class="cm-keyword">DESC</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 200px;"></div><div class="CodeMirror-gutters" style="display: none; height: 200px;"></div></div></div></pre><blockquote><p><strong><span>错误分析</span></strong><span>：</span><code>p.product_key = pc.category_key</code><span> 应该是 </span><code>p.category_key = pc.category_key</code><span>。</span>
+<code>product_key</code><span> 是商品维度的主键，</span><code>category_key</code><span> 才是品类维度的外键。LLM 混淆了这两个字段。</span></p></blockquote><h4><a name="❌-q97-表-join）华东区金卡会员通过-app-购买手机品牌-top5" class="md-header-anchor"></a><span>❌ Q9（7 表 JOIN）：华东区金卡会员通过 App 购买手机品牌 TOP5</span></h4><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql" style="break-inside: unset;"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- LLM 生成（多处潜在问题）</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span> p<span class="cm-variable-2">.brand</span>, ROUND(SUM(od<span class="cm-variable-2">.sub_total</span>), <span class="cm-number">2</span>) <span class="cm-keyword">AS</span> 销售额</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> fact_order_details od</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> fact_orders o &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-keyword">ON</span> od<span class="cm-variable-2">.order_key</span> = o<span class="cm-variable-2">.order_key</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-comment">-- ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_product p &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-keyword">ON</span> od<span class="cm-variable-2">.product_key</span> = p<span class="cm-variable-2">.product_key</span> &nbsp; &nbsp; &nbsp;<span class="cm-comment">-- ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_product_category pc <span class="cm-keyword">ON</span> p<span class="cm-variable-2">.category_key</span> = pc<span class="cm-variable-2">.category_key</span> &nbsp;<span class="cm-comment">-- ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_customer c &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-keyword">ON</span> o<span class="cm-variable-2">.customer_key</span> = c<span class="cm-variable-2">.customer_key</span> &nbsp; &nbsp; <span class="cm-comment">-- ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_region r &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-keyword">ON</span> o<span class="cm-variable-2">.region_key</span> = r<span class="cm-variable-2">.region_key</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-comment">-- ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_channel ch &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-keyword">ON</span> o<span class="cm-variable-2">.channel_key</span> = ch<span class="cm-variable-2">.channel_key</span> &nbsp; &nbsp; &nbsp;<span class="cm-comment">-- ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">WHERE</span> pc<span class="cm-variable-2">.category_name</span> = <span class="cm-string">'手机通讯'</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;<span class="cm-keyword">AND</span> r<span class="cm-variable-2">.region_name</span> = <span class="cm-string">'华东'</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment">-- ⚠️ 实际值是 '华东' 还是 '华东区'？</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;<span class="cm-keyword">AND</span> c<span class="cm-variable-2">.customer_level</span> = <span class="cm-string">'金卡'</span> &nbsp; &nbsp; &nbsp; <span class="cm-comment">-- ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;<span class="cm-keyword">AND</span> ch<span class="cm-variable-2">.channel_name</span> = <span class="cm-string">'App 商城'</span> &nbsp; &nbsp;<span class="cm-comment">-- ⚠️ 实际值是 'App 商城' 还是 'APP商城'？</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">GROUP</span> <span class="cm-keyword">BY</span> p<span class="cm-variable-2">.brand</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">ORDER</span> <span class="cm-keyword">BY</span> 销售额 <span class="cm-keyword">DESC</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">LIMIT</span> <span class="cm-number">5</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 356px;"></div><div class="CodeMirror-gutters" style="display: none; height: 356px;"></div></div></div></pre><p><strong><span>7 表 JOIN！</span></strong><span> 核心问题：</span></p><ul><li><span>LLM 不知道枚举值的精确写法（</span><code>&#39;华东&#39;</code><span> vs </span><code>&#39;华东区&#39;</code><span>，</span><code>&#39;App 商城&#39;</code><span> vs </span><code>&#39;APP商城&#39;</code><span>）</span></li><li><span>注意力被 7 张表的关联关系严重分散</span></li></ul><hr /><h2><a name="📊-nl2sql-错误模式系统分类" class="md-header-anchor"></a><span>📊 NL2SQL 错误模式系统分类</span></h2><p><span>通过 10 题 × 多次测试，我们归纳出 6 大类错误：</span></p><figure><table><thead><tr><th><span>错误类型</span></th><th style='text-align:center;' ><span>占比</span></th><th><span>典型表现</span></th><th><span>根本原因</span></th></tr></thead><tbody><tr><td><span>🔴 </span><strong><span>表名/字段名幻觉</span></strong></td><td style='text-align:center;' ><span>20%</span></td><td><span>捏造不存在的表或字段</span></td><td><span>无 Schema 或 Schema 不足</span></td></tr><tr><td><span>🔴 </span><strong><span>JOIN 条件错误</span></strong></td><td style='text-align:center;' ><span>35%</span></td><td><span>代理键和业务键混淆，关联错字段</span></td><td><span>不理解外键参照关系</span></td></tr><tr><td><span>🟡 </span><strong><span>字段值不精确</span></strong></td><td style='text-align:center;' ><span>15%</span></td><td><code>&#39;华东&#39;</code><span> vs </span><code>&#39;华东区&#39;</code></td><td><span>对维度表枚举值不了解</span></td></tr><tr><td><span>🟡 </span><strong><span>聚合粒度错误</span></strong></td><td style='text-align:center;' ><span>15%</span></td><td><span>订单级求和 vs 明细级求和混用</span></td><td><span>不理解表的业务粒度</span></td></tr><tr><td><span>🟢 </span><strong><span>SQL 语法错误</span></strong></td><td style='text-align:center;' ><span>10%</span></td><td><span>GROUP BY 遗漏、别名冲突</span></td><td><span>LLM 注意力分散</span></td></tr><tr><td><span>🟢 </span><strong><span>业务逻辑错误</span></strong></td><td style='text-align:center;' ><span>5%</span></td><td><span>退款率计算公式错误</span></td><td><span>业务语义理解偏差</span></td></tr></tbody></table></figure><hr /><h2><a name="💸-注意力稀释效应为什么-join-越多问题越大" class="md-header-anchor"></a><span>💸 注意力稀释效应：为什么 JOIN 越多问题越大</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">单表 (Q1): &nbsp; &nbsp; ████████████████████ 100% 注意力 → 准确率 95%+</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">2-3表 (Q2-7):  ████████████░░░░░░░░  65% 注意力 → 准确率 85%</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">4-5表 (Q8): &nbsp;  ████████░░░░░░░░░░░░  40% 注意力 → 准确率 70%</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">6-7表 (Q9-10): ████░░░░░░░░░░░░░░░░  20% 注意力 → 准确率 45%</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 89px;"></div><div class="CodeMirror-gutters" style="display: none; height: 89px;"></div></div></div></pre><p><span>每多 JOIN 一张表，LLM 需要在 Prompt 中</span><strong><span>多理解一个完整表结构</span></strong><span>，并在生成 SQL 时</span><strong><span>多匹配一个精确关联条件</span></strong><span>。当 JOIN 达到 7 张表时，LLM 的有效注意力已被稀释到难以准确选择正确字段的程度。</span></p><h3><a name="token-消耗对比" class="md-header-anchor"></a><span>Token 消耗对比</span></h3><figure><table><thead><tr><th><span>问题</span></th><th style='text-align:center;' ><span>Schema Prompt Token</span></th><th style='text-align:center;' ><span>LLM 耗时</span></th><th style='text-align:center;' ><span>SQL Token</span></th><th style='text-align:center;' ><span>准确率</span></th></tr></thead><tbody><tr><td><span>Q1（2表 JOIN）</span></td><td style='text-align:center;' ><span>1200</span></td><td style='text-align:center;' ><span>1.2s</span></td><td style='text-align:center;' ><span>85</span></td><td style='text-align:center;' ><span>95%</span></td></tr><tr><td><span>Q5（3表 JOIN）</span></td><td style='text-align:center;' ><span>1500</span></td><td style='text-align:center;' ><span>1.8s</span></td><td style='text-align:center;' ><span>120</span></td><td style='text-align:center;' ><span>85%</span></td></tr><tr><td><span>Q8（5表 JOIN）</span></td><td style='text-align:center;' ><span>2500</span></td><td style='text-align:center;' ><span>3.1s</span></td><td style='text-align:center;' ><span>185</span></td><td style='text-align:center;' ><span>70%</span></td></tr><tr><td><span>Q9（7表 JOIN）</span></td><td style='text-align:center;' ><span>3500</span></td><td style='text-align:center;' ><span>5.4s</span></td><td style='text-align:center;' ><span>250</span></td><td style='text-align:center;' ><span>45%</span></td></tr></tbody></table></figure><hr /><h2><a name="🛠️-缓解策略临时方案治标不治本）" class="md-header-anchor"></a><span>🛠️ 缓解策略（临时方案，治标不治本）</span></h2><h3><a name="策略-1创建视图封装常用-join" class="md-header-anchor"></a><span>策略 1：创建视图封装常用 JOIN</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="sql" style="break-inside: unset;"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="sql"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">-- 将常用维度预 JOIN 成视图</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">CREATE</span> VIEW v_order_summary <span class="cm-keyword">AS</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">SELECT</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  o<span class="cm-variable-2">.order_key</span>, o<span class="cm-variable-2">.actual_amount</span>, o<span class="cm-variable-2">.item_count</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  d<span class="cm-variable-2">.date_value</span> <span class="cm-keyword">AS</span> order_date,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  d<span class="cm-variable-2">.year</span> <span class="cm-keyword">AS</span> order_year, d<span class="cm-variable-2">.month</span> <span class="cm-keyword">AS</span> order_month,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  c<span class="cm-variable-2">.customer_level</span>, c<span class="cm-variable-2">.age_group</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  ch<span class="cm-variable-2">.channel_name</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  r<span class="cm-variable-2">.region_name</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  os<span class="cm-variable-2">.status_name</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">FROM</span> fact_orders o</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_date d &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.order_date_key</span> = d<span class="cm-variable-2">.date_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_customer c &nbsp; &nbsp; &nbsp; <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.customer_key</span> = c<span class="cm-variable-2">.customer_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_channel ch &nbsp; &nbsp; &nbsp; <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.channel_key</span> = ch<span class="cm-variable-2">.channel_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_region r &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-keyword">ON</span> o<span class="cm-variable-2">.region_key</span> = r<span class="cm-variable-2">.region_key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">JOIN</span> dim_order_status os &nbsp;<span class="cm-keyword">ON</span> o<span class="cm-variable-2">.order_status_key</span> = os<span class="cm-variable-2">.order_status_key</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 356px;"></div><div class="CodeMirror-gutters" style="display: none; height: 356px;"></div></div></div></pre><ul><li><span>✅ 减少了部分 JOIN</span></li><li><span>❌ 视图只覆盖了订单维度，不包含商品/品类维度</span></li><li><span>❌ 多个视图之间仍需 JOIN</span></li></ul><h3><a name="策略-2few-shot-优化" class="md-header-anchor"></a><span>策略 2：Few-Shot 优化</span></h3><p><span>为每类高频问题提供 2-3 个准确示例</span></p><h3><a name="策略-3分步查询" class="md-header-anchor"></a><span>策略 3：分步查询</span></h3><p><span>引导 LLM 先用子查询缩小范围，再 JOIN</span></p><blockquote><p><span>⚠️ </span><strong><span>这些方案都无法从根本上解决问题，只是降低出错的概率。</span></strong></p></blockquote><hr /><h2><a name="🎯-关键结论必须引入大宽表" class="md-header-anchor"></a><span>🎯 关键结论：必须引入大宽表</span></h2><figure><table><thead><tr><th><span>维度</span></th><th style='text-align:center;' ><span>星型模型直接查询</span></th><th style='text-align:center;' ><span>大宽表查询</span></th><th style='text-align:center;' ><span>提升幅度</span></th></tr></thead><tbody><tr><td><span>平均需 JOIN 表数</span></td><td style='text-align:center;' ><span>3-7 张</span></td><td style='text-align:center;' ><strong><span>0 张</span></strong></td><td style='text-align:center;' ><span>100%</span></td></tr><tr><td><span>NL2SQL 准确率</span></td><td style='text-align:center;' ><span>60-80%</span></td><td style='text-align:center;' ><strong><span>92-97%</span></strong></td><td style='text-align:center;' ><span>+30%+</span></td></tr><tr><td><span>Prompt Token 消耗</span></td><td style='text-align:center;' ><span>2500-3500</span></td><td style='text-align:center;' ><strong><span>800-1200</span></strong></td><td style='text-align:center;' ><span>-70%</span></td></tr><tr><td><span>LLM 单次推理延迟</span></td><td style='text-align:center;' ><span>3-5s</span></td><td style='text-align:center;' ><strong><span>1-2s</span></strong></td><td style='text-align:center;' ><span>-60%</span></td></tr><tr><td><span>SQL 执行时间</span></td><td style='text-align:center;' ><span>50-200ms</span></td><td style='text-align:center;' ><strong><span>10-30ms</span></strong></td><td style='text-align:center;' ><span>-80%</span></td></tr><tr><td><span>数据存储冗余</span></td><td style='text-align:center;' ><span>无</span></td><td style='text-align:center;' ><span>~3x</span></td><td style='text-align:center;' ><span>可接受</span></td></tr></tbody></table></figure><hr /><h2><a name="🧪-独立练习" class="md-header-anchor"></a><span>🧪 独立练习</span></h2><h3><a name="基础练习" class="md-header-anchor"></a><span>基础练习</span></h3><ol start='' ><li><span>用 LLM 生成 Q10（各品类月度退款率趋势）的 SQL，记录尝试次数和每次的错误</span></li><li><span>将自己手写的标准 SQL 与 LLM 生成的结果逐行对比，标注出差异</span></li></ol><h3><a name="进阶挑战" class="md-header-anchor"></a><span>进阶挑战</span></h3><ol start='3' ><li><span>设计一个新的「刁钻」业务问题（至少需要 5 表 JOIN），测试 LLM 的表现</span></li><li><span>分析：为什么大宽表的 Prompt 能减少 70% 的 Token 消耗？</span></li></ol><h3><a name="思考题" class="md-header-anchor"></a><span>思考题</span></h3><ol start='5' ><li><span>如果不用大宽表，你能想到其他提升 NL2SQL 准确率的方法吗？（提示：RAG 召回相关表结构）</span></li></ol><hr /><blockquote><p><strong><span>🔜 下一章预告</span></strong><span>：大宽表设计与实现 — 一劳永逸解决所有 JOIN 问题！</span></p></blockquote></div>
+</body>
+</html>

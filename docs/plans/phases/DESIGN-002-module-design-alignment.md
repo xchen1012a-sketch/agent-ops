@@ -36,8 +36,18 @@
 - 2026-07-04：父目录及 5 个仓库的 `project-facts.md` 已补充已确认项目身份、当前阶段、数据库/AI 边界；未知项保留待确认。
 - 2026-07-04：6 套项目规则模板检查通过；业务代码及依赖/容器文件仍为 0。
 - 2026-07-04：企业级FastAPI/LangGraph目录、MySQL标准、代码/注释规范和契约优先开发顺序已形成跨仓标准；FOUND-010执行计划已预建但未启动。
+- 2026-07-04：5 项关键决策已通过 ADR 落地：
+  - `agent-suite-ops/docs/adr/0007-unified-auth.md`（统一认证 + JWT + RBAC + 前端统一用户表）
+  - `agent-suite-ops/docs/adr/0008-legal-knowledge-source.md`（法律 RAG + BGE-M3 + 不联网 + 引用格式 + 高风险升级）
+  - `agent-suite-ops/docs/adr/0009-recruitment-fairness.md`（PDF/文本 + 解析后删除 + 评分权重 40/25/15/20 + 敏感属性屏蔽 + 强制人工复核）
+  - `agent-suite-ops/docs/adr/0010-data-query-sql-safety.md`（MCP + sqlglot AST + 白名单 + shop_db 只读 + SQL 审计 90 天）
+  - `agent-suite-ops/docs/adr/0011-deployment-and-database-permissions.md`（端口、4 数据库账号、版本矩阵、Redis、Nginx、Docker 安全、可观测）
+- 2026-07-04：4 个模块的 `docs/specification.md` 已将"待详细设计确认"替换为"DESIGN-002 对齐结果"，并显式引用上述 ADR。
+- 2026-07-04：用户已确认"全部按推荐"作为 5 项决策的统一答复。
 
-以上仅证明开发准备文档完整，不代表模块详细设计已经完成。认证、法律知识来源、招聘规则、MCP/SQL 策略、飞书和部署参数仍需逐项与用户确认。
+DESIGN-002 整体验收通过。仍标注为"待用户提供"的项（课件法律知识库样本、招聘合成样本审阅、岗位说明模板等）属于子阶段（LEGAL-110 / RECRUIT-210）启动前的输入，不阻塞 DESIGN-002 阶段结束。
+
+进入 `FOUND-010` 编码前仍需用户明确授权（参见本文件"验收标准"最后一条）。
 
 ## 回滚方式
 

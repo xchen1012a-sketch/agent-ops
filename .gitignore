@@ -1,5 +1,6 @@
 # Reference courseware is not part of the engineering repository.
 /AI编程_智能问数实训(课件)/
+/docs/homework/AI编程_智能问数实训(课件)/
 
 # Local environment and generated files.
 .env
@@ -13,7 +14,11 @@ __pycache__/
 dist/
 build/
 coverage/
+.coverage
 .idea/
 .vscode/
 *.log
 
+# Claude Code hook state (personal, not committed)
+.claude/
+.claude/state/

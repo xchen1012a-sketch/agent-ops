@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: c4fcb7b6e6945caf
-- last refresh: 2026-07-04 21:11:16 +08:00
+- source hash: 837ef693f293eacd
+- last refresh: 2026-07-05 20:17:15 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -22,23 +22,126 @@
 
 ```text
 legal-consulting-agent/
+|-- .mypy_cache/
+|   |-- 3.12/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|-- .pytest_cache/
+|   |-- v/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|   |-- README.md
+|-- .ruff_cache/
+|   |-- 0.15.20/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|-- .uv-cache/
+|   |-- interpreter-v4/
+|   |-- sdists-v9/
+|   |-- .gitignore
+|   |-- .lock
+|   |-- CACHEDIR.TAG
+|-- .venv/
+|   |-- include/
+|   |-- Lib/
+|   |-- Scripts/
+|   |-- share/
+|   |-- .gitignore
+|   |-- .lock
+|   |-- CACHEDIR.TAG
+|   |-- pyvenv.cfg
 |-- docs/
+|   |-- acceptance-closeout.md
 |   |-- api-contract.md
 |   |-- architecture.md
+|   |-- detailed-design.md
 |   |-- specification.md
+|-- logs/
+|   |-- uvicorn-8081.err.log
+|   |-- uvicorn-8081.out.log
+|   |-- uvicorn-8088.err.log
+|   |-- uvicorn-8088.job.log
+|   |-- uvicorn-8088.out.log
+|-- migrations/
+|   |-- __pycache__/
+|   |-- versions/
+|   |-- env.py
+|   |-- script.py.mako
+|-- scripts/
+|   |-- .gitkeep
+|-- src/
+|   |-- legal_consulting_agent/
+|-- tests/
+|   |-- __pycache__/
+|   |-- contract/
+|   |-- e2e/
+|   |-- evaluation/
+|   |-- integration/
+|   |-- unit/
+|   |-- __init__.py
+|   |-- conftest.py
+|-- .coverage
+|-- .env
+|-- .env.example
 |-- .gitignore
 |-- AGENTS.md
+|-- alembic.ini
 |-- CLAUDE.md
+|-- Dockerfile
+|-- pyproject.toml
 |-- README.md
+|-- uv.lock
 ```
 
 ## [auto] Environment keys
 
-- No .env*.example keys detected.
+- AGENT_CONFIG_ENCRYPTION_KEY
+- APP_ENV
+- APP_NAME
+- APP_PORT
+- DATABASE_MAX_OVERFLOW
+- DATABASE_MIGRATION_URL
+- DATABASE_POOL_RECYCLE_SECONDS
+- DATABASE_POOL_SIZE
+- DATABASE_SLOW_QUERY_SECONDS
+- DATABASE_URL
+- DEEPSEEK_API_BASE
+- DEEPSEEK_API_KEY
+- DEEPSEEK_BACKOFF_SECONDS
+- DEEPSEEK_MAX_RETRIES
+- DEEPSEEK_MODEL
+- DEEPSEEK_TIMEOUT_SECONDS
+- EMBEDDING_BASE_URL
+- EMBEDDING_MODEL
+- HIGH_RISK_KEYWORDS_PATH
+- JWT_ACCESS_TTL_SECONDS
+- JWT_REFRESH_TTL_SECONDS
+- JWT_SECRET
+- LEGAL_KB_PATH
+- LOG_FORMAT
+- LOG_LEVEL
+- RAG_CATEGORY_FILTER_ENABLED
+- RAG_DENSE_WEIGHT
+- RAG_RECALL_TOP_N
+- RAG_RERANK_TOP_N
+- RAG_RERANKER_BASE_URL
+- RAG_RERANKER_ENABLED
+- RAG_RERANKER_MODEL
+- RAG_SIMILARITY_THRESHOLD
+- RAG_SPARSE_WEIGHT
+- RAG_VECTOR_COLLECTION
+- RAG_VECTOR_DB_URL
+- RATE_LIMIT_API_PER_MINUTE
+- RATE_LIMIT_LOGIN_PER_MINUTE
+- REDIS_URL
 
 ## [auto] Git status
 
-- Git status check failed: fatal: not a git repository (or any of the parent directories): .git
+- Current branch: legal-100-data-workflow-local
+- Working tree: has uncommitted changes
+- Remotes:
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (push)
 <!-- ai-facts:auto:end -->
 
 <!-- ai-facts:manual:start -->
@@ -73,8 +176,8 @@ legal-consulting-agent/
 
 | 字段 | 值 | 来源 | 状态 |
 |---|---|---|---|
-| 当前阶段 | DESIGN-002 模块详细设计对齐 | 父目录 `docs/plans/current.md` | 已确认 |
-| 下一步 | 确认法律知识、认证、数据模型、API与验收样本 | 父目录模块计划 | 已确认 |
+| 当前阶段 | LEGAL-100 法律咨询 Agent 业务实现 | 父目录 `docs/plans/current.md` | 已确认 |
+| 下一步 | 继续 `LEGAL-130` 后续表；RAG、知识库索引和真实 DeepSeek 调用后置到 `LEGAL-140` | 父目录 `docs/plans/current.md` + `docs/plans/phases/LEGAL-100-legal-consulting-agent.md` | 已确认 |
 
 ## [manual] 外部服务
 

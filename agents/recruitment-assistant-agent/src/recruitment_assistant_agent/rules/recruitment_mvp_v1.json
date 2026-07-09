@@ -1,0 +1,85 @@
+{
+  "version": "recruitment_mvp:v1",
+  "source_status": "当前 docs/homework 只展开实训报告大纲和报告模板；原始 Dify 招聘案例课件未在当前目录找到。本规则包基于作业大纲要求、现有招聘工作流和项目公平性边界整理。",
+  "workflow_nodes": [
+    "start",
+    "file_safety",
+    "resume_parse",
+    "jd_parse",
+    "evidence_match",
+    "fairness_check",
+    "gap_question_gen",
+    "report_template",
+    "end"
+  ],
+  "resume_extraction_fields": [
+    "summary",
+    "total_years_exp",
+    "skills.skill_name",
+    "skills.evidence_snippet",
+    "experiences.role_title",
+    "experiences.evidence_snippet",
+    "educations.degree",
+    "soft_skills"
+  ],
+  "jd_extraction_fields": [
+    "job_title",
+    "summary",
+    "requirements.requirement_type",
+    "requirements.text",
+    "requirements.category",
+    "requirements.weight_hint"
+  ],
+  "matching": {
+    "score_basis": "只使用岗位相关技能、经历证据和 JD 要求；没有证据的要求必须标记为 no_evidence。",
+    "skill_keywords": [
+      "python",
+      "fastapi",
+      "django",
+      "java",
+      "spring",
+      "vue",
+      "react",
+      "typescript",
+      "mysql",
+      "postgresql",
+      "redis",
+      "docker",
+      "kubernetes",
+      "linux",
+      "api",
+      "sql",
+      "data",
+      "nlp",
+      "llm",
+      "communication",
+      "stakeholder"
+    ],
+    "tiers": {
+      "strong": "核心要求大部分有证据，缺口较少。",
+      "medium": "部分核心要求有证据，同时存在需要追问的缺口。",
+      "weak": "核心要求缺少证据，建议谨慎推进。"
+    }
+  },
+  "fairness": {
+    "protected_attribute_fields": [
+      "age",
+      "gender",
+      "marital_status",
+      "ethnicity",
+      "health",
+      "political_status",
+      "photo",
+      "id_card",
+      "hometown",
+      "religion",
+      "hukou"
+    ],
+    "policy": "受保护属性必须脱敏，不能参与筛选、排序、评分或推荐结论。"
+  },
+  "completion_effect": {
+    "conversation": "用户在对话中粘贴脱敏简历和 JD，系统创建任务并进入任务对话。",
+    "analysis": "输出结构化摘要、匹配分、证据/缺口、风险点和面试追问。",
+    "report": "报告说明 Dify 等价节点、规则版本、公平性边界和未接入外部服务的限制。"
+  }
+}

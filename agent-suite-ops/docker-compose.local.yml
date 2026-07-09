@@ -1,0 +1,11 @@
+# Local developer override.
+# Keeps the project MySQL/Redis isolated when 3306/6379 are already used.
+
+services:
+  mysql:
+    ports: !override
+      - "13306:3306"
+
+  redis:
+    ports: !override
+      - "16379:6379"

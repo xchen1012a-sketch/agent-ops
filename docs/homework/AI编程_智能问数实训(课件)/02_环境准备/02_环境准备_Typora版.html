@@ -1,0 +1,972 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>02_环境准备_Typora版</title><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; --title-bar-height:20px; }
+.mac-os-11 { --title-bar-height:28px; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 36px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li blockquote { margin: 1rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
+  #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  .typora-export #write { break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+.MathJax_ref { fill: currentcolor; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.md-inline-math .MathJax_SVG .noError { display: none !important; }
+.html-for-mac .inline-math-svg .MathJax_SVG { vertical-align: 0.2px; }
+.md-math-block .MathJax_SVG_Display { text-align: center; margin: 0px; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; overflow-y: hidden; display: block !important; }
+.MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
+.MathJax_SVG .MJX-monospace { font-family: var(--monospace); }
+.MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; overflow-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none 0s ease 0s; }
+.MathJax_SVG_Display svg { vertical-align: middle !important; margin-bottom: 0px !important; margin-top: 0px !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+mark .md-meta { color: rgb(0, 0, 0); opacity: 0.3 !important; }
+@media print {
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
+}
+.md-diagram-panel .messageText { stroke: none !important; }
+.md-diagram-panel .start-state { fill: var(--node-fill); }
+.md-diagram-panel .edgeLabel rect { opacity: 1 !important; }
+.md-require-zoom-fix foreignobject { font-size: var(--mermaid-font-zoom); }
+
+
+.CodeMirror { height: auto; }
+.CodeMirror.cm-s-inner { background: inherit; }
+.CodeMirror-scroll { overflow: auto hidden; z-index: 3; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: rgb(255, 255, 255); }
+.CodeMirror-gutters { border-right: 1px solid rgb(221, 221, 221); background: inherit; white-space: nowrap; }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-property { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: 700; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: red; }
+.cm-invalidchar { color: red; }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background: inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { height: 100%; outline: 0px; position: relative; box-sizing: content-box; background: inherit; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow: hidden; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow: hidden; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 30px; z-index: 3; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: 0px 0px !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0px; bottom: 0px; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-radius: 0px; border-width: 0px; background: 0px 0px; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; overflow-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; }
+.CodeMirror-wrap pre { overflow-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right: 30px solid transparent; width: fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.cm-searching { background: rgba(255, 255, 0, 0.4); }
+@media print {
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+
+
+@import '';
+
+:root {
+    --side-bar-bg-color: #fff;
+    --control-text-color: #777;
+    --font-sans-serif: 'Ubuntu', 'Source Sans Pro', sans-serif !important;
+    --font-monospace: 'Fira Code', 'Roboto Mono', monospace !important;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-sans-serif);
+    color: #34495e;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6rem;
+    letter-spacing: 0;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+#write {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 30px 100px;
+}
+
+#write p {
+    line-height: 1.6rem;
+    word-spacing: .05rem;
+}
+
+#write ol li {
+    padding-left: 0.5rem;
+}
+
+#write > ul:first-child,
+#write > ol:first-child {
+    margin-top: 30px;
+}
+
+body > *:first-child {
+    margin-top: 0 !important;
+}
+
+body > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+a {
+    color: #42b983;
+    font-weight: 600;
+    padding: 0 2px;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+
+h1 tt,
+h1 code {
+    font-size: inherit !important;
+}
+
+h2 tt,
+h2 code {
+    font-size: inherit !important;
+}
+
+h3 tt,
+h3 code {
+    font-size: inherit !important;
+}
+
+h4 tt,
+h4 code {
+    font-size: inherit !important;
+}
+
+h5 tt,
+h5 code {
+    font-size: inherit !important;
+}
+
+h6 tt,
+h6 code {
+    font-size: inherit !important;
+}
+
+h2 a,
+h3 a {
+    color: #34495e;
+}
+
+h1 {
+    padding-bottom: .4rem;
+    font-size: 2.2rem;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.75rem;
+    line-height: 1.225;
+    margin: 35px 0 15px;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid #ddd;
+}
+
+h3 {
+    font-size: 1.4rem;
+    line-height: 1.43;
+    margin: 20px 0 7px;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h6 {
+    font-size: 1rem;
+    color: #777;
+}
+
+p,
+blockquote,
+ul,
+ol,
+dl,
+table {
+    margin: 0.8em 0;
+}
+
+li > ol,
+li > ul {
+    margin: 0 0;
+}
+
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+body > h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child + h2 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h3:first-child,
+body > h4:first-child,
+body > h5:first-child,
+body > h6:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+a:first-child h1,
+a:first-child h2,
+a:first-child h3,
+a:first-child h4,
+a:first-child h5,
+a:first-child h6 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+h1 p,
+h2 p,
+h3 p,
+h4 p,
+h5 p,
+h6 p {
+    margin-top: 0;
+}
+
+li p.first {
+    display: inline-block;
+}
+
+ul,
+ol {
+    padding-left: 30px;
+}
+
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+
+blockquote {
+    border-left: 4px solid #42b983;
+    padding: 10px 15px;
+    color: #777;
+    background-color: rgba(66, 185, 131, .1);
+}
+
+table {
+    padding: 0;
+    word-break: initial;
+}
+
+table tr {
+    border-top: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+
+table tr:nth-child(2n),
+thead {
+    background-color: #fafafa;
+}
+
+table tr th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr td {
+    border: 1px solid #dfe2e5;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr th:first-child,
+table tr td:first-child {
+    margin-top: 0;
+}
+
+table tr th:last-child,
+table tr td:last-child {
+    margin-bottom: 0;
+}
+
+#write strong {
+    padding: 0 1px;
+}
+
+#write em {
+    padding: 0 5px 0 2px;
+}
+
+#write table thead th {
+    background-color: #f2f2f2;
+}
+
+#write .CodeMirror-gutters {
+    border-right: none;
+}
+
+#write .md-fences {
+    border: 1px solid #F4F4F4;
+    -webkit-font-smoothing: initial;
+    margin: 0.8rem 0 !important;
+    padding: 0.3rem 0 !important;
+    line-height: 1.43rem;
+    background-color: #F8F8F8 !important;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.85rem;
+    word-wrap: normal;
+}
+
+#write .CodeMirror-wrap .CodeMirror-code pre {
+    padding-left: 12px;
+}
+
+#write code, tt {
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.92rem;
+    color: #e96900;
+    background-color: #f8f8f8;
+}
+
+tt {
+    margin: 0 2px;
+}
+
+#write .md-footnote {
+    background-color: #f8f8f8;
+    color: #e96900;
+}
+
+/* heighlight. */
+#write mark {
+    background-color: #EBFFEB;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: 0 2px;
+    color: #222;
+    font-weight: 500;
+}
+
+#write del {
+    padding: 1px 2px;
+}
+
+.cm-s-inner .cm-link,
+.cm-s-inner.cm-link {
+    color: #22a2c9;
+}
+
+.cm-s-inner .cm-string {
+    color: #22a2c9;
+}
+
+.md-task-list-item > input {
+    margin-left: -1.3em;
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+
+    table,
+    pre {
+        page-break-inside: avoid;
+    }
+
+    pre {
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+    background-color: #f8f8f8;
+}
+
+.md-diagram-panel {
+    position: static !important;
+}
+
+#write pre.md-meta-block {
+    padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block > .code-tooltip {
+    bottom: .375rem;
+}
+
+#write > h3.md-focus:before {
+    left: -1.5625rem;
+    top: .375rem;
+}
+
+#write > h4.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h5.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h6.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+.md-image > .md-meta {
+    border-radius: 3px;
+    font-family: var(--font-monospace);
+    padding: 2px 0 0 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: inherit;
+}
+
+.md-toc {
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+#md-notification:before {
+    top: 10px;
+}
+
+/** focus mode */
+
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header,
+.context-menu,
+.megamenu-content,
+footer {
+    font-family: var(--font-sans-serif);
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state {
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: var(--side-bar-bg-color);
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+.html-for-mac .context-menu {
+    --item-hover-bg-color: #E6F0FE;
+}
+
+/**
+ * author: LPZ
+ * email: lpzmail@163.com
+ */
+
+h1, h2, h3, h4, strong {
+  font-weight: 600;
+}
+
+/* 添加自动序号样式 */
+#write {
+    counter-reset: h1
+}
+
+h1 {
+    counter-reset: h2
+}
+
+h2 {
+    counter-reset: h3
+}
+
+h3 {
+    counter-reset: h4
+}
+
+h4 {
+    counter-reset: h5
+}
+
+h5 {
+    counter-reset: h6
+}
+
+#write h1:before {
+    counter-increment: h1;
+    content: counter(h1) ". "
+}
+
+#write h2:before {
+  counter-increment: h2;
+  content: counter(h1) ". "counter(h2) ". ";
+}
+
+#write h3:before,
+h3.md-focus.md-heading:before { /** override the default style for focused headings */
+  counter-increment: h3;
+  content: counter(h1) ". "counter(h2) "."counter(h3) ". ";
+}
+
+#write h4:before,
+h4.md-focus.md-heading:before {
+  counter-increment: h4;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) ". ";
+}
+
+#write h5:before,
+h5.md-focus.md-heading:before {
+  counter-increment: h5;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) "."counter(h5) ". "
+}
+
+#write h6:before,
+h6.md-focus.md-heading:before {
+  counter-increment: h6;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) "."counter(h5) "."counter(h6) ". "
+}
+
+/** override the default style for focused headings */
+#write>h3.md-focus:before,
+#write>h4.md-focus:before,
+#write>h5.md-focus:before,
+#write>h6.md-focus:before,
+h3.md-focus:before,
+h4.md-focus:before,
+h5.md-focus:before,
+h6.md-focus:before {
+  color: inherit;
+  border: inherit;
+  border-radius: inherit;
+  position: inherit;
+  left: initial;
+  float: none;
+  top: initial;
+  font-size: inherit;
+  padding-left: inherit;
+  padding-right: inherit;
+  vertical-align: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* 自定义强制换号符，使得在导出PDF 或打印时强制换行 */
+@media print {
+
+  /* 这是自定义标签, 在需要换行的地方插入：<pb> */
+  pb {
+    display: block;
+    page-break-after: always;
+  }
+
+  h1 {
+    page-break-before: always;
+  }
+
+  h1:first-of-type {
+    page-break-before: avoid;
+  }
+}
+
+/* 完成的 Task 添加删除线 */
+.task-list-done {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.task-list-not-done {}
+
+/* 添加键盘样式 */
+kbd {
+  box-shadow: inset 0 -2px 0 #c6cbd1;
+  background-color: white;
+}
+
+/* TOC 中隐藏 H1 和 H6 
+.md-toc-h1, .md-toc-h6 {
+  display: none;
+}
+*/
+/* 添加 TOC 自动序号样式 */
+.md-toc-content {
+  counter-reset: toc-h1;
+}
+
+.md-toc-h1 {
+  counter-reset: toc-h2;
+}
+
+.md-toc-h2 {
+  counter-reset: toc-h3;
+}
+
+.md-toc-h3 {
+  counter-reset: toc-h4;
+}
+
+.md-toc-h4 {
+  counter-reset: toc-h5;
+}
+
+.md-toc-h5 {
+  counter-reset: toc-h6;
+}
+
+.md-toc-content .md-toc-h1 a:before {
+  counter-increment: toc-h1;
+  content: counter(toc-h1) ". ";
+}
+
+.md-toc-content .md-toc-h2 a:before {
+  counter-increment: toc-h2;
+  content: counter(toc-h1) ". "counter(toc-h2) ". ";
+}
+
+.md-toc-content .md-toc-h3 a:before {
+  counter-increment: toc-h3;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) ". ";
+}
+
+.md-toc-content .md-toc-h4 a:before {
+  counter-increment: toc-h4;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) ". ";
+}
+
+.md-toc-content .md-toc-h5 a:before {
+  counter-increment: toc-h5;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) "."counter(toc-h5) ". ";
+}
+
+.md-toc-content .md-toc-h6 a:before {
+  counter-increment: toc-h6;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) "."counter(toc-h5) "."counter(toc-h6) ". ";
+}
+
+/* 侧边栏自动编号 */
+.outline-content {
+  counter-reset: outline-h1;
+}
+
+.outline-h1 {
+  counter-reset: outline-h2;
+}
+
+.outline-h2 {
+  counter-reset: outline-h3;
+}
+
+.outline-h3 {
+  counter-reset: outline-h4;
+}
+
+.outline-h4 {
+  counter-reset: outline-h5;
+}
+
+.outline-h5 {
+  counter-reset: outline-h6;
+}
+
+.outline-content .outline-h1 .outline-label:before {
+  counter-increment: outline-h1;
+  content: counter(outline-h1) ". ";
+}
+
+
+.outline-content .outline-h2 .outline-label:before {
+  counter-increment: outline-h2;
+  content: counter(outline-h1) ". "counter(outline-h2) ". ";
+}
+
+.outline-content .outline-h3 .outline-label:before {
+  counter-increment: outline-h3;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) ". ";
+}
+
+.outline-content .outline-h4 .outline-label:before {
+  counter-increment: outline-h4;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) ". ";
+}
+
+.outline-content .outline-h5 .outline-label:before {
+  counter-increment: outline-h5;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) "."counter(outline-h5) ". ";
+}
+
+.outline-content .outline-h6 .outline-label:before {
+  counter-increment: outline-h6;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) "."counter(outline-h5) "."counter(outline-h6) ". ";
+}
+
+ :root {--mermaid-font-zoom:1.44em ;} 
+</style>
+</head>
+<body class='typora-export os-windows'>
+<div id='write'  class=''><h1><a name="🔧-环境准备与工具链搭建" class="md-header-anchor"></a><span>🔧 环境准备与工具链搭建</span></h1><blockquote><p><strong><span>前置说明</span></strong><span>：本课程涉及 AI 编程、智能体开发和数据仓库实操，需要提前搭建完整的开发环境。以下步骤务必在第一次正式上课前完成，遇到问题随时在课堂上提出。</span></p></blockquote><hr /><h2><a name="📋-目录" class="md-header-anchor"></a><span>📋 目录</span></h2><ol start='' ><li><a href='#注册国内大模型账号'><span>注册国内大模型账号</span></a></li><li><a href='#git-安装与配置'><span>Git 安装与配置</span></a></li><li><a href='#nodejs-环境搭建'><span>Node.js 环境搭建</span></a></li><li><a href='#python-环境搭建miniconda'><span>Python 环境搭建（Miniconda）</span></a></li><li><a href='#cc-switch-安装与配置'><span>CC Switch 安装与配置</span></a></li><li><a href='#claude-code-安装与基本配置'><span>Claude Code 安装与基本配置</span></a></li><li><a href='#环境验证清单'><span>环境验证清单</span></a></li></ol><hr /><h1><a name="注册国内大模型账号" class="md-header-anchor"></a><span>注册国内大模型账号</span></h1><p><span>在本课程中，我们将使用国产大模型作为 AI 编程的底层引擎。建议同时注册 </span><strong><span>DeepSeek</span></strong><span> 和 </span><strong><span>Kimi</span></strong><span>，以应对不同场景的需求。</span></p><h2><a name="deepseek-注册与-api-key-获取" class="md-header-anchor"></a><span>DeepSeek 注册与 API Key 获取</span></h2><h3><a name="注册流程" class="md-header-anchor"></a><span>注册流程</span></h3><ol start='' ><li><span>访问 DeepSeek 开发者平台：</span><a href='https://platform.deepseek.com'><span>https://platform.deepseek.com</span></a></li><li><span>点击右上角「注册」，支持 </span><strong><span>手机号注册</span></strong></li><li><span>注册后登录，进入「开发者控制台」</span></li></ol><blockquote><p><span>📖 官方文档参考：</span><a href='https://platform.deepseek.com/api-docs/'><span>DeepSeek API 文档</span></a></p></blockquote><h3><a name="api-key-创建步骤" class="md-header-anchor"></a><span>API Key 创建步骤</span></h3><ol start='' ><li><span>登录控制台 → 左侧菜单 </span><strong><span>「API Keys」</span></strong></li><li><span>点击 </span><strong><span>「创建 API Key」</span></strong></li><li><span>输入名称（如 </span><code>课程实训</code><span>），点击确认</span></li><li><span>系统会生成一个类似 </span><code>sk-xxxxxxxxxxxxxxxxxxxxxxxx</code><span> 的密钥</span></li></ol><blockquote><p><span>⚠️ </span><strong><span>重要</span></strong><span>：API Key 创建后</span><strong><span>仅显示一次</span></strong><span>，请</span><strong><span>立即复制保存</span></strong><span>到安全的地方！</span></p></blockquote><h3><a name="充值说明" class="md-header-anchor"></a><span>充值说明</span></h3><ul><li><span>DeepSeek API 为</span><strong><span>按量计费</span></strong><span>，需要先充值才能使用</span></li><li><span>建议第一次充值 </span><strong><span>10~50 元</span></strong><span>，日常开发消耗极低</span></li><li><span>充值入口：控制台 → 「充值」→ 选择金额 → 微信/支付宝支付</span></li></ul><figure><table><thead><tr><th><span>模型</span></th><th style='text-align:center;' ><span>输入价格（元/百万 tokens）</span></th><th style='text-align:center;' ><span>输出价格（元/百万 tokens）</span></th></tr></thead><tbody><tr><td><code>deepseek-v4-flash</code></td><td style='text-align:center;' ><strong><span>¥1</span></strong><span>（缓存命中 ¥0.02）</span></td><td style='text-align:center;' ><strong><span>¥2</span></strong></td></tr><tr><td><code>deepseek-v4-pro</code></td><td style='text-align:center;' ><strong><span>¥3</span></strong><span>（缓存命中 ¥0.025）</span></td><td style='text-align:center;' ><strong><span>¥6</span></strong></td></tr></tbody></table></figure><blockquote><p><span>📌 价格为 2026 年上半年限时折扣价。V4-Pro 标准价为输入 </span><span class="MathJax_SVG" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.016ex" height="2.784ex" viewBox="0 -848.2 3881.7 1198.6" role="img" focusable="false" style="vertical-align: -0.814ex;"><defs><path stroke-width="0" id="E1-MJMAIN-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path stroke-width="0" id="E1-MJMAIN-2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z"></path><path stroke-width="0" id="E1-MJMAIN-37" d="M55 458Q56 460 72 567L88 674Q88 676 108 676H128V672Q128 662 143 655T195 646T364 644H485V605L417 512Q408 500 387 472T360 435T339 403T319 367T305 330T292 284T284 230T278 162T275 80Q275 66 275 52T274 28V19Q270 2 255 -10T221 -22Q210 -22 200 -19T179 0T168 40Q168 198 265 368Q285 400 349 489L395 552H302Q128 552 119 546Q113 543 108 522T98 479L95 458V455H55V458Z"></path><path stroke-width="0" id="E1-MJMAIN-34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z"></path><path stroke-width="0" id="E1-MJMAIN-2F" d="M423 750Q432 750 438 744T444 730Q444 725 271 248T92 -240Q85 -250 75 -250Q68 -250 62 -245T56 -231Q56 -221 230 257T407 740Q411 750 423 750Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><use xlink:href="#E1-MJMAIN-31"></use><use xlink:href="#E1-MJMAIN-2E" x="500" y="0"></use><use xlink:href="#E1-MJMAIN-37" x="778" y="0"></use><use xlink:href="#E1-MJMAIN-34" x="1278" y="0"></use><use xlink:href="#E1-MJMAIN-2F" x="1778" y="0"></use><g transform="translate(2278,0)"><text font-family="STIXGeneral, 'PingFang SC', serif" stroke="none" transform="scale(49.775) matrix(1 0 0 -1 0 0)">输</text></g><g transform="translate(3085,0)"><text font-family="STIXGeneral, 'PingFang SC', serif" stroke="none" transform="scale(49.775) matrix(1 0 0 -1 0 0)">出</text></g></g></svg></span><script type="math/tex">1.74 / 输出 </script><span>3.48，目前享受 </span><strong><span>2.5 折</span></strong><span>优惠。预期下半年昇腾 950 量产后进一步大幅降价。</span></p></blockquote><blockquote><p><span>💡 普通编程对话约 0.01~0.05 元/次，日常开发 </span><strong><span>10 元够用一个月</span></strong></p></blockquote><h3><a name="模型说明" class="md-header-anchor"></a><span>模型说明</span></h3><figure><table><thead><tr><th><span>模型</span></th><th style='text-align:center;' ><span>参数规模</span></th><th><span>特点</span></th></tr></thead><tbody><tr><td><code>deepseek-v4-flash</code></td><td style='text-align:center;' ><span>284B 总参 / 13B 激活</span></td><td><span>轻量高速，首字延迟 &lt; 200ms，日常编程首选</span></td></tr><tr><td><code>deepseek-v4-pro</code></td><td style='text-align:center;' ><span>1.6T 总参 / 49B 激活</span></td><td><span>旗舰推理，Agent 编程能力接近 Claude Opus 4.6</span></td></tr></tbody></table></figure><blockquote><p><span>📌 两个模型均支持 </span><strong><span>1M（百万）token 上下文</span></strong><span>，输出上限 384K tokens。</span></p><p><span>📌 </span><strong><span>V4 多模态</span></strong><span>：API 版本已支持图像/视频理解（视觉权重预计 2026 Q3 开源），无需再依赖 Kimi 处理图片。</span></p></blockquote><blockquote><p><span>⚠️ </span><strong><span>注意</span></strong><span>：老的 </span><code>deepseek-chat</code><span>（V3）和 </span><code>deepseek-reasoner</code><span>（R1）接口将于 </span><strong><span>2026年7月24日弃用</span></strong><span>，请直接使用 V4 系列。</span></p></blockquote><hr /><h2><a name="kimi月之暗面）注册与-api-key-获取" class="md-header-anchor"></a><span>Kimi（月之暗面）注册与 API Key 获取</span></h2><h3><a name="注册流程-n93" class="md-header-anchor"></a><span>注册流程</span></h3><ol start='' ><li><span>访问 Kimi 开放平台：</span><a href='https://platform.moonshot.cn'><span>https://platform.moonshot.cn</span></a></li><li><span>点击「注册」，使用</span><strong><span>手机号注册</span></strong><span>（比 DeepSeek 更简单，无需实名认证）</span></li><li><span>登录后进入控制台</span></li></ol><blockquote><p><span>📖 官方文档参考：</span><a href='https://platform.moonshot.cn/docs'><span>Kimi API 文档</span></a></p></blockquote><h3><a name="api-key-创建步骤-n103" class="md-header-anchor"></a><span>API Key 创建步骤</span></h3><ol start='' ><li><span>控制台 → 左侧菜单 </span><strong><span>「API Key 管理」</span></strong></li><li><span>点击 </span><strong><span>「新建密钥」</span></strong></li><li><span>输入密钥名称，确认创建</span></li><li><span>复制保存 API Key（格式：</span><code>sk-xxxxxxxxxxxxxxxxxxxxxxxx</code><span>）</span></li></ol><h3><a name="新用户福利与充值" class="md-header-anchor"></a><span>新用户福利与充值</span></h3><ul><li><span>🎁 新注册用户赠送 </span><strong><span>15 元体验金</span></strong><span>，无需充值即可开始试用</span></li><li><span>体验金用完后再根据需要充值</span></li></ul><h3><a name="模型说明-n119" class="md-header-anchor"></a><span>模型说明</span></h3><figure><table><thead><tr><th><span>模型</span></th><th><span>特点</span></th></tr></thead><tbody><tr><td><code>kimi-2</code><span>（K2-Thinking）</span></td><td><span>超长上下文（百万字）、多模态、强推理</span></td></tr><tr><td><code>kimi-1.5</code></td><td><span>快速响应，适合日常对话和简单任务</span></td></tr></tbody></table></figure><blockquote><p><span>💡 </span><strong><span>推荐场景</span></strong><span>：涉及图片理解、长文档分析时使用 Kimi；纯代码推理使用 DeepSeek。</span></p></blockquote><hr /><h2><a name="两者对比与使用策略" class="md-header-anchor"></a><span>两者对比与使用策略</span></h2><figure><table><thead><tr><th><span>对比维度</span></th><th><span>DeepSeek V4</span></th><th><span>Kimi (Moonshot)</span></th></tr></thead><tbody><tr><td><span>🖼️ </span><strong><span>多模态</span></strong></td><td><span>✅ API 支持（视觉权重 Q3 开源）</span></td><td><span>✅ 原生支持图片、文件理解</span></td></tr><tr><td><span>🧠 </span><strong><span>推理能力</span></strong></td><td><span>⭐⭐⭐⭐⭐ (V4-Pro 接近 Claude Opus)</span></td><td><span>⭐⭐⭐⭐ (K2-Thinking)</span></td></tr><tr><td><span>📏 </span><strong><span>上下文长度</span></strong></td><td><strong><span>1M tokens</span></strong></td><td><span>百万字级别</span></td></tr><tr><td><span>💰 </span><strong><span>价格</span></strong></td><td><span>¥1-6/百万 tokens（极低）</span></td><td><span>中等</span></td></tr><tr><td><span>⚡ </span><strong><span>速度</span></strong></td><td><span>Flash &lt; 200ms / Pro 800-1500ms</span></td><td><span>较快</span></td></tr><tr><td><span>🔑 </span><strong><span>注册难度</span></strong></td><td><span>需实名认证</span></td><td><span>手机号即可</span></td></tr><tr><td><span>🎁 </span><strong><span>新用户福利</span></strong></td><td><span>少量免费额度</span></td><td><span>送 15 元体验金</span></td></tr><tr><td><span>👨‍💻 </span><strong><span>代码/Agent</span></strong></td><td><span>⭐⭐⭐⭐⭐ (V4-Pro 极强)</span></td><td><span>⭐⭐⭐⭐</span></td></tr></tbody></table></figure><h3><a name="🎯-本课程使用策略" class="md-header-anchor"></a><span>🎯 本课程使用策略</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">日常编程 + Agent 任务 → 优先用 DeepSeek V4-Flash（便宜 + 高速）</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">复杂算法 + 架构设计 → 切换到 DeepSeek V4-Pro（极致推理能力）</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">图片分析 + 长文档 &nbsp; → DeepSeek V4 API 已支持，也可用 Kimi 备用</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 67px;"></div><div class="CodeMirror-gutters" style="display: none; height: 67px;"></div></div></div></pre><hr /><h1><a name="git-安装与配置" class="md-header-anchor"></a><span>Git 安装与配置</span></h1><p><span>Git 是代码版本管理的基础工具，也是 Claude Code 和各类 AI 开发工具的前置依赖。</span></p><h2><a name="下载安装包国内镜像加速）" class="md-header-anchor"></a><span>下载安装包（国内镜像加速）</span></h2><blockquote><p><span>⚠️ 官网 </span><code>https://git-scm.com</code><span> 在国内下载极慢，建议使用镜像：</span></p></blockquote><figure><table><thead><tr><th><span>镜像源</span></th><th><span>下载地址</span></th></tr></thead><tbody><tr><td><strong><span>华为云（推荐）</span></strong></td><td><a href='https://mirrors.huaweicloud.com/git-for-windows/'><span>https://mirrors.huaweicloud.com/git-for-windows/</span></a></td></tr><tr><td><strong><span>清华 TUNA</span></strong></td><td><a href='https://mirrors.tuna.tsinghua.edu.cn/git-for-windows/'><span>https://mirrors.tuna.tsinghua.edu.cn/git-for-windows/</span></a></td></tr></tbody></table></figure><ul><li><span>下载最新 64 位版本：</span><code>Git-2.4x.x-64-bit.exe</code></li><li><span>官方文档：</span><a href='https://git-scm.com/book/zh/v2'><span>https://git-scm.com/book/zh/v2</span></a></li></ul><h2><a name="windows-安装步骤" class="md-header-anchor"></a><span>Windows 安装步骤</span></h2><blockquote><p><span>以下步骤中标 ⚠️ 的为</span><strong><span>关键配置</span></strong><span>，请务必按说明选择！</span></p></blockquote><figure><table><thead><tr><th><span>步骤</span></th><th><span>选项</span></th><th><span>选择</span></th></tr></thead><tbody><tr><td><span>1</span></td><td><span>安装路径</span></td><td><span>自定义，建议 </span><code>D:\Program Files\Git</code></td></tr><tr><td><span>2</span></td><td><span>选择组件</span></td><td><span>✅ 勾选 </span><code>Git Bash Here</code><span>、</span><code>Git GUI Here</code></td></tr><tr><td><span>3</span></td><td><span>⚠️ 默认编辑器</span></td><td><strong><span>不要选 Vim！</span></strong><span> 选择 </span><strong><span>VS Code</span></strong><span> 或 </span><strong><span>Notepad++</span></strong></td></tr><tr><td><span>4</span></td><td><span>⚠️ PATH 环境</span></td><td><span>选 </span><strong><span>&quot;Git from the command line and also from 3rd-party software&quot;</span></strong></td></tr><tr><td><span>5</span></td><td><span>SSH 执行</span></td><td><span>选 </span><strong><span>&quot;Use bundled OpenSSH&quot;</span></strong><span>（默认）</span></td></tr><tr><td><span>6</span></td><td><span>HTTPS 传输</span></td><td><span>选 </span><strong><span>&quot;Use the OpenSSL library&quot;</span></strong><span>（默认）</span></td></tr><tr><td><span>7</span></td><td><span>⚠️ 换行符</span></td><td><span>选 </span><strong><span>&quot;Checkout Windows-style, commit Unix-style line endings&quot;</span></strong></td></tr><tr><td><span>8</span></td><td><span>终端模拟器</span></td><td><span>推荐 </span><strong><span>&quot;Use MinTTY&quot;</span></strong></td></tr><tr><td><span>9</span></td><td><span>其余选项</span></td><td><span>保持默认 → Install</span></td></tr></tbody></table></figure><h3><a name="验证安装" class="md-header-anchor"></a><span>验证安装</span></h3><p><span>打开 Git Bash 或 CMD，输入：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> <span class="cm-attribute">--version</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 输出: git version 2.49.0.windows.1  ✅</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 44px;"></div><div class="CodeMirror-gutters" style="display: none; height: 44px;"></div></div></div></pre><h2><a name="基本配置" class="md-header-anchor"></a><span>基本配置</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><span><span>​</span>x</span></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 配置用户名（替换为你的真实姓名）</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> config <span class="cm-attribute">--global</span> user.name <span class="cm-string">"张三"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 配置邮箱（替换为你的真实邮箱）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> config <span class="cm-attribute">--global</span> user.email <span class="cm-string">"zhangsan@example.com"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 设置默认分支名为 main（GitHub 新标准）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> config <span class="cm-attribute">--global</span> init.defaultBranch main</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 查看所有配置</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> config <span class="cm-attribute">--global</span> <span class="cm-attribute">--list</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 244px;"></div><div class="CodeMirror-gutters" style="display: none; height: 244px;"></div></div></div></pre><h2><a name="生成-ssh-key用于-github--gitee）" class="md-header-anchor"></a><span>生成 SSH Key（用于 GitHub / Gitee）</span></h2><h3><a name="生成密钥推荐-ed25519-算法）" class="md-header-anchor"></a><span>生成密钥（推荐 Ed25519 算法）</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 打开 Git Bash，执行：</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">ssh-keygen <span class="cm-attribute">-t</span> ed25519 <span class="cm-attribute">-C</span> <span class="cm-string">"你的邮箱@example.com"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 一路按 Enter 即可（使用默认路径和空密码）</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 89px;"></div><div class="CodeMirror-gutters" style="display: none; height: 89px;"></div></div></div></pre><blockquote><p><span>生成后会在 </span><code>C:\Users\你的用户名\.ssh\</code><span> 目录下产生两个文件：</span></p><ul><li><code>id_ed25519</code><span> —— 私钥（</span><strong><span>绝对不能泄露！</span></strong><span>）</span></li><li><code>id_ed25519.pub</code><span> —— 公钥（需要上传到代码托管平台）</span></li></ul></blockquote><h3><a name="复制公钥" class="md-header-anchor"></a><span>复制公钥</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">cat</span> ~/.ssh/id_ed25519.pub</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 复制输出的全部内容（以 ssh-ed25519 开头）</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 44px;"></div><div class="CodeMirror-gutters" style="display: none; height: 44px;"></div></div></div></pre><h3><a name="添加公钥到平台" class="md-header-anchor"></a><span>添加公钥到平台</span></h3><figure><table><thead><tr><th><span>平台</span></th><th><span>操作路径</span></th></tr></thead><tbody><tr><td><strong><span>GitHub</span></strong></td><td><span>登录 → Settings → SSH and GPG keys → New SSH Key → 粘贴保存</span></td></tr><tr><td><strong><span>Gitee（码云）</span></strong></td><td><span>登录 → 个人设置 → SSH 公钥 → 粘贴保存</span></td></tr></tbody></table></figure><h3><a name="测试连接" class="md-header-anchor"></a><span>测试连接</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">ssh</span> <span class="cm-attribute">-T</span> <span class="cm-builtin">git</span>@github.com</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 成功: Hi username! You've successfully authenticated...</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">ssh</span> <span class="cm-attribute">-T</span> <span class="cm-builtin">git</span>@gitee.com</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 成功: Hi username! You've successfully authenticated...</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 111px;"></div><div class="CodeMirror-gutters" style="display: none; height: 111px;"></div></div></div></pre><h2><a name="国内加速-github-克隆" class="md-header-anchor"></a><span>国内加速 GitHub 克隆</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 方法一：使用 ghproxy 代理（临时加速）</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> clone https://ghproxy.com/https://github.com/用户/仓库.git</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 方法二：全局配置 URL 替换（一劳永逸）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> config <span class="cm-attribute">--global</span> url.<span class="cm-string">"https://ghproxy.com/https://github.com/"</span>.insteadOf <span class="cm-string">"https://github.com/"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 方法三（如果有梯子）：配置 HTTP 代理</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> config <span class="cm-attribute">--global</span> http.proxy http://127.0.0.1:7890</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> config <span class="cm-attribute">--global</span> https.proxy http://127.0.0.1:7890</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 200px;"></div><div class="CodeMirror-gutters" style="display: none; height: 200px;"></div></div></div></pre><hr /><h1><a name="nodejs-环境搭建" class="md-header-anchor"></a><span>Node.js 环境搭建</span></h1><p><span>Claude Code 是基于 Node.js 的 CLI 工具，需要 Node.js ≥ 18 版本。本课程直接安装 </span><strong><span>Node.js 22.x LTS</span></strong><span>，不做多版本管理。</span></p><blockquote><p><span>🎯 </span><strong><span>为什么不用 nvm？</span></strong><span> 课程实训只需要一个稳定的 Node 版本即可，直接安装最简单、最稳定，避免 nvm 符号链接和 PATH 混乱问题。你的讲师环境也是直接用 Node 22 原生安装。</span></p></blockquote><h2><a name="下载-nodejs-安装包使用国内镜像）" class="md-header-anchor"></a><span>下载 Node.js 安装包（使用国内镜像）</span></h2><blockquote><p><span>⚠️ 官网 </span><code>https://nodejs.org</code><span> 在国内下载极慢，建议使用国内镜像：</span></p></blockquote><figure><table><thead><tr><th><span>镜像源</span></th><th><span>下载地址</span></th></tr></thead><tbody><tr><td><strong><span>npmmirror（推荐）</span></strong></td><td><a href='https://npmmirror.com/mirrors/node/'><span>https://npmmirror.com/mirrors/node/v22.x.x/</span></a></td></tr><tr><td><strong><span>华为云</span></strong></td><td><a href='https://mirrors.huaweicloud.com/nodejs/'><span>https://mirrors.huaweicloud.com/nodejs/</span></a></td></tr></tbody></table></figure><ul><li><span>下载最新 </span><strong><span>22.x LTS</span></strong><span> 版本：</span><code>node-v22.x.x-x64.msi</code><span>（Windows 安装包）</span></li><li><span>官方文档：</span><a href='https://nodejs.org/docs/latest-v22.x/api/'><span>https://nodejs.org/docs/latest-v22.x/api/</span></a></li></ul><h2><a name="windows-安装步骤-n293" class="md-header-anchor"></a><span>Windows 安装步骤</span></h2><ol start='' ><li><span>双击 </span><code>node-v22.x.x-x64.msi</code></li><li><span>一路 Next（全部保持默认）</span></li><li><span>⚠️ 关键步骤！在 </span><strong><span>「Custom Setup」</span></strong><span> 页面，确认 </span><strong><span>「Add to PATH」</span></strong><span> 选项为 ✅（默认已勾选）</span></li><li><span>点击 Install 完成</span></li></ol><blockquote><p><span>📌 默认安装路径：</span><code>C:\Program Files\nodejs\</code><span>，会自动加入系统 PATH。</span></p></blockquote><h3><a name="验证安装-n305" class="md-header-anchor"></a><span>验证安装</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 新开一个 CMD 或 PowerShell 窗口</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">node</span> <span class="cm-attribute">--version</span> &nbsp; <span class="cm-comment"># v22.x.x  ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> <span class="cm-attribute">--version</span> &nbsp; &nbsp;<span class="cm-comment"># 10.x.x &nbsp; ✅</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 67px;"></div><div class="CodeMirror-gutters" style="display: none; height: 67px;"></div></div></div></pre><h2><a name="配置-npm-国内镜像" class="md-header-anchor"></a><span>配置 npm 国内镜像</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 设置 npm 包镜像源为淘宝/阿里云 npmmirror</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> config <span class="cm-keyword">set</span> registry https://registry.npmmirror.com</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 验证</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> config <span class="cm-builtin">get</span> registry</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 输出: https://registry.npmmirror.com/  ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 安装一个包测试速度</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> install <span class="cm-attribute">-g</span> npm-check-updates</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 200px;"></div><div class="CodeMirror-gutters" style="display: none; height: 200px;"></div></div></div></pre><h3><a name="在项目目录下也可以创建-npmrc-文件" class="md-header-anchor"></a><span>在项目目录下也可以创建 </span><code>.npmrc</code><span> 文件</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="ini"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="ini"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-def">registry</span>=<span class="cm-quote">https</span>:<span class="cm-quote">//registry.npmmirror.com</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-def">disturl</span>=<span class="cm-quote">https</span>:<span class="cm-quote">//npmmirror.com/mirrors/node/</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 44px;"></div><div class="CodeMirror-gutters" style="display: none; height: 44px;"></div></div></div></pre><hr /><h1><a name="python-环境搭建miniconda）" class="md-header-anchor"></a><span>Python 环境搭建（Miniconda）</span></h1><p><span>本课程的数据仓库实训和 Dify 开发需要 Python 环境。使用 </span><strong><span>Miniconda</span></strong><span> 可以轻量、隔离地管理多个 Python 版本和依赖包。</span></p><h2><a name="为什么用-miniconda" class="md-header-anchor"></a><span>为什么用 Miniconda？</span></h2><figure><table><thead><tr><th><span>Anaconda</span></th><th style='text-align:center;' ><span>Miniconda (推荐)</span></th></tr></thead><tbody><tr><td><span>安装体积 ~3GB</span></td><td style='text-align:center;' ><span>安装体积 ~400MB</span></td></tr><tr><td><span>预装 1500+ 包</span></td><td style='text-align:center;' ><span>仅含 conda + Python 核心</span></td></tr><tr><td><span>臃肿，很多用不上</span></td><td style='text-align:center;' ><span>按需安装，干净可控</span></td></tr></tbody></table></figure><h2><a name="下载-miniconda使用国内镜像）" class="md-header-anchor"></a><span>下载 Miniconda（使用国内镜像）</span></h2><blockquote><p><span>⚠️ 官方下载地址 </span><code>https://repo.anaconda.com/miniconda/</code><span> 在国内很慢，建议使用国内镜像：</span></p></blockquote><figure><table><thead><tr><th><span>镜像站</span></th><th><span>下载地址</span></th></tr></thead><tbody><tr><td><strong><span>清华 TUNA（推荐）</span></strong></td><td><a href='https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/'><span>https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/</span></a></td></tr><tr><td><strong><span>中科大 USTC</span></strong></td><td><a href='https://mirrors.ustc.edu.cn/anaconda/miniconda/'><span>https://mirrors.ustc.edu.cn/anaconda/miniconda/</span></a></td></tr></tbody></table></figure><ul><li><p><span>选择对应系统的版本：</span></p><ul><li><strong><span>Windows</span></strong><span>：</span><code>Miniconda3-latest-Windows-x86_64.exe</code></li><li><strong><span>macOS Intel</span></strong><span>：</span><code>Miniconda3-latest-MacOSX-x86_64.pkg</code></li><li><strong><span>macOS Apple Silicon</span></strong><span>：</span><code>Miniconda3-latest-MacOSX-arm64.pkg</code></li></ul></li></ul><blockquote><p><span>📖 官方文档参考：</span><a href='https://docs.conda.io/en/latest/miniconda.html'><span>Conda 文档</span></a></p></blockquote><h2><a name="windows-安装步骤-n353" class="md-header-anchor"></a><span>Windows 安装步骤</span></h2><ol start='' ><li><span>双击 </span><code>.exe</code><span> 安装包</span></li><li><span>选择安装类型：</span><strong><span>Just Me (recommended)</span></strong></li><li><span>选择安装路径：建议 </span><code>C:\Users\你的用户名\Miniconda3</code></li><li><span>⚠️ </span><strong><span>重要！</span></strong><span> 勾选 </span><strong><span>「Add Miniconda3 to my PATH environment variable」</span></strong></li><li><span>⚠️ </span><strong><span>重要！</span></strong><span> 勾选 </span><strong><span>「Register Miniconda3 as my default Python 3.x」</span></strong></li><li><span>点击 Install 完成</span></li></ol><h3><a name="验证安装-n367" class="md-header-anchor"></a><span>验证安装</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 新开一个 CMD 或 PowerShell 窗口</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda <span class="cm-attribute">--version</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 输出: conda 24.x.x  ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">python <span class="cm-attribute">--version</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 输出: Python 3.12.x  ✅</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 133px;"></div><div class="CodeMirror-gutters" style="display: none; height: 133px;"></div></div></div></pre><h2><a name="配置系统环境变量确保命令行可执行-python）" class="md-header-anchor"></a><span>配置系统环境变量（确保命令行可执行 Python）</span></h2><blockquote><p><span>⚠️ 如果在安装时忘记勾选「Add Miniconda3 to my PATH」，或者安装后 </span><code>python</code><span> 命令提示&quot;找不到&quot;，需要手动配置系统环境变量。</span></p></blockquote><h3><a name="检查-python-是否已在-path-中" class="md-header-anchor"></a><span>检查 Python 是否已在 PATH 中</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 打开 CMD，输入：</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">where python</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 正常情况下应输出 Miniconda3 安装路径，如：</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># C:\Users\你的用户名\Miniconda3\python.exe  ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">where conda</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 正常输出：</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># C:\Users\你的用户名\Miniconda3\Scripts\conda.exe  ✅</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 178px;"></div><div class="CodeMirror-gutters" style="display: none; height: 178px;"></div></div></div></pre><blockquote><p><span>如果 </span><code>where python</code><span> 无输出或指向其他路径（如 Windows Store），说明需要手动配置环境变量。</span></p></blockquote><h3><a name="手动添加-miniconda-到系统-path" class="md-header-anchor"></a><span>手动添加 Miniconda 到系统 PATH</span></h3><p><span>需要将以下 </span><strong><span>3 个路径</span></strong><span> 添加到系统环境变量的 </span><code>Path</code><span> 中（按实际安装路径调整）：</span></p><figure><table><thead><tr><th style='text-align:center;' ><span>序号</span></th><th><span>需添加的路径</span></th><th><span>作用</span></th></tr></thead><tbody><tr><td style='text-align:center;' ><span>1</span></td><td><code>C:\Users\你的用户名\Miniconda3</code></td><td><span>使 </span><code>python</code><span> 命令可用</span></td></tr><tr><td style='text-align:center;' ><span>2</span></td><td><code>C:\Users\你的用户名\Miniconda3\Scripts</code></td><td><span>使 </span><code>conda</code><span>、</span><code>pip</code><span> 命令可用</span></td></tr><tr><td style='text-align:center;' ><span>3</span></td><td><code>C:\Users\你的用户名\Miniconda3\Library\bin</code></td><td><span>使依赖的动态库可被找到</span></td></tr></tbody></table></figure><h3><a name="windows-操作步骤" class="md-header-anchor"></a><span>Windows 操作步骤</span></h3><ol start='' ><li><strong><span>Win + R</span></strong><span> → 输入 </span><code>sysdm.cpl</code><span> → 确定</span></li><li><span>点击 </span><strong><span>「高级」</span></strong><span> 选项卡 → </span><strong><span>「环境变量」</span></strong></li><li><span>在 </span><strong><span>「用户变量」</span></strong><span>（或「系统变量」）中找到 </span><code>Path</code><span> 变量 → 双击编辑</span></li><li><span>点击 </span><strong><span>「新建」</span></strong><span>，依次添加上述 3 个路径</span></li><li><span>⚠️ 使用「上移」按钮将 3 个路径移到顶部，确保优先级高于其他 Python</span></li><li><span>点击「确定」保存所有窗口</span></li><li><strong><span>重新打开 CMD</span></strong><span>，再次执行 </span><code>where python</code><span> 验证</span></li></ol><blockquote><p><span>💡 </span><strong><span>排序提示</span></strong><span>：如果系统中安装了多个 Python（如 Windows Store 版），请务必将 Miniconda 的路径放在最前面，确保 </span><code>python</code><span> 命令指向 Miniconda。</span></p></blockquote><h3><a name="验证配置成功" class="md-header-anchor"></a><span>验证配置成功</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 重新打开 CMD 后执行：</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">python <span class="cm-attribute">--version</span> &nbsp; <span class="cm-comment"># Python 3.12.x  ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda <span class="cm-attribute">--version</span> &nbsp; &nbsp;<span class="cm-comment"># conda 24.x.x &nbsp; ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip <span class="cm-attribute">--version</span> &nbsp; &nbsp; &nbsp;<span class="cm-comment"># pip 24.x.x &nbsp; &nbsp; ✅</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 确认 Python 路径正确</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">where python</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 第一行必须是 Miniconda3 路径！✅</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 178px;"></div><div class="CodeMirror-gutters" style="display: none; height: 178px;"></div></div></div></pre><hr /><h2><a name="配置国内镜像源关键步骤）" class="md-header-anchor"></a><span>配置国内镜像源（关键步骤！）</span></h2><blockquote><p><span>⚠️ </span><strong><span>安装完 Miniconda 后第一件事就是改镜像</span></strong><span>，否则 </span><code>conda install</code><span> 会极慢或失败。</span></p></blockquote><h3><a name="命令行一键配置推荐）" class="md-header-anchor"></a><span>命令行一键配置（推荐）</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 添加清华大学镜像源</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--add</span> channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--add</span> channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--add</span> channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 设置通道优先级</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--set</span> channel_priority strict</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 显示来源 URL（便于排查问题）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--set</span> show_channel_urls <span class="cm-builtin">yes</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 222px;"></div><div class="CodeMirror-gutters" style="display: none; height: 222px;"></div></div></div></pre><h3><a name="验证镜像配置" class="md-header-anchor"></a><span>验证镜像配置</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--show</span> channels</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 22px;"></div><div class="CodeMirror-gutters" style="display: none; height: 22px;"></div></div></div></pre><p><span>输出应包含 </span><code>mirrors.tuna.tsinghua.edu.cn</code><span> 地址。</span></p><h3><a name="备选镜像源" class="md-header-anchor"></a><span>备选镜像源</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 中科大 USTC</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--add</span> channels https://mirrors.ustc.edu.cn/anaconda/pkgs/main/</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 阿里云</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda config <span class="cm-attribute">--add</span> channels https://mirrors.aliyun.com/anaconda/pkgs/main/</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 111px;"></div><div class="CodeMirror-gutters" style="display: none; height: 111px;"></div></div></div></pre><h2><a name="本项目统一使用-base-环境" class="md-header-anchor"></a><span>本项目统一使用 base 环境</span></h2><blockquote><p><span>🎯 </span><strong><span>课程约定</span></strong><span>：为简化环境管理、方便脚本运行和课堂演示，本实训项目</span><strong><span>统一使用 base 环境</span></strong><span>，不创建额外的虚拟环境。所有 Python 包直接安装在 base 中。</span></p></blockquote><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 确认当前在 base 环境（终端提示符前应有 (base) 标识）</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda activate base</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 查看 base 环境中的 Python 版本</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">python <span class="cm-attribute">--version</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 111px;"></div><div class="CodeMirror-gutters" style="display: none; height: 111px;"></div></div></div></pre><blockquote><p><span>💡 </span><strong><span>为什么用 base？</span></strong><span> 课程实训涉及大量脚本和 Dify 工作流调用，统一 base 环境可以避免每次手动激活环境、路径混乱等问题，降低初学者的认知负担。</span></p></blockquote><h2><a name="配置-pip-国内镜像" class="md-header-anchor"></a><span>配置 pip 国内镜像</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 确保在 base 环境</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda activate base</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 设置 pip 镜像为清华源</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip config <span class="cm-keyword">set</span> global.index-url https://pypi.tuna.tsinghua.edu.cn/simple</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 或使用阿里云</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip config <span class="cm-keyword">set</span> global.index-url https://mirrors.aliyun.com/pypi/simple/</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 验证</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip config list</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 244px;"></div><div class="CodeMirror-gutters" style="display: none; height: 244px;"></div></div></div></pre><h2><a name="安装课程常用-python-包" class="md-header-anchor"></a><span>安装课程常用 Python 包</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 确保在 base 环境（终端提示符有 (base) 标识）</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda activate base</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 基础数据科学包</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip install numpy pandas matplotlib jupyter notebook</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 数据库连接</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip install pymysql sqlalchemy</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># API 开发</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip install requests flask</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># Dify 相关后续按需安装</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 289px;"></div><div class="CodeMirror-gutters" style="display: none; height: 289px;"></div></div></div></pre><hr /><h1><a name="cc-switch-安装与配置" class="md-header-anchor"></a><span>CC Switch 安装与配置</span></h1><h2><a name="什么是-cc-switch" class="md-header-anchor"></a><span>什么是 CC Switch？</span></h2><p><strong><span>CC Switch</span></strong><span>（GitHub: </span><a href='https://github.com/farion1231/cc-switch'><span>farion1231/cc-switch</span></a><span>）是一个开源跨平台桌面工具，用于给 Claude Code 一键切换 AI 模型提供商。</span></p><figure><table><thead><tr><th><span>问题</span></th><th><span>CC Switch 如何解决</span></th></tr></thead><tbody><tr><td><span>Claude Code 默认连 </span><code>api.anthropic.com</code><span>（被墙）</span></td><td><span>拦截并重定向到国内模型 API</span></td></tr><tr><td><span>需要手动修改复杂配置文件</span></td><td><span>图形化界面一键切换</span></td></tr><tr><td><span>多个模型切换麻烦</span></td><td><span>预设模板快速配置</span></td></tr></tbody></table></figure><blockquote><p><span>📖 官方仓库：</span><a href='https://github.com/farion1231/cc-switch'><span>https://github.com/farion1231/cc-switch</span></a></p></blockquote><h2><a name="安装-cc-switch" class="md-header-anchor"></a><span>安装 CC Switch</span></h2><h3><a name="windows" class="md-header-anchor"></a><span>Windows</span></h3><ol start='' ><li><span>访问 </span><a href='https://github.com/farion1231/cc-switch/releases'><span>CC Switch Releases</span></a><span> 页面</span></li><li><span>下载最新版 </span><code>.msi</code><span> 安装包或 </span><code>.exe</code><span> 安装程序</span></li><li><span>双击安装，一路 Next</span></li><li><span>安装完成后启动，任务栏右下角会出现 CC Switch 图标</span></li></ol><h3><a name="macos" class="md-header-anchor"></a><span>macOS</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">brew install <span class="cm-attribute">--cask</span> cc-switch</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 22px;"></div><div class="CodeMirror-gutters" style="display: none; height: 22px;"></div></div></div></pre><h3><a name="linux" class="md-header-anchor"></a><span>Linux</span></h3><p><span>从 Releases 下载 </span><code>.deb</code><span> / </span><code>.rpm</code><span> / </span><code>.AppImage</code><span>，使用对应包管理器安装。</span></p><h2><a name="配置-deepseek-模型" class="md-header-anchor"></a><span>配置 DeepSeek 模型</span></h2><blockquote><p><span>确保已完成 </span><a href='#deepseek-注册与-api-key-获取'><span>DeepSeek 注册与 API Key 获取</span></a><span>。</span></p></blockquote><h3><a name="步骤操作" class="md-header-anchor"></a><span>步骤操作</span></h3><ol start='' ><li><span>点击任务栏 CC Switch 图标 → 打开管理界面</span></li><li><span>点击右上角 </span><strong><span>「+」</span></strong><span> 按钮 → 选择 </span><strong><span>DeepSeek</span></strong><span> 预设</span></li><li><span>填入以下信息：</span></li></ol><figure><table><thead><tr><th><span>配置项</span></th><th><span>值</span></th></tr></thead><tbody><tr><td><strong><span>Base URL</span></strong></td><td><code>https://api.deepseek.com/anthropic</code></td></tr><tr><td><strong><span>API Key</span></strong></td><td><span>你在 DeepSeek 平台创建的 API Key（</span><code>sk-xxxxx</code><span>）</span></td></tr><tr><td><strong><span>主力模型</span></strong></td><td><code>deepseek-v4-pro</code><span>（旗舰推理）</span></td></tr><tr><td><strong><span>轻量模型</span></strong></td><td><code>deepseek-v4-flash</code><span>（日常编程首选）</span></td></tr></tbody></table></figure><ol start='4' ><li><span>点击保存 → </span><strong><span>启用</span></strong></li></ol><h3><a name="模型选择建议" class="md-header-anchor"></a><span>模型选择建议</span></h3><figure><table><thead><tr><th><span>场景</span></th><th><span>推荐模型</span></th></tr></thead><tbody><tr><td><span>日常代码编写</span></td><td><code>deepseek-v4-flash</code><span> — 便宜（¥2/百万输出）、首字 &lt; 200ms</span></td></tr><tr><td><span>复杂算法/架构</span></td><td><code>deepseek-v4-pro</code><span> — 1.6T 参数、强推理、强 Agent 能力</span></td></tr><tr><td><span>省钱模式</span></td><td><code>deepseek-v4-flash</code><span> — 输出成本仅为 Pro 的 1/3</span></td></tr></tbody></table></figure><h2><a name="配置-kimi-模型可选）" class="md-header-anchor"></a><span>配置 Kimi 模型（可选）</span></h2><blockquote><p><span>如果主要使用 DeepSeek，Kimi 可作为备用方案。配置方式与 DeepSeek 类似。</span></p></blockquote><figure><table><thead><tr><th><span>配置项</span></th><th><span>值</span></th></tr></thead><tbody><tr><td><strong><span>Base URL</span></strong></td><td><code>https://api.moonshot.cn/anthropic</code></td></tr><tr><td><strong><span>API Key</span></strong></td><td><span>你在 Kimi 平台创建的 API Key（</span><code>sk-xxxxx</code><span>）</span></td></tr><tr><td><strong><span>主力模型</span></strong></td><td><code>kimi-2</code><span> 或 </span><code>kimi-2-thinking</code></td></tr></tbody></table></figure><hr /><h1><a name="claude-code-安装与基本配置" class="md-header-anchor"></a><span>Claude Code 安装与基本配置</span></h1><h2><a name="什么是-claude-code" class="md-header-anchor"></a><span>什么是 Claude Code？</span></h2><p><span>Claude Code 是 Anthropic 官方推出的 AI 编程 CLI（命令行）工具，可以在终端中与 AI 对话、编写代码、管理项目。</span></p><p><span>在本课程中，我们通过 CC Switch 将其底层模型切换为国产大模型，实现</span><strong><span>国内免魔法免费/低成本使用</span></strong><span>。</span></p><blockquote><p><span>📖 官方文档：</span><a href='https://docs.anthropic.com/en/docs/claude-code/overview'><span>https://docs.anthropic.com/en/docs/claude-code/overview</span></a></p></blockquote><h2><a name="前置检查" class="md-header-anchor"></a><span>前置检查</span></h2><p><span>在安装之前，请确认以下条件已满足：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 1. Node.js ≥ 18</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">node</span> <span class="cm-attribute">--version</span> &nbsp;<span class="cm-comment"># 应为 v20.x 或 v18.x</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 2. npm 可用</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> <span class="cm-attribute">--version</span> &nbsp; <span class="cm-comment"># 应为 10.x 或更高</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 3. npm 镜像正确</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> config <span class="cm-builtin">get</span> registry</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 应为 https://registry.npmmirror.com</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 200px;"></div><div class="CodeMirror-gutters" style="display: none; height: 200px;"></div></div></div></pre><h2><a name="通过-npm-安装国内推荐方式）" class="md-header-anchor"></a><span>通过 npm 安装（国内推荐方式）</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 全局安装，使用国内镜像加速</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> install <span class="cm-attribute">-g</span> @anthropic-ai/claude-code <span class="cm-attribute">--registry</span><span class="cm-operator">=</span>https://registry.npmmirror.com</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 验证安装</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">claude <span class="cm-attribute">--version</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 输出版本号即成功 ✅</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 133px;"></div><div class="CodeMirror-gutters" style="display: none; height: 133px;"></div></div></div></pre><blockquote><p><span>⚠️ 如果安装过程中提示权限错误（EACCES），请使用</span><strong><span>管理员模式</span></strong><span>打开 CMD/PowerShell 再执行。</span></p></blockquote><h2><a name="设置环境变量可选但推荐）" class="md-header-anchor"></a><span>设置环境变量（可选但推荐）</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 如果使用新版 Claude Code 遇到 "thinking type" 兼容性问题</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 在系统环境变量中添加：</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">变量名: CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">变量值: <span class="cm-number">1</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 89px;"></div><div class="CodeMirror-gutters" style="display: none; height: 89px;"></div></div></div></pre><h3><a name="windows-设置环境变量的方法" class="md-header-anchor"></a><span>Windows 设置环境变量的方法</span></h3><ol start='' ><li><span>Win + R → 输入 </span><code>sysdm.cpl</code><span> → 确定</span></li><li><span>高级 → 环境变量</span></li><li><span>用户变量 → 新建</span></li><li><span>变量名：</span><code>CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING</code></li><li><span>变量值：</span><code>1</code></li><li><span>点击确定保存</span></li></ol><h2><a name="验证全部配置" class="md-header-anchor"></a><span>验证全部配置</span></h2><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 第一步：确认 CC Switch 正在运行，且已启用模型</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 第二步：在任意目录打开终端，输入：</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">claude</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 第三步：如果成功，会进入 Claude Code 交互界面</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 输入 /model 查看当前使用的模型</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># 应返回你在 CC Switch 中配置的模型名称 ✅</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 178px;"></div><div class="CodeMirror-gutters" style="display: none; height: 178px;"></div></div></div></pre><h3><a name="基本使用命令" class="md-header-anchor"></a><span>基本使用命令</span></h3><figure><table><thead><tr><th><span>命令</span></th><th><span>功能</span></th></tr></thead><tbody><tr><td><code>claude</code></td><td><span>启动 Claude Code 交互模式</span></td></tr><tr><td><code>claude &quot;你的问题&quot;</code></td><td><span>直接提问（不进入交互模式）</span></td></tr><tr><td><code>claude --help</code></td><td><span>查看帮助</span></td></tr><tr><td><code>/help</code></td><td><span>交互模式中查看所有命令</span></td></tr><tr><td><code>/model</code></td><td><span>查看当前模型</span></td></tr><tr><td><code>/clear</code></td><td><span>清除对话历史</span></td></tr><tr><td><code>Ctrl + C</code><span> / </span><code>exit</code></td><td><span>退出</span></td></tr></tbody></table></figure><h2><a name="常见问题排查" class="md-header-anchor"></a><span>常见问题排查</span></h2><figure><table><thead><tr><th><span>现象</span></th><th><span>原因</span></th><th><span>解决方案</span></th></tr></thead><tbody><tr><td><code>Unable to connect to Anthropic services</code></td><td><span>CC Switch 未启用或配置错误</span></td><td><span>检查 CC Switch 是否运行、模型是否已启用、重启终端</span></td></tr><tr><td><span>弹出 Anthropic 登录界面</span></td><td><span>CC Switch 未正确拦截请求</span></td><td><span>检查 CC Switch 是否运行且模型已启用，重启终端再试</span></td></tr><tr><td><code>402 Insufficient Balance</code></td><td><span>DeepSeek 账户余额不足</span></td><td><span>登录 DeepSeek 平台充值</span></td></tr><tr><td><code>401 Unauthorized</code></td><td><span>API Key 无效</span></td><td><span>检查 Key 格式（</span><code>sk-</code><span> 开头），确认未过期</span></td></tr><tr><td><code>claude</code><span> 命令找不到</span></td><td><span>PATH 未包含 npm 全局安装目录</span></td><td><span>重启终端，或将 </span><code>%APPDATA%\npm</code><span> 加入 PATH</span></td></tr><tr><td><code>400 thinking type</code><span> 错误</span></td><td><span>新版 Claude Code 与第三方 API 不兼容</span></td><td><span>添加环境变量（见上节）</span></td></tr></tbody></table></figure><hr /><h1><a name="环境验证清单" class="md-header-anchor"></a><span>环境验证清单</span></h1><p><span>完成全部配置后，请逐项检查：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="bash" style="break-inside: unset;"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="bash"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ========== 基础工具 ==========</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">git</span> <span class="cm-attribute">--version</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment"># ✅ git version 2.49.x</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">ssh</span> <span class="cm-attribute">-T</span> <span class="cm-builtin">git</span>@github.com &nbsp;<span class="cm-comment"># ✅ 认证成功</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ========== Node.js ==========</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">node</span> <span class="cm-attribute">--version</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-comment"># ✅ v22.x.x</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> <span class="cm-attribute">--version</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment"># ✅ 10.x.x</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-builtin">npm</span> config <span class="cm-builtin">get</span> registry &nbsp;<span class="cm-comment"># ✅ https://registry.npmmirror.com</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ========== Python ==========</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">conda <span class="cm-attribute">--version</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment"># ✅ conda 24.x.x</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">python <span class="cm-attribute">--version</span> &nbsp; &nbsp; &nbsp; <span class="cm-comment"># ✅ Python 3.12.x</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">where python &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-comment"># ✅ 第一行必须是 Miniconda3 路径</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">pip config list &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment"># ✅ 显示清华/阿里云镜像</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ========== AI 平台 ==========</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ✅ 已注册 DeepSeek 并获取 API Key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ✅ 已注册 Kimi 并获取 API Key</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ✅ DeepSeek 账户已充值（建议 10-50 元）</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ========== AI 工具链 ==========</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ✅ CC Switch 已安装、已运行</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ✅ CC Switch 中已配置并启用模型</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">claude <span class="cm-attribute">--version</span> &nbsp; &nbsp; &nbsp; <span class="cm-comment"># ✅ 输出版本号</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ========== 最终测试 ==========</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ✅ 执行 claude 进入交互模式，输入 /model 确认模型</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 600px;"></div><div class="CodeMirror-gutters" style="display: none; height: 600px;"></div></div></div></pre><blockquote><p><span>🎉 全部通过后，你的开发环境就准备就绪了！继续完成以下验证练习。</span></p></blockquote><hr /><h2><a name="📝-课后验证练习" class="md-header-anchor"></a><span>📝 课后验证练习</span></h2><p><span>请完成以下练习，并在下次课开始时演示：</span></p><ol start='' ><li><strong><span>模型切换测试</span></strong><span>：在 CC Switch 中分别切换到 DeepSeek 和 Kimi，在 Claude Code 中询问&quot;请介绍一下你自己&quot;，对比两者的回答。</span></li><li><strong><span>Python 环境测试</span></strong><span>：在 CMD 中直接运行 </span><code>python -c &quot;import numpy as np; print(np.__version__)&quot;</code><span>，确保不报错且路径指向 Miniconda3。</span></li><li><strong><span>Node 全局包测试</span></strong><span>：执行 </span><code>npm list -g --depth=0</code><span>，确认 </span><code>@anthropic-ai/claude-code</code><span> 在列表中。</span></li></ol><hr /><blockquote><p><span>💬 </span><strong><span>遇到问题？</span></strong><span> 欢迎在课堂上提出，或提前在群内交流。环境搭建是课程的&quot;拦路虎&quot;，一次性解决好，后续实训才能顺滑进行。</span></p></blockquote></div>
+</body>
+</html>

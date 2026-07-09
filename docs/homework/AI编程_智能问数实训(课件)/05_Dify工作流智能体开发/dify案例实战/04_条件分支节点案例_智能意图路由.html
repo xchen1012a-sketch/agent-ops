@@ -1,0 +1,975 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>04_条件分支节点案例_智能意图路由</title><style type='text/css'>html {overflow-x: initial !important;}:root { --node-fill: #ECECFF; --node-border: #CCCCFF; --cluster-fill: #ffffde; --cluster-border: #aaaa33; --note-fill: #fff5ad; --note-border: #aaaa33; --mermaid-color: var(--text-color); }
+
+
+:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; --title-bar-height:20px; }
+.mac-os-11 { --title-bar-height:28px; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 36px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li blockquote { margin: 1rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
+  #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  .typora-export #write { break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+.MathJax_ref { fill: currentcolor; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.md-inline-math .MathJax_SVG .noError { display: none !important; }
+.html-for-mac .inline-math-svg .MathJax_SVG { vertical-align: 0.2px; }
+.md-math-block .MathJax_SVG_Display { text-align: center; margin: 0px; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; overflow-y: hidden; display: block !important; }
+.MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
+.MathJax_SVG .MJX-monospace { font-family: var(--monospace); }
+.MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; overflow-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none 0s ease 0s; }
+.MathJax_SVG_Display svg { vertical-align: middle !important; margin-bottom: 0px !important; margin-top: 0px !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+mark .md-meta { color: rgb(0, 0, 0); opacity: 0.3 !important; }
+@media print {
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
+}
+.md-diagram-panel .messageText { stroke: none !important; }
+.md-diagram-panel .start-state { fill: var(--node-fill); }
+.md-diagram-panel .edgeLabel rect { opacity: 1 !important; }
+.md-require-zoom-fix foreignobject { font-size: var(--mermaid-font-zoom); }
+
+
+.CodeMirror { height: auto; }
+.CodeMirror.cm-s-inner { background: inherit; }
+.CodeMirror-scroll { overflow: auto hidden; z-index: 3; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: rgb(255, 255, 255); }
+.CodeMirror-gutters { border-right: 1px solid rgb(221, 221, 221); background: inherit; white-space: nowrap; }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-property { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: 700; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: red; }
+.cm-invalidchar { color: red; }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background: inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { height: 100%; outline: 0px; position: relative; box-sizing: content-box; background: inherit; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow: hidden; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow: hidden; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 30px; z-index: 3; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: 0px 0px !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0px; bottom: 0px; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-radius: 0px; border-width: 0px; background: 0px 0px; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; overflow-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; }
+.CodeMirror-wrap pre { overflow-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right: 30px solid transparent; width: fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.cm-searching { background: rgba(255, 255, 0, 0.4); }
+@media print {
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+
+
+@import '';
+
+:root {
+    --side-bar-bg-color: #fff;
+    --control-text-color: #777;
+    --font-sans-serif: 'Ubuntu', 'Source Sans Pro', sans-serif !important;
+    --font-monospace: 'Fira Code', 'Roboto Mono', monospace !important;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: var(--font-sans-serif);
+    color: #34495e;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6rem;
+    letter-spacing: 0;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+#write {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 30px 100px;
+}
+
+#write p {
+    line-height: 1.6rem;
+    word-spacing: .05rem;
+}
+
+#write ol li {
+    padding-left: 0.5rem;
+}
+
+#write > ul:first-child,
+#write > ol:first-child {
+    margin-top: 30px;
+}
+
+body > *:first-child {
+    margin-top: 0 !important;
+}
+
+body > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+a {
+    color: #42b983;
+    font-weight: 600;
+    padding: 0 2px;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+
+h1 tt,
+h1 code {
+    font-size: inherit !important;
+}
+
+h2 tt,
+h2 code {
+    font-size: inherit !important;
+}
+
+h3 tt,
+h3 code {
+    font-size: inherit !important;
+}
+
+h4 tt,
+h4 code {
+    font-size: inherit !important;
+}
+
+h5 tt,
+h5 code {
+    font-size: inherit !important;
+}
+
+h6 tt,
+h6 code {
+    font-size: inherit !important;
+}
+
+h2 a,
+h3 a {
+    color: #34495e;
+}
+
+h1 {
+    padding-bottom: .4rem;
+    font-size: 2.2rem;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.75rem;
+    line-height: 1.225;
+    margin: 35px 0 15px;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid #ddd;
+}
+
+h3 {
+    font-size: 1.4rem;
+    line-height: 1.43;
+    margin: 20px 0 7px;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h6 {
+    font-size: 1rem;
+    color: #777;
+}
+
+p,
+blockquote,
+ul,
+ol,
+dl,
+table {
+    margin: 0.8em 0;
+}
+
+li > ol,
+li > ul {
+    margin: 0 0;
+}
+
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+body > h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child + h2 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h3:first-child,
+body > h4:first-child,
+body > h5:first-child,
+body > h6:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+a:first-child h1,
+a:first-child h2,
+a:first-child h3,
+a:first-child h4,
+a:first-child h5,
+a:first-child h6 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+h1 p,
+h2 p,
+h3 p,
+h4 p,
+h5 p,
+h6 p {
+    margin-top: 0;
+}
+
+li p.first {
+    display: inline-block;
+}
+
+ul,
+ol {
+    padding-left: 30px;
+}
+
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+
+blockquote {
+    border-left: 4px solid #42b983;
+    padding: 10px 15px;
+    color: #777;
+    background-color: rgba(66, 185, 131, .1);
+}
+
+table {
+    padding: 0;
+    word-break: initial;
+}
+
+table tr {
+    border-top: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+
+table tr:nth-child(2n),
+thead {
+    background-color: #fafafa;
+}
+
+table tr th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr td {
+    border: 1px solid #dfe2e5;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr th:first-child,
+table tr td:first-child {
+    margin-top: 0;
+}
+
+table tr th:last-child,
+table tr td:last-child {
+    margin-bottom: 0;
+}
+
+#write strong {
+    padding: 0 1px;
+}
+
+#write em {
+    padding: 0 5px 0 2px;
+}
+
+#write table thead th {
+    background-color: #f2f2f2;
+}
+
+#write .CodeMirror-gutters {
+    border-right: none;
+}
+
+#write .md-fences {
+    border: 1px solid #F4F4F4;
+    -webkit-font-smoothing: initial;
+    margin: 0.8rem 0 !important;
+    padding: 0.3rem 0 !important;
+    line-height: 1.43rem;
+    background-color: #F8F8F8 !important;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.85rem;
+    word-wrap: normal;
+}
+
+#write .CodeMirror-wrap .CodeMirror-code pre {
+    padding-left: 12px;
+}
+
+#write code, tt {
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: var(--font-monospace);
+    font-size: 0.92rem;
+    color: #e96900;
+    background-color: #f8f8f8;
+}
+
+tt {
+    margin: 0 2px;
+}
+
+#write .md-footnote {
+    background-color: #f8f8f8;
+    color: #e96900;
+}
+
+/* heighlight. */
+#write mark {
+    background-color: #EBFFEB;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: 0 2px;
+    color: #222;
+    font-weight: 500;
+}
+
+#write del {
+    padding: 1px 2px;
+}
+
+.cm-s-inner .cm-link,
+.cm-s-inner.cm-link {
+    color: #22a2c9;
+}
+
+.cm-s-inner .cm-string {
+    color: #22a2c9;
+}
+
+.md-task-list-item > input {
+    margin-left: -1.3em;
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+
+    table,
+    pre {
+        page-break-inside: avoid;
+    }
+
+    pre {
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+    background-color: #f8f8f8;
+}
+
+.md-diagram-panel {
+    position: static !important;
+}
+
+#write pre.md-meta-block {
+    padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block > .code-tooltip {
+    bottom: .375rem;
+}
+
+#write > h3.md-focus:before {
+    left: -1.5625rem;
+    top: .375rem;
+}
+
+#write > h4.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h5.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h6.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+.md-image > .md-meta {
+    border-radius: 3px;
+    font-family: var(--font-monospace);
+    padding: 2px 0 0 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: inherit;
+}
+
+.md-toc {
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+#md-notification:before {
+    top: 10px;
+}
+
+/** focus mode */
+
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header,
+.context-menu,
+.megamenu-content,
+footer {
+    font-family: var(--font-sans-serif);
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state {
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: var(--side-bar-bg-color);
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+.html-for-mac .context-menu {
+    --item-hover-bg-color: #E6F0FE;
+}
+
+/**
+ * author: LPZ
+ * email: lpzmail@163.com
+ */
+
+h1, h2, h3, h4, strong {
+  font-weight: 600;
+}
+
+/* 添加自动序号样式 */
+#write {
+    counter-reset: h1
+}
+
+h1 {
+    counter-reset: h2
+}
+
+h2 {
+    counter-reset: h3
+}
+
+h3 {
+    counter-reset: h4
+}
+
+h4 {
+    counter-reset: h5
+}
+
+h5 {
+    counter-reset: h6
+}
+
+#write h1:before {
+    counter-increment: h1;
+    content: counter(h1) ". "
+}
+
+#write h2:before {
+  counter-increment: h2;
+  content: counter(h1) ". "counter(h2) ". ";
+}
+
+#write h3:before,
+h3.md-focus.md-heading:before { /** override the default style for focused headings */
+  counter-increment: h3;
+  content: counter(h1) ". "counter(h2) "."counter(h3) ". ";
+}
+
+#write h4:before,
+h4.md-focus.md-heading:before {
+  counter-increment: h4;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) ". ";
+}
+
+#write h5:before,
+h5.md-focus.md-heading:before {
+  counter-increment: h5;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) "."counter(h5) ". "
+}
+
+#write h6:before,
+h6.md-focus.md-heading:before {
+  counter-increment: h6;
+  content: counter(h1) ". "counter(h2) "."counter(h3) "."counter(h4) "."counter(h5) "."counter(h6) ". "
+}
+
+/** override the default style for focused headings */
+#write>h3.md-focus:before,
+#write>h4.md-focus:before,
+#write>h5.md-focus:before,
+#write>h6.md-focus:before,
+h3.md-focus:before,
+h4.md-focus:before,
+h5.md-focus:before,
+h6.md-focus:before {
+  color: inherit;
+  border: inherit;
+  border-radius: inherit;
+  position: inherit;
+  left: initial;
+  float: none;
+  top: initial;
+  font-size: inherit;
+  padding-left: inherit;
+  padding-right: inherit;
+  vertical-align: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* 自定义强制换号符，使得在导出PDF 或打印时强制换行 */
+@media print {
+
+  /* 这是自定义标签, 在需要换行的地方插入：<pb> */
+  pb {
+    display: block;
+    page-break-after: always;
+  }
+
+  h1 {
+    page-break-before: always;
+  }
+
+  h1:first-of-type {
+    page-break-before: avoid;
+  }
+}
+
+/* 完成的 Task 添加删除线 */
+.task-list-done {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.task-list-not-done {}
+
+/* 添加键盘样式 */
+kbd {
+  box-shadow: inset 0 -2px 0 #c6cbd1;
+  background-color: white;
+}
+
+/* TOC 中隐藏 H1 和 H6 
+.md-toc-h1, .md-toc-h6 {
+  display: none;
+}
+*/
+/* 添加 TOC 自动序号样式 */
+.md-toc-content {
+  counter-reset: toc-h1;
+}
+
+.md-toc-h1 {
+  counter-reset: toc-h2;
+}
+
+.md-toc-h2 {
+  counter-reset: toc-h3;
+}
+
+.md-toc-h3 {
+  counter-reset: toc-h4;
+}
+
+.md-toc-h4 {
+  counter-reset: toc-h5;
+}
+
+.md-toc-h5 {
+  counter-reset: toc-h6;
+}
+
+.md-toc-content .md-toc-h1 a:before {
+  counter-increment: toc-h1;
+  content: counter(toc-h1) ". ";
+}
+
+.md-toc-content .md-toc-h2 a:before {
+  counter-increment: toc-h2;
+  content: counter(toc-h1) ". "counter(toc-h2) ". ";
+}
+
+.md-toc-content .md-toc-h3 a:before {
+  counter-increment: toc-h3;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) ". ";
+}
+
+.md-toc-content .md-toc-h4 a:before {
+  counter-increment: toc-h4;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) ". ";
+}
+
+.md-toc-content .md-toc-h5 a:before {
+  counter-increment: toc-h5;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) "."counter(toc-h5) ". ";
+}
+
+.md-toc-content .md-toc-h6 a:before {
+  counter-increment: toc-h6;
+  content: counter(toc-h1) ". "counter(toc-h2) "."counter(toc-h3) "."counter(toc-h4) "."counter(toc-h5) "."counter(toc-h6) ". ";
+}
+
+/* 侧边栏自动编号 */
+.outline-content {
+  counter-reset: outline-h1;
+}
+
+.outline-h1 {
+  counter-reset: outline-h2;
+}
+
+.outline-h2 {
+  counter-reset: outline-h3;
+}
+
+.outline-h3 {
+  counter-reset: outline-h4;
+}
+
+.outline-h4 {
+  counter-reset: outline-h5;
+}
+
+.outline-h5 {
+  counter-reset: outline-h6;
+}
+
+.outline-content .outline-h1 .outline-label:before {
+  counter-increment: outline-h1;
+  content: counter(outline-h1) ". ";
+}
+
+
+.outline-content .outline-h2 .outline-label:before {
+  counter-increment: outline-h2;
+  content: counter(outline-h1) ". "counter(outline-h2) ". ";
+}
+
+.outline-content .outline-h3 .outline-label:before {
+  counter-increment: outline-h3;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) ". ";
+}
+
+.outline-content .outline-h4 .outline-label:before {
+  counter-increment: outline-h4;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) ". ";
+}
+
+.outline-content .outline-h5 .outline-label:before {
+  counter-increment: outline-h5;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) "."counter(outline-h5) ". ";
+}
+
+.outline-content .outline-h6 .outline-label:before {
+  counter-increment: outline-h6;
+  content: counter(outline-h1) ". "counter(outline-h2) "."counter(outline-h3) "."counter(outline-h4) "."counter(outline-h5) "."counter(outline-h6) ". ";
+}
+
+ :root {--mermaid-font-zoom:1.44em ;} 
+</style>
+</head>
+<body class='typora-export os-windows'>
+<div id='write'  class=''><h1><a name="🔀-条件分支节点-----智能意图路由" class="md-header-anchor"></a><span>🔀 条件分支节点 — 智能意图路由</span></h1><blockquote><p><strong><span>核心作用</span></strong><span>：条件分支节点根据预设条件自动判断，将工作流导向不同的执行路径。它是实现「智能路由」的核心，让一个工作流能处理多种不同类型的问题。</span></p></blockquote><hr /><h2><a name="🎯-学习目标" class="md-header-anchor"></a><span>🎯 学习目标</span></h2><p><span>学完本案例后，你将能够：</span></p><ul><li><span>配置条件分支节点，理解 IF/ELIF/ELSE 的匹配逻辑</span></li><li><span>使用变量比较、关键词匹配、空值判断等条件</span></li><li><span>设计多分支工作流，实现意图分类和路由</span></li></ul><hr /><h2><a name="📚-案例描述" class="md-header-anchor"></a><span>📚 案例描述</span></h2><p><span>构建一个「</span><strong><span>智能意图路由</span></strong><span>」工作流：用户输入一句话，系统自动识别意图（翻译 / 摘要 / 问答），然后路由到不同的 LLM 处理分支。</span></p><div class="md-diagram-panel"><svg id="mermaidChart0" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="314.234375" style="max-width: 903.159px; height: 354.234px;" viewBox="0 0 903.1593627929688 314.234375" class="md-require-zoom-fix"><style>#mermaidChart0{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:11.111110669595242px;fill:#333333;}#mermaidChart0 .error-icon{fill:hsl(60,100%,100%);}#mermaidChart0 .error-text{fill:rgb(0,0,0);stroke:rgb(0,0,0);}#mermaidChart0 .edge-thickness-normal{stroke-width:2px;}#mermaidChart0 .edge-thickness-thick{stroke-width:3.5px;}#mermaidChart0 .edge-pattern-solid{stroke-dasharray:0;}#mermaidChart0 .edge-pattern-dashed{stroke-dasharray:3;}#mermaidChart0 .edge-pattern-dotted{stroke-dasharray:2;}#mermaidChart0 .marker{fill:#000000;}#mermaidChart0 .marker.cross{stroke:#000000;}#mermaidChart0 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:11.111110669595242px;}#mermaidChart0 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaidChart0 .label text{fill:#333;}#mermaidChart0 .node rect,#mermaidChart0 .node circle,#mermaidChart0 .node ellipse,#mermaidChart0 .node polygon,#mermaidChart0 .node path{fill:#ECECFF;stroke:hsl(240,60%,86.2745098039%);stroke-width:1px;}#mermaidChart0 .node .label{text-align:center;}#mermaidChart0 .node.clickable{cursor:pointer;}#mermaidChart0 .arrowheadPath{fill:undefined;}#mermaidChart0 .edgePath .path{stroke:#000000;stroke-width:1.5px;}#mermaidChart0 .flowchart-link{stroke:#000000;fill:none;}#mermaidChart0 .edgeLabel{background-color:#f4f4f4;text-align:center;}#mermaidChart0 .edgeLabel rect{opacity:0.5;background-color:#f4f4f4;fill:#f4f4f4;}#mermaidChart0 .cluster rect{fill:hsl(60,100%,100%);stroke:hsl(60,60%,90%);stroke-width:1px;}#mermaidChart0 .cluster text{fill:rgb(0,0,0);}#mermaidChart0 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(60,100%,100%);border:1px solid undefined;border-radius:2px;pointer-events:none;z-index:100;}#mermaidChart0:root{--mermaid-font-family:sans-serif;}#mermaidChart0:root{--mermaid-alt-font-family:sans-serif;}#mermaidChart0 flowchart{fill:apa;}</style><g><g class="output"><g class="clusters"></g><g class="edgePaths"><g class="edgePath LS-START LE-IF" id="L-START-IF" style="opacity: 1;"><path class="path" d="M92.015625,157.1171875L117.015625,157.1171875L142.51562652587887,157.6171875" marker-end="url(#arrowhead29)" style="fill:none"></path><defs><marker id="arrowhead29" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-IF LE-LLM1" id="L-IF-LLM1" style="opacity: 1;"><path class="path" d="M301.00990303241144,115.46771400653256L402.5421905517578,41.0390625L478.4171905517578,41.0390625" marker-end="url(#arrowhead30)" style="fill:none"></path><defs><marker id="arrowhead30" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-IF LE-LLM2" id="L-IF-LLM2" style="opacity: 1;"><path class="path" d="M343.1593734741211,157.6171875L402.5421905517578,157.1171875L478.4171905517578,157.1171875" marker-end="url(#arrowhead31)" style="fill:none"></path><defs><marker id="arrowhead31" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-IF LE-LLM3" id="L-IF-LLM3" style="opacity: 1;"><path class="path" d="M301.0099012628264,199.76665971129452L402.5421905517578,273.1953125L462.4250030517578,273.1953125" marker-end="url(#arrowhead32)" style="fill:none"></path><defs><marker id="arrowhead32" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-LLM1 LE-AGG" id="L-LLM1-AGG" style="opacity: 1;"><path class="path" d="M589.5890655517578,41.0390625L630.5812530517578,41.0390625L688.090470518779,124.078125" marker-end="url(#arrowhead33)" style="fill:none"></path><defs><marker id="arrowhead33" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-LLM2 LE-AGG" id="L-LLM2-AGG" style="opacity: 1;"><path class="path" d="M589.5890655517578,157.1171875L630.5812530517578,157.1171875L655.5812530517578,157.1171875" marker-end="url(#arrowhead34)" style="fill:none"></path><defs><marker id="arrowhead34" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-LLM3 LE-AGG" id="L-LLM3-AGG" style="opacity: 1;"><path class="path" d="M605.5812530517578,273.1953125L630.5812530517578,273.1953125L688.090470518779,190.15625" marker-end="url(#arrowhead35)" style="fill:none"></path><defs><marker id="arrowhead35" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-AGG LE-END" id="L-AGG-END" style="opacity: 1;"><path class="path" d="M766.3625030517578,157.1171875L791.3625030517578,157.1171875L816.3625030517578,157.1171875" marker-end="url(#arrowhead36)" style="fill:none"></path><defs><marker id="arrowhead36" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g></g><g class="edgeLabels"><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(402.5421905517578,41.0390625)" style="opacity: 1;"><g transform="translate(-32.0078125,-23.0390625)" class="label"><rect rx="0" ry="0" width="64.015625" height="46.078125"></rect><foreignObject width="64.015625" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span>翻译意图</span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(402.5421905517578,157.1171875)" style="opacity: 1;"><g transform="translate(-32.0078125,-23.0390625)" class="label"><rect rx="0" ry="0" width="64.015625" height="46.078125"></rect><foreignObject width="64.015625" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span>摘要意图</span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(402.5421905517578,273.1953125)" style="opacity: 1;"><g transform="translate(-34.8828125,-23.0390625)" class="label"><rect rx="0" ry="0" width="69.765625" height="46.078125"></rect><foreignObject width="69.7734375" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span>ELSE 其他</span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="flowchart-START-16" transform="translate(50.0078125,157.1171875)" style="opacity: 1;"><rect rx="0" ry="0" x="-42.0078125" y="-56.078125" width="84.015625" height="112.15625" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-32.0078125,-46.078125)"><foreignObject width="64.015625" height="92.1600341796875"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">▶️ 开始<br>用户输入</div></foreignObject></g></g></g><g class="node default" id="flowchart-IF-17" transform="translate(242.3375015258789,157.1171875)" style="opacity: 1;"><polygon points="100.321875,0 200.64375,-100.321875 100.321875,-200.64375 0,-100.321875" transform="translate(-100.321875,100.321875)" class="label-container"></polygon><g class="label" transform="translate(0,0)"><g transform="translate(-45.390625,-46.078125)"><foreignObject width="90.78125" height="92.1600341796875"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">🔀 条件分支<br>意图识别</div></foreignObject></g></g></g><g class="node default" id="flowchart-LLM1-19" transform="translate(534.0031280517578,41.0390625)" style="opacity: 1;"><rect rx="0" ry="0" x="-55.5859375" y="-33.0390625" width="111.171875" height="66.078125" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-45.5859375,-23.0390625)"><foreignObject width="91.171875" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">🧠 LLM 翻译</div></foreignObject></g></g></g><g class="node default" id="flowchart-LLM2-21" transform="translate(534.0031280517578,157.1171875)" style="opacity: 1;"><rect rx="0" ry="0" x="-55.5859375" y="-33.0390625" width="111.171875" height="66.078125" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-45.5859375,-23.0390625)"><foreignObject width="91.171875" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">🧠 LLM 摘要</div></foreignObject></g></g></g><g class="node default" id="flowchart-LLM3-23" transform="translate(534.0031280517578,273.1953125)" style="opacity: 1;"><rect rx="0" ry="0" x="-71.578125" y="-33.0390625" width="143.15625" height="66.078125" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-61.578125,-23.0390625)"><foreignObject width="123.1640625" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">🧠 LLM 通用问答</div></foreignObject></g></g></g><g class="node default" id="flowchart-AGG-25" transform="translate(710.9718780517578,157.1171875)" style="opacity: 1;"><rect rx="0" ry="0" x="-55.390625" y="-33.0390625" width="110.78125" height="66.078125" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-45.390625,-23.0390625)"><foreignObject width="90.78125" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">🔗 变量聚合</div></foreignObject></g></g></g><g class="node default" id="flowchart-END-31" transform="translate(855.7609405517578,157.1171875)" style="opacity: 1;"><rect rx="0" ry="0" x="-39.3984375" y="-33.0390625" width="78.796875" height="66.078125" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-29.3984375,-23.0390625)"><foreignObject width="58.796875" height="46.08001708984375"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">⏹️ 结束</div></foreignObject></g></g></g></g></g></g></svg></div><hr /><h2><a name="🔧-手把手实操" class="md-header-anchor"></a><span>🔧 手把手实操</span></h2><h3><a name="步骤-1创建工作流" class="md-header-anchor"></a><span>步骤 1：创建工作流</span></h3><ol start='' ><li><span>创建应用 → 「工作流」</span></li><li><span>命名为：</span><code>智能意图路由</code></li></ol><h3><a name="步骤-2配置开始节点" class="md-header-anchor"></a><span>步骤 2：配置开始节点</span></h3><figure><table><thead><tr><th style='text-align:left;' ><span>字段名</span></th><th style='text-align:left;' ><span>类型</span></th><th style='text-align:center;' ><span>必填</span></th><th><span>说明</span></th></tr></thead><tbody><tr><td style='text-align:left;' ><code>user_input</code></td><td style='text-align:left;' ><span>文本</span></td><td style='text-align:center;' ><span>✅</span></td><td><span>用户输入的内容</span></td></tr></tbody></table></figure><h3><a name="步骤-3配置条件分支节点核心）" class="md-header-anchor"></a><span>步骤 3：配置条件分支节点（核心）</span></h3><ol start='' ><li><span>从节点面板拖入「</span><strong><span>条件分支</span></strong><span>」节点</span></li><li><span>连接：</span><code>开始</code><span> → </span><code>条件分支</code></li></ol><h4><a name="分支条件配置" class="md-header-anchor"></a><span>分支条件配置</span></h4><p><span>点击「添加条件」设置以下 3 个分支：</span></p><figure><table><thead><tr><th><span>分支</span></th><th><span>条件类型</span></th><th><span>配置</span></th><th><span>说明</span></th></tr></thead><tbody><tr><td><strong><span>IF</span></strong></td><td><span>关键词匹配</span></td><td><code>{{#start.user_input#}}</code><span> </span><strong><span>包含</span></strong><span> </span><code>翻译</code></td><td><span>检测到「翻译」关键词</span></td></tr><tr><td><strong><span>ELIF 1</span></strong></td><td><span>关键词匹配</span></td><td><code>{{#start.user_input#}}</code><span> </span><strong><span>包含</span></strong><span> </span><code>摘要</code><span> 或 </span><code>总结</code><span> 或 </span><code>概括</code></td><td><span>检测到摘要相关关键词</span></td></tr><tr><td><strong><span>ELSE</span></strong></td><td><span>—</span></td><td><span>以上条件都不满足时</span></td><td><span>兜底分支，通用问答</span></td></tr></tbody></table></figure><blockquote><p><span>💡 </span><strong><span>条件类型速查</span></strong><span>：</span></p><ul><li><code>包含</code><span>：文本中包含指定关键词（支持多个，用英文逗号分隔）</span></li><li><code>等于</code><span>：精确匹配</span></li><li><code>为空</code><span>：判断变量是否为空</span></li><li><code>大于/小于</code><span>：数字比较</span></li></ul></blockquote><h3><a name="步骤-4配置三个-llm-分支" class="md-header-anchor"></a><span>步骤 4：配置三个 LLM 分支</span></h3><h4><a name="分支-1翻译-llm" class="md-header-anchor"></a><span>分支 1：翻译 LLM</span></h4><p><span>拖入 LLM 节点，命名为 </span><code>翻译处理</code><span>，连接到 IF 分支出口。</span></p><p><strong><span>System Prompt</span></strong><span>：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">你是一个专业翻译。将用户输入翻译为英文。</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">如果用户输入中包含"翻译"，请提取翻译目标文本并翻译。</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">只输出翻译结果。</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 67px;"></div><div class="CodeMirror-gutters" style="display: none; height: 67px;"></div></div></div></pre><p><strong><span>User Prompt</span></strong><span>：</span><code>{{#start.user_input#}}</code></p><h4><a name="分支-2摘要-llm" class="md-header-anchor"></a><span>分支 2：摘要 LLM</span></h4><p><span>拖入 LLM 节点，命名为 </span><code>摘要处理</code><span>，连接到 ELIF 1 分支出口。</span></p><p><strong><span>System Prompt</span></strong><span>：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">你是一个文本摘要专家。对用户输入的内容生成 3 个要点的摘要。</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">只输出摘要结果。</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 44px;"></div><div class="CodeMirror-gutters" style="display: none; height: 44px;"></div></div></div></pre><p><strong><span>User Prompt</span></strong><span>：</span><code>{{#start.user_input#}}</code></p><h4><a name="分支-3通用问答-llmelse）" class="md-header-anchor"></a><span>分支 3：通用问答 LLM（ELSE）</span></h4><p><span>拖入 LLM 节点，命名为 </span><code>通用问答</code><span>，连接到 ELSE 分支出口。</span></p><p><strong><span>System Prompt</span></strong><span>：</span></p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">你是一个友好的 AI 助手。用中文简洁回答用户问题。</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 22px;"></div><div class="CodeMirror-gutters" style="display: none; height: 22px;"></div></div></div></pre><p><strong><span>User Prompt</span></strong><span>：</span><code>{{#start.user_input#}}</code></p><h3><a name="步骤-5使用变量聚合节点合并分支" class="md-header-anchor"></a><span>步骤 5：使用变量聚合节点合并分支</span></h3><blockquote><p><span>三个分支只有一个会被执行，但需要统一输出。使用「变量聚合」节点合并三个出口。</span></p></blockquote><ol start='' ><li><span>拖入「</span><strong><span>变量聚合</span></strong><span>」节点</span></li><li><span>将三个 LLM 节点的输出都连接到变量聚合节点</span></li><li><span>变量聚合节点的输出变量自动合并</span></li><li><span>用 </span><code>{{#aggregator.output#}}</code><span> 引用最终输出</span></li></ol><h3><a name="步骤-6结束节点" class="md-header-anchor"></a><span>步骤 6：结束节点</span></h3><p><span>输出变量引用：</span><code>{{#aggregator.output#}}</code></p><h3><a name="步骤-7测试三类输入" class="md-header-anchor"></a><span>步骤 7：测试三类输入</span></h3><figure><table><thead><tr><th><span>测试输入</span></th><th style='text-align:center;' ><span>命中分支</span></th><th><span>期望行为</span></th></tr></thead><tbody><tr><td><span>&quot;请翻译：今天天气真好&quot;</span></td><td style='text-align:center;' ><span>IF → 翻译</span></td><td><span>输出英文翻译</span></td></tr><tr><td><span>&quot;帮我总结一下AI的发展趋势&quot;</span></td><td style='text-align:center;' ><span>ELIF 1 → 摘要</span></td><td><span>输出要点摘要</span></td></tr><tr><td><span>&quot;今天星期几？&quot;</span></td><td style='text-align:center;' ><span>ELSE → 通用问答</span></td><td><span>正常回答</span></td></tr></tbody></table></figure><hr /><h2><a name="🧠-条件逻辑深度解析" class="md-header-anchor"></a><span>🧠 条件逻辑深度解析</span></h2><h3><a name="条件匹配优先级" class="md-header-anchor"></a><span>条件匹配优先级</span></h3><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang=""><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang=""><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 11.8055px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">IF 条件 1  （优先级最高）</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">  ↓ 不匹配</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">ELIF 条件 2</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">  ↓ 不匹配</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">ELIF 条件 3</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">  ↓ 不匹配</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">ELSE  （兜底，优先级最低）</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 156px;"></div><div class="CodeMirror-gutters" style="display: none; height: 156px;"></div></div></div></pre><blockquote><p><span>⚠️ </span><strong><span>重要</span></strong><span>：一旦某个条件匹配成功，后续条件</span><strong><span>不再判断</span></strong><span>。请将最具体的条件放在前面。</span></p></blockquote><h3><a name="多条件组合" class="md-header-anchor"></a><span>多条件组合</span></h3><p><span>一个分支可以添加多个条件，支持 AND / OR 逻辑：</span></p><figure><table><thead><tr><th><span>组合方式</span></th><th><span>含义</span></th><th><span>示例</span></th></tr></thead><tbody><tr><td><strong><span>AND</span></strong></td><td><span>所有条件同时满足</span></td><td><span>关键词含「翻译」AND 文本长度 &gt; 50</span></td></tr><tr><td><strong><span>OR</span></strong></td><td><span>任一条件满足即可</span></td><td><span>关键词含「翻译」OR 「转化」OR 「转换」</span></td></tr></tbody></table></figure><hr /><h2><a name="💡-避坑指南" class="md-header-anchor"></a><span>💡 避坑指南</span></h2><figure><table><thead><tr><th><span>常见问题</span></th><th><span>原因</span></th><th><span>解决方案</span></th></tr></thead><tbody><tr><td><span>所有分支都没执行</span></td><td><span>ELSE 分支未配置</span></td><td><span>确保 ELSE 分支有处理节点</span></td></tr><tr><td><span>命中了错误分支</span></td><td><span>条件顺序不当</span></td><td><span>将更具体的条件放在前面</span></td></tr><tr><td><span>关键词匹配失败</span></td><td><span>大小写/空格差异</span></td><td><span>关键词尽量简洁，覆盖核心词</span></td></tr><tr><td><span>分支出口忘记连接</span></td><td><span>拖入节点后没连线</span></td><td><span>确保每个分支出口都有连线</span></td></tr></tbody></table></figure><hr /><h2><a name="🏆-独立练习" class="md-header-anchor"></a><span>🏆 独立练习</span></h2><p><span>新增一个 ELIF 分支，当用户输入中包含「写代码」或「编程」时，路由到一个专门用于代码生成的 LLM 分支（System Prompt 设定为代码专家）。</span></p><hr /><blockquote><p><span>📌 </span><strong><span>一句话总结</span></strong><span>：条件分支节点 = 工作流的「决策中枢」，实现 IF/ELIF/ELSE 逻辑。关键词匹配做意图路由是最常见的用法，配合变量聚合统一多分支输出。</span></p></blockquote></div>
+</body>
+</html>

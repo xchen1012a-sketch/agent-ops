@@ -59,3 +59,24 @@
 - 四个目标断点无横向溢出、遮挡或不可操作控件。
 - 页面质量通过视觉检查、组件测试和端到端测试。
 
+## 7. DESIGN-002 对齐结果
+
+| 决策 | 真源 |
+|---|---|
+| 统一认证由前端维护：用户表、登录、刷新、登出、密码修改；JWT（access 15min + refresh 7d HTTP-only Cookie） | `agent-suite-ops/docs/adr/0007-unified-auth.md` |
+| RBAC：`admin` / `user` 两角色；菜单可见性与 API 权限由角色决定 | ADR-0007 |
+| 飞书 `open_id` 首次消息自动绑定到统一用户表；飞书用户可访问 Web 端 | ADR-0007 |
+| 智能问数普通用户界面隐藏完整 SQL，仅展示结果摘要、表格、图表与解读；admin 界面可见 SQL 审计 | `agent-suite-ops/docs/adr/0010-data-query-sql-safety.md` |
+| 招聘普通用户界面隐藏数值分数，仅展示三档定性结果 + 证据；admin 界面可见完整评分并提供人工覆盖入口 | `agent-suite-ops/docs/adr/0009-recruitment-fairness.md` |
+| 法律咨询回答展示"来源 + 章节 + 原文片段"引用块；高风险问题展示风险提示与线下渠道 | `agent-suite-ops/docs/adr/0008-legal-knowledge-source.md` |
+| API 速率限制：登录 5 次/分钟/IP，全 API 60 次/分钟/用户；超限返回 429 并在 UI 给提示 | ADR-0007、ADR-0011 |
+
+## 8. WEB-410 仍需细化的项
+
+- 路由图、页面清单、组件边界、状态模型。
+- OpenAPI TypeScript 工具选型与生成目录。
+- SSE 断线恢复、停止、重复事件去重策略细节。
+- 视觉 Token、暗色模式范围、四断点布局规范。
+- 文件上传限制与 Markdown 安全渲染方案（DOMPurify 或等价）。
+- 错误矩阵（401 / 403 / 429 / 5xx / SSE 断开 / 超时 / 取消）。
+

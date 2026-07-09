@@ -6,17 +6,35 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: 1bd0306539636005
-- last refresh: 2026-07-04 21:11:15 +08:00
+- source hash: 8c21496096585d64
+- last refresh: 2026-07-09 20:20:46 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
 
-- No common framework or tool detected from package.json.
+- vue ^3.5.12
+- vite ^5.4.8
+- typescript ~5.6.2
+- vitest ^2.1.2
+- @playwright/test ^1.48.0
+- eslint ^9.12.0
+- prettier ^3.3.3
 
 ## [auto] Scripts
 
-- No package.json scripts detected.
+- build: vue-tsc --noEmit && vite build
+- dev: vite
+- e2e: playwright test
+- e2e:install: playwright install --with-deps
+- format: prettier --write "src/**/*.{ts,vue,css,scss,json,md}"
+- format:check: prettier --check "src/**/*.{ts,vue,css,scss,json,md}"
+- lint: eslint . --max-warnings=0
+- lint:fix: eslint . --fix
+- preview: vite preview --port 7777
+- test: vitest run
+- test:coverage: vitest run --coverage
+- test:watch: vitest
+- typecheck: vue-tsc --noEmit
 
 ## [auto] Directory structure (top 2 levels)
 
@@ -25,20 +43,85 @@ agent-suite-web/
 |-- docs/
 |   |-- api-integration.md
 |   |-- architecture.md
+|   |-- detailed-design.md
 |   |-- specification.md
+|-- logs/
+|   |-- vite-5174.err.log
+|   |-- vite-5174.out.log
+|   |-- vite-5666.err.log
+|   |-- vite-5666.out.log
+|-- nginx/
+|   |-- default.conf
+|-- public/
+|   |-- favicon.svg
+|-- src/
+|   |-- api/
+|   |-- app/
+|   |-- components/
+|   |-- composables/
+|   |-- lib/
+|   |-- router/
+|   |-- stores/
+|   |-- styles/
+|   |-- types/
+|   |-- views/
+|   |-- App.vue
+|   |-- env.d.ts
+|   |-- main.ts
+|   |-- vue-shims.d.ts
+|-- tests/
+|   |-- unit/
+|   |-- setup.ts
+|-- .dockerignore
+|-- .editorconfig
+|-- .env
+|-- .env.example
+|-- .eslintrc-auto-import.json
 |-- .gitignore
+|-- .npmrc
 |-- AGENTS.md
+|-- auto-imports.d.ts
 |-- CLAUDE.md
+|-- components.d.ts
+|-- dev-auth-plugin.ts
+|-- Dockerfile
+|-- eslint.config.mjs
+|-- index.html
+|-- package.json
+|-- playwright.config.ts
+|-- pnpm-lock.yaml
+|-- pnpm-workspace.yaml
 |-- README.md
+|-- tsconfig.json
+|-- tsconfig.node.json
+|-- vite.config.ts
+|-- vitest.config.ts
+|-- vite-ui-restyle.err.log
+|-- vite-ui-restyle.out.log
+|-- vite-ui-restyle-5174.err.log
+|-- vite-ui-restyle-5174.out.log
+|-- vite-ui-restyle-5174b.err.log
+|-- vite-ui-restyle-5174b.out.log
 ```
 
 ## [auto] Environment keys
 
-- No .env*.example keys detected.
+- VITE_API_AUTH_PREFIX
+- VITE_API_BASE_URL
+- VITE_API_DATA_PREFIX
+- VITE_API_LEGAL_PREFIX
+- VITE_API_RECRUITMENT_PREFIX
+- VITE_DEFAULT_THEME
+- VITE_ENABLE_DEV_AUTH
+- VITE_SESS_TIMEOUT_MINUTES
 
 ## [auto] Git status
 
-- Git status check failed: fatal: not a git repository (or any of the parent directories): .git
+- Current branch: develop
+- Working tree: has uncommitted changes
+- Remotes:
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)
+  - origin	https://github.com/xchen1012a-sketch/agent-ops.git (push)
 <!-- ai-facts:auto:end -->
 
 <!-- ai-facts:manual:start -->
@@ -73,8 +156,8 @@ agent-suite-web/
 
 | 字段 | 值 | 来源 | 状态 |
 |---|---|---|---|
-| 当前阶段 | DESIGN-002 模块详细设计对齐 | 父目录 `docs/plans/current.md` | 已确认 |
-| 下一步 | 确认认证、路由、OpenAPI 类型与 SSE 交互 | `docs/plans/modules/agent-suite-web.md` | 已确认 |
+| 当前阶段 | FOUND-010 企业级工程基础 | 父目录 `docs/plans/current.md` | 已确认 |
+| 下一步 | 等待用户授权进入 WEB-400；前端后续基于 OpenAPI Mock 与业务切片联调 | 父目录 `docs/plans/current.md` + `docs/plans/modules/agent-suite-web.md` | 已确认 |
 
 ## [manual] 外部服务
 
