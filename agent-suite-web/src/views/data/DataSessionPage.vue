@@ -9,6 +9,7 @@ import AsyncState from '@components/ui/AsyncState.vue';
 import AppIcon from '@components/ui/AppIcon.vue';
 import SafeMarkdown from '@components/ui/SafeMarkdown.vue';
 import SSEStatusIndicator from '@components/ui/SSEStatusIndicator.vue';
+import { useAuthStore } from '@stores/auth';
 import { useToastStore } from '@stores/toast';
 import { createConversationTitle } from '@lib/conversation-title';
 import {
@@ -19,11 +20,12 @@ import {
 } from '@lib/request-state';
 import { useAgentStream } from '@/composables/useAgentStream';
 import { useTypewriter } from '@/composables/useTypewriter';
-import type { DataLocalDemoResult, DataRunDetail, DataThread } from '@/types/data-query';
+import type { DataRunDetail, DataThread } from '@/types/data-query';
 import type { RequestState } from '@/types/request-state';
 
 const route = useRoute();
 const router = useRouter();
+const auth = useAuthStore();
 const toast = useToastStore();
 
 const threadId = computed(() => String(route.params.id));
@@ -37,9 +39,6 @@ const question = ref(typeof route.query.q === 'string' ? route.query.q : '');
 const currentQuestion = ref('');
 const submitting = ref(false);
 const runDetail = ref<DataRunDetail | null>(null);
-const localDemoResult = ref<DataLocalDemoResult | null>(null);
-const localDemoLoading = ref(false);
-const localDemoError = ref<string | null>(null);
 const conversationRef = ref<HTMLElement | null>(null);
 const conversationScrolling = ref(false);
 let conversationScrollTimer: number | undefined;
@@ -55,6 +54,7 @@ const {
   panelExpanded,
   streamState,
   errorMessage: streamError,
+  queryResult,
   isStreaming,
   start: startStream,
   stop: stopStream,
@@ -75,6 +75,7 @@ const generatedThreadTitle = computed(() =>
   createConversationTitle(currentQuestion.value || question.value, '新的问数对话'),
 );
 const canControlRun = computed(() => Boolean(runDetail.value?.run_id));
+const canViewSql = computed(() => auth.isAdmin);
 const runStatusType = computed(() => {
   switch (runDetail.value?.status) {
     case 'success':
@@ -90,40 +91,6 @@ const runStatusType = computed(() => {
       return 'info';
   }
 });
-const localDemoColumns = computed(() => localDemoResult.value?.query_result?.columns ?? []);
-const localDemoRows = computed(() => localDemoResult.value?.query_result?.rows ?? []);
-const localDemoStatusText = computed(() => {
-  switch (localDemoResult.value?.source_status) {
-    case 'local_deterministic_fixture':
-      return '本地样例结果';
-    case 'local_deterministic_workflow':
-      return '本地工作流结果';
-    case 'local_boundary_reply':
-      return '边界回复';
-    default:
-      return '本地演示结果';
-  }
-});
-const localDemoChartRows = computed(() => {
-  const chart = localDemoResult.value?.chart;
-  if (!chart) return [];
-  const xField = chart.encoding.x;
-  const yField = chart.encoding.y;
-  const xValues = chart.dataset[xField];
-  const yValues = chart.dataset[yField];
-  if (!Array.isArray(xValues) || !Array.isArray(yValues)) return [];
-  const numericValues = yValues.map((value) => Number(value));
-  const maxValue = Math.max(...numericValues.filter((value) => Number.isFinite(value)), 0);
-  return xValues.map((label, index) => {
-    const value = numericValues[index] ?? 0;
-    return {
-      label: String(label),
-      value,
-      width: maxValue > 0 && Number.isFinite(value) ? `${Math.max((value / maxValue) * 100, 4)}%` : '4%',
-    };
-  });
-});
-
 watch(streamPhase, (phase) => {
   if (phase === 'done') {
     flushAnswer();
@@ -136,7 +103,6 @@ watch(
     currentQuestion.value,
     displayedAnswer.value,
     streamPhase.value,
-    Boolean(localDemoResult.value),
     Boolean(runDetail.value),
   ],
   () => scrollConversationToBottom(),
@@ -178,8 +144,6 @@ async function submitQuestion(): Promise<void> {
   submitting.value = true;
   resetStream();
   runDetail.value = null;
-  localDemoResult.value = null;
-  localDemoError.value = null;
   try {
     const response = await dataQueryClient.createRun(threadId.value, {
       question: trimmed,
@@ -190,31 +154,12 @@ async function submitQuestion(): Promise<void> {
     currentQuestion.value = response.data.question;
     question.value = '';
     await refreshRun(response.data.run_id);
-    await loadLocalDemoEvidence(trimmed);
     startStream();
     toast.success('问题已提交到智能问数 Agent');
   } catch (error) {
     toast.error(error instanceof Error ? error.message : '提交问数问题失败');
   } finally {
     submitting.value = false;
-  }
-}
-
-async function loadLocalDemoEvidence(prompt: string): Promise<void> {
-  localDemoLoading.value = true;
-  localDemoError.value = null;
-  try {
-    const response = await dataQueryClient.createLocalDemoRun(threadId.value, {
-      question: prompt,
-      channel: 'web',
-      locale: navigator.language || 'zh-CN',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    localDemoResult.value = response.data;
-  } catch (error) {
-    localDemoError.value = error instanceof Error ? error.message : 'local demo evidence failed';
-  } finally {
-    localDemoLoading.value = false;
   }
 }
 
@@ -259,15 +204,39 @@ async function copyText(content: string): Promise<void> {
   toast.success('已复制');
 }
 
-function formatDate(value: string | null | undefined): string {
-  if (!value) return '—';
-  return new Intl.DateTimeFormat('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(new Date(value));
+function formatCell(value: unknown): string {
+  if (value === null || value === undefined) return '—';
+  if (typeof value === 'number') {
+    return Number.isFinite(value)
+      ? new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 2 }).format(value)
+      : String(value);
+  }
+  if (typeof value === 'boolean') return value ? '是' : '否';
+  return String(value);
+}
+
+function formatColumn(column: string): string {
+  const labels: Record<string, string> = {
+    total_sales: '销售额',
+    actual_amount: '实付金额',
+    total_amount: '订单金额',
+    refund_amount: '退款金额',
+    refund_rate: '退款率',
+    gross_margin: '毛利率',
+    gross_profit: '毛利',
+    profit: '利润',
+    order_count: '订单数',
+    customer_count: '客户数',
+    channel: '渠道',
+    region: '地区',
+    month: '月份',
+    date: '日期',
+    day: '日期',
+    day_type: '日期类型',
+    category: '品类',
+    brand: '品牌',
+  };
+  return labels[column] ?? column.replaceAll('_', ' ');
 }
 
 onMounted(() => {
@@ -362,59 +331,55 @@ onBeforeUnmount(() => {
                 </div>
 
                 <section
-                  v-if="localDemoLoading || localDemoResult || localDemoError"
-                  class="data-evidence"
-                  aria-label="本地问数证据"
+                  v-if="queryResult && (queryResult.columns.length || queryResult.sampleRows.length)"
+                  class="data-result"
+                  aria-label="数据明细"
                 >
-                  <p v-if="localDemoLoading" class="data-evidence__state">
-                    正在加载本地问数证据…
-                  </p>
-                  <p v-else-if="localDemoError" class="data-evidence__error">
-                    {{ localDemoError }}
-                  </p>
-                  <template v-else-if="localDemoResult">
-                    <div class="data-evidence__header">
-                      <span>{{ localDemoStatusText }}</span>
-                      <el-tag v-if="localDemoResult.fixture_case_id" size="small" effect="plain">
-                        {{ localDemoResult.fixture_case_id }}
-                      </el-tag>
+                  <header class="data-result__header">
+                    <div>
+                      <span>数据明细</span>
+                      <p>用于核对本次结论来源</p>
                     </div>
-                    <p class="data-evidence__note">{{ localDemoResult.source_note }}</p>
+                    <span class="data-result__meta">
+                      共 {{ queryResult.rowCount }} 行
+                      <span v-if="queryResult.truncated">（已截断）</span>
+                      <span v-if="queryResult.errorCode" class="data-result__error">
+                        · {{ queryResult.errorCode }}
+                      </span>
+                    </span>
+                  </header>
 
-                    <div
-                      v-if="localDemoColumns.length && localDemoRows.length"
-                      class="data-evidence__table-wrap"
-                    >
-                      <table class="data-evidence__table">
-                        <thead>
-                          <tr>
-                            <th v-for="column in localDemoColumns" :key="column">{{ column }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(row, rowIndex) in localDemoRows" :key="rowIndex">
-                            <td v-for="(cell, cellIndex) in row" :key="cellIndex">
-                              {{ cell }}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                  <details v-if="canViewSql && queryResult.sql" class="data-result__sql">
+                    <summary>SQL 审计</summary>
+                    <pre><code>{{ queryResult.sql }}</code></pre>
+                  </details>
 
-                    <div v-if="localDemoChartRows.length" class="data-evidence__chart">
-                      <div
-                        v-for="item in localDemoChartRows"
-                        :key="item.label"
-                        class="data-evidence__bar-row"
-                      >
-                        <span>{{ item.label }}</span>
-                        <div class="data-evidence__bar-track">
-                          <div class="data-evidence__bar" :style="{ width: item.width }" />
-                        </div>
-                        <strong>{{ item.value }}</strong>
-                      </div>
-                    </div>
-                  </template>
+                  <div v-if="queryResult.columns.length" class="data-result__table-wrap">
+                    <table class="data-result__table">
+                      <thead>
+                        <tr>
+                          <th v-for="column in queryResult.columns" :key="column" :title="column">
+                            {{ formatColumn(column) }}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(row, rowIndex) in queryResult.sampleRows"
+                          :key="rowIndex"
+                        >
+                          <td v-for="(cell, cellIndex) in row" :key="cellIndex">
+                            {{ formatCell(cell) }}
+                          </td>
+                        </tr>
+                        <tr v-if="!queryResult.sampleRows.length">
+                          <td :colspan="queryResult.columns.length" class="data-result__empty">
+                            查询未返回数据行
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </section>
 
                 <div v-if="runDetail" class="data-message__actions">
@@ -449,32 +414,6 @@ onBeforeUnmount(() => {
                     <AppIcon name="Play" />
                   </el-button>
                 </div>
-
-                <details v-if="runDetail" class="data-message__details">
-                  <summary>运行细节</summary>
-                  <dl>
-                    <div>
-                      <dt>Run ID</dt>
-                      <dd>{{ runDetail.run_id }}</dd>
-                    </div>
-                    <div>
-                      <dt>创建</dt>
-                      <dd>{{ formatDate(runDetail.created_at) }}</dd>
-                    </div>
-                    <div>
-                      <dt>开始</dt>
-                      <dd>{{ formatDate(runDetail.started_at) }}</dd>
-                    </div>
-                    <div>
-                      <dt>结束</dt>
-                      <dd>{{ formatDate(runDetail.finished_at) }}</dd>
-                    </div>
-                    <div v-if="runDetail.error_code">
-                      <dt>错误</dt>
-                      <dd>{{ runDetail.error_code }}</dd>
-                    </div>
-                  </dl>
-                </details>
               </div>
             </article>
           </div>
@@ -701,7 +640,7 @@ onBeforeUnmount(() => {
   color: var(--color-danger);
 }
 
-.data-evidence {
+.data-result {
   display: grid;
   gap: var(--space-3);
   margin-top: var(--space-4);
@@ -711,9 +650,9 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-lg);
 }
 
-.data-evidence__header {
+.data-result__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-2);
   color: var(--color-text);
@@ -721,76 +660,75 @@ onBeforeUnmount(() => {
   font-weight: 700;
 }
 
-.data-evidence__note,
-.data-evidence__state,
-.data-evidence__error {
-  margin: 0;
+.data-result__header p {
+  margin-top: var(--space-1);
   color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.data-result__meta {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.data-result__error {
+  color: var(--color-danger);
+}
+
+.data-result__sql summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.data-result__sql pre {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  overflow-x: auto;
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-md);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: var(--text-xs);
   line-height: 1.5;
 }
 
-.data-evidence__error {
-  color: var(--color-danger);
-}
-
-.data-evidence__table-wrap {
+.data-result__table-wrap {
   max-width: 100%;
   overflow-x: auto;
 }
 
-.data-evidence__table {
+.data-result__table {
   width: 100%;
   min-width: 360px;
   border-collapse: collapse;
   font-size: var(--text-xs);
 }
 
-.data-evidence__table th,
-.data-evidence__table td {
+.data-result__table th,
+.data-result__table td {
   padding: var(--space-2);
   color: var(--color-text);
-  text-align: left;
+  text-align: right;
   border-bottom: 1px solid var(--color-border);
+  font-variant-numeric: tabular-nums;
 }
 
-.data-evidence__table th {
+.data-result__table th:first-child,
+.data-result__table td:first-child {
+  text-align: left;
+}
+
+.data-result__table th {
   color: var(--color-text-muted);
   font-weight: 700;
 }
 
-.data-evidence__chart {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.data-evidence__bar-row {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto;
-  gap: var(--space-2);
-  align-items: center;
-  font-size: var(--text-xs);
-}
-
-.data-evidence__bar-row span,
-.data-evidence__bar-row strong {
-  overflow: hidden;
+.data-result__empty {
+  text-align: center !important;
   color: var(--color-text-muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.data-evidence__bar-track {
-  height: 10px;
-  overflow: hidden;
-  background: var(--color-surface-muted);
-  border-radius: var(--radius-pill);
-}
-
-.data-evidence__bar {
-  height: 100%;
-  background: var(--color-data);
-  border-radius: inherit;
 }
 
 .data-message__actions {
@@ -812,47 +750,6 @@ onBeforeUnmount(() => {
   background: var(--color-surface-muted);
 }
 
-.data-message__details {
-  margin-top: var(--space-3);
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-}
-
-.data-message__details summary {
-  cursor: pointer;
-}
-
-.data-message__details dl,
-.data-message__events {
-  display: grid;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-
-.data-message__details dl div {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: var(--space-2);
-}
-
-.data-message__details dd {
-  overflow-wrap: anywhere;
-}
-
-.data-message__events {
-  padding-left: var(--space-4);
-}
-
-.data-message__events li {
-  overflow-wrap: anywhere;
-}
-
-.data-message__events span {
-  margin-left: var(--space-2);
-  color: var(--color-text-subtle);
-  font-size: var(--text-xs);
-}
-
 .data-chat-page__composer-shell {
   position: relative;
   z-index: var(--z-sticky);
@@ -869,6 +766,14 @@ onBeforeUnmount(() => {
   .data-chat-page__topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .data-result__header {
+    flex-direction: column;
+  }
+
+  .data-result__meta {
+    white-space: normal;
   }
 
   .data-message,

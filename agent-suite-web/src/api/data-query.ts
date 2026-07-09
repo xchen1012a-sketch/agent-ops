@@ -7,7 +7,6 @@ import type {
   DataFeishuEventInput,
   DataHealthLive,
   DataHealthReady,
-  DataLocalDemoEnvelope,
   DataQueryHistoryDetailEnvelope,
   DataQueryHistoryListEnvelope,
   DataRunCreateInput,
@@ -67,17 +66,6 @@ export const dataQueryClient = {
   async createRun(threadId: string, payload: DataRunCreateInput): Promise<DataRunEnvelope> {
     const { data } = await dataApi.post<DataRunEnvelope>(
       `/threads/${encodeURIComponent(threadId)}/runs`,
-      payload,
-    );
-    return data;
-  },
-
-  async createLocalDemoRun(
-    threadId: string,
-    payload: DataRunCreateInput,
-  ): Promise<DataLocalDemoEnvelope> {
-    const { data } = await dataApi.post<DataLocalDemoEnvelope>(
-      `/threads/${encodeURIComponent(threadId)}/runs/local-demo`,
       payload,
     );
     return data;

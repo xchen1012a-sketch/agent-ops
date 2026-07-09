@@ -89,7 +89,14 @@ export class AgentStreamClient {
         credentials: 'include',
       });
 
-      if (!response.ok || !response.body) {
+      if (!response.ok) {
+        if (response.status >= 500) {
+          throw new Error(`SSE connection failed: HTTP ${response.status}`);
+        }
+        await this.handleHttpError(response);
+        return;
+      }
+      if (!response.body) {
         throw new Error(`SSE connection failed: HTTP ${response.status}`);
       }
 
@@ -182,6 +189,23 @@ export class AgentStreamClient {
     this.options.onEvent(event);
   }
 
+  private async handleHttpError(response: Response): Promise<void> {
+    const message = await readErrorMessage(response);
+    this.dispatchEvent({
+      event_id: `http-error-${this.lastSequence + 1}`,
+      event: 'run.failed',
+      run_id: '',
+      sequence: this.lastSequence + 1,
+      timestamp: new Date().toISOString(),
+      payload: {
+        error_code: `HTTP_${response.status}`,
+        message,
+        retryable: response.status >= 500,
+      },
+    });
+    this.setState('error');
+  }
+
   private buildHeaders(): HeadersInit {
     const headers: Record<string, string> = {
       ...this.options.headers,
@@ -250,4 +274,25 @@ export class AgentStreamClient {
     this.state = next;
     this.options.onStateChange(next);
   }
+}
+
+async function readErrorMessage(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as {
+      error?: { message?: unknown; code?: unknown };
+      detail?: unknown;
+    };
+    if (typeof payload.error?.message === 'string' && payload.error.message) {
+      return payload.error.message;
+    }
+    if (typeof payload.detail === 'string' && payload.detail) {
+      return payload.detail;
+    }
+    if (typeof payload.error?.code === 'string' && payload.error.code) {
+      return payload.error.code;
+    }
+  } catch {
+    // Fall through to the generic HTTP message.
+  }
+  return `SSE connection failed: HTTP ${response.status}`;
 }

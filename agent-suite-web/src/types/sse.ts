@@ -47,6 +47,12 @@ export interface MessageCompletedPayload {
   content: string;
   citations?: Citation[];
   high_risk?: LegalHighRiskFlag;
+  sql?: string;
+  columns?: string[];
+  sample_rows?: unknown[][];
+  row_count?: number;
+  truncated?: boolean;
+  error_code?: string;
 }
 
 export interface RunCompletedPayload {

@@ -8,9 +8,14 @@ from cryptography.fernet import Fernet
 from pydantic import SecretStr
 
 from data_query_agent.application.services.agent_api_config import ApiConfigCrypto
-from data_query_agent.application.services.stream_adapter_resolver import resolve_stream_adapter
+from data_query_agent.application.services.stream_adapter_resolver import (
+    resolve_chat_adapter,
+    resolve_stream_adapter,
+)
 from data_query_agent.core.config import Settings
+from data_query_agent.core.errors import ConfigNotFoundError
 from data_query_agent.domain.entities.agent_api_config import AgentApiConfig
+from data_query_agent.infrastructure.llm.deepseek_adapter import DeepSeekAdapter
 from data_query_agent.infrastructure.llm.deepseek_stream_adapter import DeepSeekStreamAdapter
 from data_query_agent.infrastructure.llm.fake_llm_adapter import FakeLlmAdapter
 
@@ -57,11 +62,34 @@ async def test_enabled_config_with_key_resolves_real_adapter() -> None:
     assert isinstance(adapter, DeepSeekStreamAdapter)
 
 
+async def test_enabled_config_with_key_resolves_real_chat_adapter() -> None:
+    master = Fernet.generate_key().decode()
+    encrypted = ApiConfigCrypto(master).encrypt("sk-live-key-1234")
+    reader = _FakeReader(_config(enabled=True, api_key_encrypted=encrypted))
+
+    adapter = await resolve_chat_adapter(subject="user-1", reader=reader, settings=_settings(master))
+
+    assert isinstance(adapter, DeepSeekAdapter)
+
+
 async def test_missing_config_falls_back_to_fake() -> None:
     adapter = await resolve_stream_adapter(
         subject="user-1", reader=_FakeReader(None), settings=_settings(Fernet.generate_key().decode())
     )
     assert isinstance(adapter, FakeLlmAdapter)
+
+
+async def test_missing_config_does_not_fake_chat_adapter() -> None:
+    try:
+        await resolve_chat_adapter(
+            subject="user-1",
+            reader=_FakeReader(None),
+            settings=_settings(Fernet.generate_key().decode()),
+        )
+    except ConfigNotFoundError as exc:
+        assert "无法执行真实 NL2SQL" in exc.message
+    else:
+        raise AssertionError("resolve_chat_adapter should fail without a real model config")
 
 
 async def test_disabled_config_falls_back_to_fake() -> None:

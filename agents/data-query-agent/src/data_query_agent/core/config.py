@@ -97,6 +97,11 @@ class Settings(BaseSettings):
     mcp_server_url: str = ""
     mcp_timeout_seconds: int = 30
 
+    # Shop schema binding (DATA-NL2SQL): path to the course ``shop_db_export.sql``
+    # dump. The loader filters it down to whitelisted tables before injecting
+    # into the NL2SQL prompt, so the full star schema is safe to point at.
+    shop_schema_path: str = ""
+
     # Feishu bot integration (FEISHU-100). Credentials only required when
     # feishu_enabled is true; encrypt_key is optional (event encryption is
     # only on when configured in the Feishu console).

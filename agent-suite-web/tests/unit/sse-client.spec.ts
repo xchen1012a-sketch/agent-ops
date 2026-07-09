@@ -117,4 +117,41 @@ describe('AgentStreamClient', () => {
     expect(states.at(-1)).toBe('error');
     expect(client.currentState).toBe('error');
   });
+
+  it('dispatches client error payload without reconnecting', async () => {
+    const events: AgentStreamEvent[] = [];
+    const states: StreamState[] = [];
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: 'CONFIG_NOT_FOUND',
+            message: '未配置可用的模型 API Key，无法执行真实 NL2SQL 查询',
+          },
+        }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+
+    const client = new AgentStreamClient({
+      url: '/stream',
+      token: null,
+      maxReconnectAttempts: 1,
+      onEvent: (event) => events.push(event),
+      onStateChange: (state) => states.push(state),
+    });
+
+    client.start();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(events).toHaveLength(1);
+    expect(events[0].event).toBe('run.failed');
+    expect(events[0].payload).toMatchObject({
+      error_code: 'HTTP_404',
+      message: '未配置可用的模型 API Key，无法执行真实 NL2SQL 查询',
+      retryable: false,
+    });
+    expect(states).not.toContain('reconnecting');
+    expect(client.currentState).toBe('error');
+  });
 });

@@ -1,7 +1,7 @@
 {
   "name": "nl2sql",
   "version": "v1",
-  "template": "Convert the user question into a JSON SQL candidate. Question: {question}. Available schema summary: {schema_summary}.",
+  "template": "Convert the user question into one safe MySQL SELECT statement and return JSON only. Use only tables and columns that appear in the schema summary. Prefer business fields in the available wide tables; do not invent columns. Map Chinese business words carefully: 销售额/GMV usually means SUM(actual_amount) or SUM(order_actual_amount) when those fields exist; 城市/地区/区域 should use city or region_name when available; 渠道 should use channel_name or channel_type when available. If the user asks for highest/top/ranking, GROUP BY the requested dimension, ORDER BY the metric DESC, and LIMIT the result. If the user mentions 本月/这个月/上个月/最近, add an appropriate date filter using order_date/date columns available in the schema. Never output INSERT/UPDATE/DELETE/DDL, comments, multiple statements, or non-JSON text. Required JSON shape: {{\"sql\":\"SELECT ...\",\"confidence\":0.0,\"reasoning_summary\":\"short Chinese summary\"}}. Question: {question}. Available schema summary: {schema_summary}.",
   "variables_schema": {
     "type": "object",
     "required": ["question", "schema_summary"],

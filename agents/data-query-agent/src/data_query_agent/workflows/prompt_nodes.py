@@ -6,6 +6,10 @@ import json
 from typing import Literal
 
 from data_query_agent.application.services.prompt_template_service import PromptTemplateService
+from data_query_agent.application.services.result_interpretation_service import (
+    ResultInterpretationService,
+)
+from data_query_agent.application.services.result_projection_service import ResultProjectionService
 from data_query_agent.domain.ports.llm_adapter import LlmAdapter, LlmCompletionRequest
 from data_query_agent.prompts.policy import with_system_policy
 from data_query_agent.workflows.state import DataQueryState, NodeTrace
@@ -81,11 +85,25 @@ class PromptBackedWorkflowNodes:
         answer = output["answer"]
         if not isinstance(answer, str):
             raise ValueError("validated answer output must be a string")
+        followups = _followups(output)
+        if not followups and isinstance(state.get("query_result"), dict):
+            followups = ResultProjectionService().project(
+                question=state.get("question", ""),
+                query_result=state["query_result"],
+            ).followups
+        if _needs_deterministic_interpretation(answer) and isinstance(
+            state.get("query_result"), dict
+        ):
+            answer = ResultInterpretationService().interpret(
+                question=state.get("question", ""),
+                query_result=state["query_result"],
+                followups=followups,
+            )
         next_state: DataQueryState = {**state, "answer": answer, "llm_output": output}
         if "chart" in output:
             next_state["chart"] = output["chart"]
-        if "followups" in output:
-            next_state["followups"] = output["followups"]
+        if followups:
+            next_state["followups"] = list(followups)
         return _with_trace(next_state, "interpret", "completed")
 
 
@@ -93,6 +111,23 @@ def _result_summary(query_result: object) -> str:
     if not isinstance(query_result, dict):
         return "no structured result"
     return json.dumps(query_result, ensure_ascii=False, default=str)
+
+
+def _followups(output: dict[str, object]) -> tuple[str, ...]:
+    value = output.get("followups")
+    if not isinstance(value, list):
+        return ()
+    return tuple(item for item in value if isinstance(item, str) and item.strip())
+
+
+def _needs_deterministic_interpretation(answer: str) -> bool:
+    normalized = answer.strip()
+    return normalized in {
+        "",
+        "结论：查询结果已生成。",
+        "查询结果已生成。",
+        "已生成查询结果。",
+    }
 
 
 def _with_trace(

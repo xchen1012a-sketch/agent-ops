@@ -26,6 +26,15 @@ export interface UseAgentStreamOptions {
   tickMs?: number;
 }
 
+export interface QueryResultSummary {
+  sql: string | null;
+  columns: string[];
+  sampleRows: unknown[][];
+  rowCount: number;
+  truncated: boolean;
+  errorCode: string | null;
+}
+
 export interface UseAgentStreamReturn {
   phase: Ref<StreamPhase>;
   thinkingText: Ref<string>;
@@ -35,6 +44,7 @@ export interface UseAgentStreamReturn {
   panelExpanded: Ref<boolean>;
   streamState: Ref<StreamState>;
   errorMessage: Ref<string | null>;
+  queryResult: Ref<QueryResultSummary | null>;
   isStreaming: ComputedRef<boolean>;
   start: () => void;
   stop: () => void;
@@ -53,6 +63,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
   const panelExpanded = ref(false);
   const streamState = ref<StreamState>('idle');
   const errorMessage = ref<string | null>(null);
+  const queryResult = ref<QueryResultSummary | null>(null);
 
   const isStreaming = computed(() => phase.value === 'thinking' || phase.value === 'answering');
 
@@ -131,6 +142,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
           freezeThinking();
           panelExpanded.value = false;
         }
+        queryResult.value = extractQueryResult(payload);
         phase.value = 'done';
         stop();
         break;
@@ -170,6 +182,7 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
     panelExpanded.value = false;
     streamState.value = 'idle';
     errorMessage.value = null;
+    queryResult.value = null;
   }
 
   function start(): void {
@@ -201,10 +214,26 @@ export function useAgentStream(options: UseAgentStreamOptions): UseAgentStreamRe
     panelExpanded,
     streamState,
     errorMessage,
+    queryResult,
     isStreaming,
     start,
     stop,
     reset,
     togglePanel,
+  };
+}
+
+function extractQueryResult(payload: Record<string, unknown>): QueryResultSummary | null {
+  const hasSqlOrColumns = payload.sql !== undefined || Array.isArray(payload.columns);
+  if (!hasSqlOrColumns) return null;
+  const columns = Array.isArray(payload.columns) ? (payload.columns as string[]) : [];
+  const rawRows = Array.isArray(payload.sample_rows) ? (payload.sample_rows as unknown[][]) : [];
+  return {
+    sql: typeof payload.sql === 'string' ? payload.sql : null,
+    columns,
+    sampleRows: rawRows,
+    rowCount: typeof payload.row_count === 'number' ? payload.row_count : rawRows.length,
+    truncated: Boolean(payload.truncated),
+    errorCode: typeof payload.error_code === 'string' ? payload.error_code : null,
   };
 }

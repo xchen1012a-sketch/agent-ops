@@ -5,6 +5,9 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from data_query_agent.application.services.data_catalog_service import DataCatalogService
+from data_query_agent.application.services.result_interpretation_service import (
+    ResultInterpretationService,
+)
 from data_query_agent.application.services.result_projection_service import ResultProjectionService
 from data_query_agent.domain.policies.sql_ast import SqlAstPolicyValidator
 from data_query_agent.domain.value_objects.data_catalog import EvaluationFixture
@@ -49,6 +52,11 @@ _OFF_TOPIC_SIGNALS = (
     "recipe", "essay",
     "写诗", "作诗", "笑话", "讲个故事", "唱歌", "歌词", "天气", "翻译",
     "菜谱", "食谱", "作文",
+)
+
+_GREETING_SIGNALS = (
+    "hi", "hello", "hey", "good morning", "good afternoon", "good evening",
+    "你好", "您好", "嗨", "在吗", "早上好", "下午好", "晚上好",
 )
 
 _CAPABILITY_LINE = (
@@ -115,6 +123,16 @@ def intent_classify_node(state: DataQueryState) -> DataQueryState:
         }
         return _with_trace(next_state, "intent_classify", "completed")
 
+    if normalized in _GREETING_SIGNALS:
+        next_state = {
+            **state,
+            "intent": "non_data",
+            "intent_confidence": "high",
+            "response_tier": "greeting",
+            "offtopic_streak": 0,
+        }
+        return _with_trace(next_state, "intent_classify", "completed")
+
     if any(signal in normalized for signal in _DATA_SIGNALS):
         next_state = {
             **state,
@@ -122,6 +140,17 @@ def intent_classify_node(state: DataQueryState) -> DataQueryState:
             "intent_confidence": "high",
             "response_tier": "in_scope",
             "offtopic_streak": 0,
+        }
+        return _with_trace(next_state, "intent_classify", "completed")
+
+    if not any(signal in normalized for signal in _OFF_TOPIC_SIGNALS):
+        next_state = {
+            **state,
+            "intent": "non_data",
+            "intent_confidence": "low",
+            "response_tier": "clarify",
+            "offtopic_streak": 0,
+            "refusal_reason": "ambiguous data-query request; ask for metric and time range",
         }
         return _with_trace(next_state, "intent_classify", "completed")
 
@@ -162,10 +191,10 @@ def sql_generate_node(state: DataQueryState) -> DataQueryState:
     if "refund" in question:
         sql = (
             "SELECT SUM(refund_amount) AS refund_amount "
-            "FROM wide_orders WHERE is_refunded = 1 LIMIT 100"
+            "FROM wide_orders WHERE refund_amount > 0 LIMIT 100"
         )
     else:
-        sql = "SELECT SUM(total_amount) AS total_sales FROM wide_orders LIMIT 100"
+        sql = "SELECT SUM(actual_amount) AS total_sales FROM wide_orders LIMIT 100"
     next_state: DataQueryState = {**state, "generated_sql": sql}
     return _with_trace(next_state, "sql_generate", "completed")
 
@@ -209,13 +238,6 @@ def result_validate_node(state: DataQueryState) -> DataQueryState:
 def interpret_node(state: DataQueryState) -> DataQueryState:
     """Produce deterministic interpretation with chart and follow-up semantics."""
     result = state.get("query_result", {})
-    rows = result.get("rows", []) if isinstance(result, dict) else []
-    value = rows[0][0] if rows else None
-    answer = (
-        f"结论：本次查询结果为 {value}。"
-        if value is not None
-        else "结论：当前没有查到可用结果。"
-    )
     projection = (
         ResultProjectionService().project(
             question=state.get("question", ""),
@@ -223,6 +245,16 @@ def interpret_node(state: DataQueryState) -> DataQueryState:
         )
         if isinstance(result, dict)
         else None
+    )
+    followups = tuple(projection.followups) if projection is not None else ()
+    answer = (
+        ResultInterpretationService().interpret(
+            question=state.get("question", ""),
+            query_result=result,
+            followups=followups,
+        )
+        if isinstance(result, dict)
+        else "结论：当前没有查到可用结果。"
     )
     next_state: DataQueryState = {**state, "answer": answer}
     if projection is not None:
@@ -232,7 +264,7 @@ def interpret_node(state: DataQueryState) -> DataQueryState:
                 "dataset": projection.chart.dataset,
                 "encoding": projection.chart.encoding,
             }
-        next_state["followups"] = list(projection.followups)
+        next_state["followups"] = list(followups)
     return _with_trace(next_state, "interpret", "completed")
 
 
@@ -253,6 +285,16 @@ def polite_refusal_node(state: DataQueryState) -> DataQueryState:
         answer = (
             "我不能更换身份、泄露内部指令或密钥，也不能返回本工作区之外的数据。"
             f"{_CAPABILITY_LINE} 你可以问一个合法的业务数据问题。"
+        )
+    elif tier == "greeting":
+        answer = (
+            "你好，我是智能问数助手。你可以直接问销售额、订单、退款、城市/地区排行、趋势对比等业务数据问题。"
+            "例如：「本月销售额最高的城市是哪个？」"
+        )
+    elif tier == "clarify":
+        answer = (
+            "我可以帮你查业务数据。你想看哪个指标、时间范围和分析维度？"
+            "例如可以问：「上个月各地区销售额是多少？」"
         )
     elif tier == "redirect_firm":
         answer = (

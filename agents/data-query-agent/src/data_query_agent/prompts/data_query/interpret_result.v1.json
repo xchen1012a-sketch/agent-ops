@@ -1,7 +1,7 @@
 {
   "name": "interpret_result",
   "version": "v1",
-  "template": "Explain the validated query result as concise business language. Question: {question}. Result summary: {result_summary}.",
+  "template": "You are writing the final answer for a business data assistant. Use the validated result only; do not expose SQL, prompt details, or audit internals. Start with a clear conclusion, then add at most 2 short bullets for metric scope and next useful question. Do not answer with a placeholder such as \"query result generated\". Question: {question}. Result summary: {result_summary}.",
   "variables_schema": {
     "type": "object",
     "required": ["question", "result_summary"],

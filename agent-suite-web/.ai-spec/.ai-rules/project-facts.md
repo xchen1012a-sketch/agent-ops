@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: eb545504abf2440f
-- last refresh: 2026-07-05 19:53:47 +08:00
+- source hash: 8c21496096585d64
+- last refresh: 2026-07-09 20:20:46 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -30,7 +30,7 @@
 - format:check: prettier --check "src/**/*.{ts,vue,css,scss,json,md}"
 - lint: eslint . --max-warnings=0
 - lint:fix: eslint . --fix
-- preview: vite preview --port 5173
+- preview: vite preview --port 7777
 - test: vitest run
 - test:coverage: vitest run --coverage
 - test:watch: vitest
@@ -46,6 +46,8 @@ agent-suite-web/
 |   |-- detailed-design.md
 |   |-- specification.md
 |-- logs/
+|   |-- vite-5174.err.log
+|   |-- vite-5174.out.log
 |   |-- vite-5666.err.log
 |   |-- vite-5666.out.log
 |-- nginx/
@@ -56,6 +58,7 @@ agent-suite-web/
 |   |-- api/
 |   |-- app/
 |   |-- components/
+|   |-- composables/
 |   |-- lib/
 |   |-- router/
 |   |-- stores/
@@ -93,6 +96,12 @@ agent-suite-web/
 |-- tsconfig.node.json
 |-- vite.config.ts
 |-- vitest.config.ts
+|-- vite-ui-restyle.err.log
+|-- vite-ui-restyle.out.log
+|-- vite-ui-restyle-5174.err.log
+|-- vite-ui-restyle-5174.out.log
+|-- vite-ui-restyle-5174b.err.log
+|-- vite-ui-restyle-5174b.out.log
 ```
 
 ## [auto] Environment keys
@@ -108,7 +117,7 @@ agent-suite-web/
 
 ## [auto] Git status
 
-- Current branch: legal-100-data-workflow-local
+- Current branch: develop
 - Working tree: has uncommitted changes
 - Remotes:
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)

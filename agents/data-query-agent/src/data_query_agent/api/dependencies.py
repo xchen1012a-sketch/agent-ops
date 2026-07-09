@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from data_query_agent.application.services.agent_api_config import ApiConfigCrypto
 from data_query_agent.application.services.audit_service import SqlAuditService
+from data_query_agent.application.services.data_catalog_service import DataCatalogService
 from data_query_agent.application.services.feishu_bot_service import (
     FeishuBotService,
     FeishuInboundMessage,
@@ -21,13 +22,24 @@ from data_query_agent.application.services.feishu_webhook_service import (
     FeishuWebhookProcessor,
 )
 from data_query_agent.application.services.identity_service import IdentityThreadService
+from data_query_agent.application.services.prompt_template_service import PromptTemplateService
 from data_query_agent.application.services.run_service import QueryRunTraceService
-from data_query_agent.application.services.stream_adapter_resolver import resolve_stream_adapter
+from data_query_agent.application.services.shop_schema_loader import ShopSchemaLoader
+from data_query_agent.application.services.stream_adapter_resolver import (
+    resolve_chat_adapter,
+    resolve_stream_adapter,
+)
 from data_query_agent.core.config import Settings, get_settings
 from data_query_agent.core.errors import AuthError
 from data_query_agent.core.logging import get_logger
 from data_query_agent.core.request_context import REQUEST_ID_KEY, request_context
-from data_query_agent.domain.ports.llm_adapter import LlmAdapter
+from data_query_agent.domain.ports.llm_adapter import (
+    LlmAdapter,
+    LlmCompletionRequest,
+    LlmCompletionResponse,
+    LlmStreamChunk,
+)
+from data_query_agent.domain.ports.query_adapter import ReadOnlyQueryAdapter
 from data_query_agent.infrastructure.db.repositories.agent_api_config import (
     SqlAlchemyAgentApiConfigRepository,
 )
@@ -35,6 +47,9 @@ from data_query_agent.infrastructure.db.repositories.audit import SqlAlchemySqlA
 from data_query_agent.infrastructure.db.repositories.identity import SqlAlchemyIdentityRepository
 from data_query_agent.infrastructure.db.repositories.run import SqlAlchemyRunRepository
 from data_query_agent.infrastructure.db.session import get_session_factory
+from data_query_agent.infrastructure.db.sqlalchemy_query_adapter import (
+    SqlAlchemyReadOnlyQueryAdapter,
+)
 from data_query_agent.infrastructure.integrations.feishu_client import (
     FeishuClient,
     FeishuClientConfig,
@@ -223,6 +238,80 @@ async def get_llm_stream_adapter(
     return await resolve_stream_adapter(subject=subject, reader=repo, settings=settings)
 
 
+async def get_chat_llm_adapter(
+    subject: CurrentSubjectDep,
+    repo: AgentApiConfigRepoDep,
+    settings: SettingsDep,
+) -> LlmAdapter:
+    """Resolve the non-streaming LLM adapter used for NL2SQL / interpret prompts.
+
+    This path drives executable SQL generation, so it resolves lazily. Boundary
+    replies such as greetings should not fail just because the account has not
+    configured a real model key.
+    """
+    return _LazyChatLlmAdapter(subject=subject, repo=repo, settings=settings)
+
+
+class _LazyChatLlmAdapter:
+    """Resolve the real chat adapter only when a model call is actually needed."""
+
+    def __init__(
+        self,
+        *,
+        subject: str,
+        repo: SqlAlchemyAgentApiConfigRepository,
+        settings: Settings,
+    ) -> None:
+        self._subject = subject
+        self._repo = repo
+        self._settings = settings
+        self._adapter: LlmAdapter | None = None
+
+    async def _resolve(self) -> LlmAdapter:
+        if self._adapter is None:
+            self._adapter = await resolve_chat_adapter(
+                subject=self._subject,
+                reader=self._repo,
+                settings=self._settings,
+            )
+        return self._adapter
+
+    async def complete(self, request: LlmCompletionRequest) -> LlmCompletionResponse:
+        adapter = await self._resolve()
+        return await adapter.complete(request)
+
+    async def stream(self, request: LlmCompletionRequest) -> AsyncIterator[LlmStreamChunk]:
+        adapter = await self._resolve()
+        async for chunk in adapter.stream(request):
+            yield chunk
+
+
+def get_prompt_template_service() -> PromptTemplateService:
+    """Return the singleton prompt template service."""
+    return _prompt_template_service
+
+
+def get_query_adapter(settings: SettingsDep) -> ReadOnlyQueryAdapter:
+    """Return the shop_db read-only query adapter (cached per URL)."""
+    return SqlAlchemyReadOnlyQueryAdapter(read_url=settings.shop_db_read_url)
+
+
+def get_shop_schema_loader(settings: SettingsDep) -> ShopSchemaLoader:
+    """Return the shop_db schema loader bound to the SQL whitelist."""
+    return ShopSchemaLoader(
+        schema_path=settings.shop_schema_path,
+        whitelist=DataCatalogService().load_sql_whitelist(),
+    )
+
+
+def get_data_catalog_service() -> DataCatalogService:
+    """Return the data catalog service (whitelist + fixtures)."""
+    return DataCatalogService()
+
+
+_prompt_template_service = PromptTemplateService()
+
+
 def get_request_id(request: Request) -> str:
     """Return the request id assigned by middleware; fall back to header or unknown."""
     value = request_context.get(REQUEST_ID_KEY)
@@ -247,3 +336,8 @@ FeishuMockEventServiceDep = Annotated[
 ]
 FeishuWebhookDepsDep = Annotated[FeishuWebhookDeps, Depends(get_feishu_webhook_deps)]
 LlmStreamAdapterDep = Annotated[LlmAdapter, Depends(get_llm_stream_adapter)]
+ChatLlmAdapterDep = Annotated[LlmAdapter, Depends(get_chat_llm_adapter)]
+PromptTemplateServiceDep = Annotated[PromptTemplateService, Depends(get_prompt_template_service)]
+QueryAdapterDep = Annotated[ReadOnlyQueryAdapter, Depends(get_query_adapter)]
+ShopSchemaLoaderDep = Annotated[ShopSchemaLoader, Depends(get_shop_schema_loader)]
+DataCatalogServiceDep = Annotated[DataCatalogService, Depends(get_data_catalog_service)]

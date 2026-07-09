@@ -6,8 +6,8 @@
 <!-- ai-facts:auto:start -->
 ## [auto] Refresh info
 
-- source hash: ad02e758b2d2e064
-- last refresh: 2026-07-05 14:06:31 +08:00
+- source hash: 3eceae5d04f17751
+- last refresh: 2026-07-09 21:03:06 +08:00
 - refresh command: scripts/refresh-project-facts.ps1
 
 ## [auto] Tech stack
@@ -27,9 +27,20 @@ data-query-agent/
 |   |-- .gitignore
 |   |-- CACHEDIR.TAG
 |-- .pytest_cache/
+|   |-- v/
+|   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|   |-- README.md
 |-- .ruff_cache/
 |   |-- 0.15.20/
 |   |-- .gitignore
+|   |-- CACHEDIR.TAG
+|-- .tmp/
+|-- .uv-cache/
+|   |-- interpreter-v4/
+|   |-- sdists-v9/
+|   |-- .gitignore
+|   |-- .lock
 |   |-- CACHEDIR.TAG
 |-- .venv/
 |   |-- include/
@@ -41,11 +52,13 @@ data-query-agent/
 |   |-- CACHEDIR.TAG
 |   |-- pyvenv.cfg
 |-- docs/
+|   |-- plans/
 |   |-- api-contract.md
 |   |-- architecture.md
 |   |-- detailed-design.md
 |   |-- specification.md
 |-- migrations/
+|   |-- __pycache__/
 |   |-- versions/
 |   |-- env.py
 |   |-- script.py.mako
@@ -63,6 +76,7 @@ data-query-agent/
 |   |-- __init__.py
 |   |-- conftest.py
 |-- .coverage
+|-- .env
 |-- .env.example
 |-- .gitignore
 |-- AGENTS.md
@@ -76,6 +90,7 @@ data-query-agent/
 
 ## [auto] Environment keys
 
+- AGENT_CONFIG_ENCRYPTION_KEY
 - APP_ENV
 - APP_NAME
 - APP_PORT
@@ -91,11 +106,17 @@ data-query-agent/
 - DEEPSEEK_MAX_RETRIES
 - DEEPSEEK_MODEL
 - DEEPSEEK_TIMEOUT_SECONDS
+- FEISHU_API_BASE
 - FEISHU_ENABLED
+- FEISHU_EVENT_DEDUP_TTL_SECONDS
+- FEISHU_TIMEOUT_SECONDS
+- FEISHU_TOKEN_CACHE_TTL_SECONDS
 - INDICATORS_PATH
 - JWT_ACCESS_TTL_SECONDS
 - JWT_REFRESH_TTL_SECONDS
 - JWT_SECRET
+- LLM_STREAM_ANSWER_FIELDS
+- LLM_STREAM_THINKING_FIELDS
 - LOG_FORMAT
 - LOG_LEVEL
 - MCP_SERVER_URL
@@ -107,6 +128,7 @@ data-query-agent/
 - SHOP_DB_POOL_SIZE
 - SHOP_DB_READ_ONLY
 - SHOP_DB_READ_URL
+- SHOP_SCHEMA_PATH
 - SQL_AUDIT_RETENTION_DAYS
 - SQL_EXECUTION_TIMEOUT_SECONDS
 - SQL_MAX_BYTES
@@ -116,7 +138,7 @@ data-query-agent/
 
 ## [auto] Git status
 
-- Current branch: legal-100-data-workflow-local
+- Current branch: develop
 - Working tree: has uncommitted changes
 - Remotes:
   - origin	https://github.com/xchen1012a-sketch/agent-ops.git (fetch)

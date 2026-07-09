@@ -23,12 +23,14 @@ const props = withDefaults(
     disabled?: boolean;
     disabledReason?: string;
     maxLength?: number;
+    showModelSelector?: boolean;
   }>(),
   {
     submitting: false,
     disabled: false,
     disabledReason: '',
     maxLength: 2000,
+    showModelSelector: false,
   },
 );
 
@@ -249,7 +251,7 @@ function selectModel(model: string): void {
       </div>
 
       <div class="chat-composer__right">
-        <el-dropdown trigger="click" @command="selectModel">
+        <el-dropdown v-if="props.showModelSelector" trigger="click" @command="selectModel">
           <button type="button" class="chat-composer__model" aria-label="选择模型">
             <span>{{ selectedModel }}</span>
             <AppIcon name="ArrowDown" />
